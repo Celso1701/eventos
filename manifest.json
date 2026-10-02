@@ -1,0 +1,14 @@
+{
+  "name":"RIZZIERI ONE — Life, Business & Projects",
+  "short_name":"RIZZIERI ONE",
+  "start_url":"./index.html",
+  "display":"standalone",
+  "background_color":"#071624",
+  "theme_color":"#071624",
+  "orientation":"any",
+  "icons":[
+    {"src":"./assets/icons/icon192.png","sizes":"192x192","type":"image/png"},
+    {"src":"./assets/icons/icon512.png","sizes":"512x512","type":"image/png"},
+    {"src":"./assets/icons/icon512-maskable.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+  ]
+}

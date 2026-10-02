@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <meta name="theme-color" content="#071624"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <meta name="apple-mobile-web-app-title" content="RIZZIERI ONE"/>
+  <title>RIZZIERI ONE</title>
+  <link rel="manifest" href="./manifest.json"/>
+  <link rel="icon" href="./assets/icons/icon192.png"/>
+  <link rel="apple-touch-icon" href="./assets/icons/icon192.png"/>
+  <link rel="stylesheet" href="./css/app.css"/>
+</head>
+<body>
+<div id="app">
+  <section id="loginView" class="login-shell">
+    <div class="login-brand">
+      <div class="brand-emblem">R1</div>
+      <div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div>
+    </div>
+    <div class="login-panel">
+      <span class="eyebrow">LIFE • BUSINESS • PROJECTS</span>
+      <h1>Planeje. Execute. <em>Evolua.</em></h1>
+      <p>Uma central para administrar projetos, aplicativos, estratégia, rotina e resultados em um único ecossistema.</p>
+      <form id="loginForm" class="login-card">
+        <label>E-mail</label>
+        <input type="email" value="demo@rizzieri.one" autocomplete="email"/>
+        <label>Senha</label>
+        <div class="password-row"><input id="password" type="password" value="123456"/><button id="togglePassword" type="button">👁</button></div>
+        <button class="btn btn-primary" type="submit">Entrar no RIZZIERI ONE</button>
+        <button id="demoLogin" class="btn btn-secondary" type="button">Acessar demonstração</button>
+      </form>
+    </div>
+    <div class="login-visual">
+      <div class="orb orb-a"></div><div class="orb orb-b"></div>
+      <div class="glass-card hero-glass">
+        <span class="micro">COMMAND CENTER</span>
+        <strong>3 apps em produção</strong>
+        <p>VetFlowCare • AttimoDrive • PDVMix</p>
+        <div class="mini-kpis"><div><b>7</b><span>projetos</span></div><div><b>12</b><span>objetivos</span></div><div><b>4</b><span>críticos</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="appView" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.12.0</span></div>
+      <div class="workspace-card">
+        <span>WORKSPACE</span>
+        <button id="workspaceBtn"><span class="workspace-current"><i id="workspaceDot" class="workspace-dot"></i><b id="workspaceName">Negócios</b></span><i class="workspace-chevron">⌄</i></button>
+      </div>
+      <nav id="sideNav" class="side-nav"></nav>
+      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.12.0</small>
+        <button id="tutorialBtn" class="tutorial-entry-btn"><span data-icon="help-circle"></span><span><b>Tutorial completo</b><small>Aprenda passo a passo</small></span></button>
+        <button id="installBtn" class="install-btn">⬇ Instalar aplicativo</button>
+        <div class="user-card"><span class="avatar">BR</span><div><b>Bruno</b><small>Administrador</small></div><button data-open-ajustes title="Ajustes">⋯</button></div>
+      </div>
+    </aside>
+
+    <div class="main-shell">
+      <header class="topbar">
+        <div><span class="eyebrow" id="sectionEyebrow">CENTRAL DE COMANDO</span><h2 id="pageTitle">Visão geral</h2></div>
+        <div class="top-actions">
+          <button class="icon-btn mobile-workspace-btn" id="mobileWorkspaceBtn" title="Trocar workspace"><span data-icon="grid"></span></button>
+          <button class="icon-btn tutorial-top-btn" id="tutorialTopBtn" title="Tutorial e ajuda"><span data-icon="help-circle"></span></button>
+          <button class="icon-btn" id="searchBtn" title="Buscar">⌕</button>
+          <button class="icon-btn badge-wrap" id="alertsBtn" title="Alertas">🔔<span class="badge">4</span></button>
+          <button class="btn btn-primary" id="quickAddBtn"><span data-icon="plus-circle"></span><span class="quick-label">Novo</span></button>
+        </div>
+      </header>
+      <main id="content" class="content"></main>
+      <nav id="bottomNav" class="bottom-nav"></nav>
+    </div>
+  </section>
+</div>
+
+<dialog id="workspaceDialog" class="modal small-modal">
+  <div class="modal-head"><div><span class="eyebrow">WORKSPACES</span><h3>Escolha seu ambiente</h3></div><button class="close-btn" data-close="workspaceDialog">×</button></div>
+  <div class="workspace-list">
+    <button data-workspace="Negócios"><span class="ws-icon" data-icon="briefcase"></span><span><b>Negócios</b><small>Empresas, apps, clientes e resultados</small></span><i class="ws-swatch business"></i></button>
+    <button data-workspace="Eventos"><span class="ws-icon" data-icon="calendar-heart"></span><span><b>Eventos</b><small>Casamentos, debutantes, corporativo e produção</small></span><i class="ws-swatch events"></i></button>
+    <button data-workspace="Pessoal"><span class="ws-icon" data-icon="user"></span><span><b>Pessoal</b><small>Objetivos, rotina, documentos e finanças</small></span><i class="ws-swatch personal"></i></button>
+    <button data-workspace="Ideias"><span class="ws-icon" data-icon="lightbulb"></span><span><b>Ideias</b><small>Incubadora e validação de projetos</small></span><i class="ws-swatch ideas"></i></button>
+  </div>
+</dialog>
+
+<dialog id="quickAddDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">CRIAR</span><h3>Novo registro</h3></div><button class="close-btn" data-close="quickAddDialog">×</button></div>
+  <div id="quickGrid" class="quick-grid"></div>
+</dialog>
+
+<dialog id="formDialog" class="modal wide">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="formTitle">Novo registro</h3></div><button class="close-btn" data-close="formDialog">×</button></div>
+  <form id="dynamicForm" class="form-grid"></form>
+</dialog>
+
+<dialog id="alertsDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">CENTRAL DE ATENÇÃO</span><h3 id="alertsCountTitle">Pontos importantes</h3></div><button class="close-btn" data-close="alertsDialog">×</button></div>
+  <div id="alertsList" class="attention-list"></div>
+</dialog>
+
+
+
+<dialog id="tutorialWelcomeDialog" class="modal tutorial-welcome-dialog">
+  <div class="modal-head"><div><span class="eyebrow">PRIMEIROS PASSOS</span><h3>Quer aprender usando o sistema?</h3></div><button class="close-btn" data-close="tutorialWelcomeDialog">×</button></div>
+  <div class="tutorial-welcome-body">
+    <div class="tutorial-welcome-icon"><span data-icon="help-circle"></span></div>
+    <div><p>O tutorial não é apenas um manual. Ele leva você até a tela correta, destaca o botão e acompanha a execução passo a passo.</p><div class="tutorial-welcome-actions"><button id="startEssentialTutorial" class="btn btn-primary"><span data-icon="play-circle"></span> Começar tour essencial</button><button id="openTutorialCenter" class="btn btn-secondary">Ver todos os tutoriais</button></div></div>
+  </div>
+</dialog>
+
+<dialog id="catalogDetailDialog" class="modal wide catalog-detail-modal">
+  <div class="modal-head"><div><span class="eyebrow">CATÁLOGO COMERCIAL</span><h3 id="catalogDetailTitle">Detalhes do item</h3></div><button class="close-btn" data-close="catalogDetailDialog">×</button></div>
+  <div id="catalogDetailBody"></div>
+</dialog>
+
+<dialog id="companyProfileDialog" class="modal wide">
+  <div class="modal-head"><div><span class="eyebrow">IDENTIDADE & DADOS CADASTRAIS</span><h3>Minha empresa / marca</h3></div><button class="close-btn" data-close="companyProfileDialog">×</button></div>
+  <form id="companyProfileForm" class="form-grid">
+    <div class="profile-logo-zone full">
+      <div id="companyLogoPreview" class="company-logo-preview"><span>Seu logo</span></div>
+      <label class="upload-logo">Adicionar logo<input id="companyLogo" type="file" accept="image/*"></label>
+      <small>O logo será usado nos contratos, propostas, listas e relatórios em PDF.</small>
+    </div>
+    <div class="form-field"><label>Nome da marca</label><input name="businessName" type="text"></div>
+    <div class="form-field"><label>Razão social / Nome profissional</label><input name="legalName" type="text"></div>
+    <div class="form-field"><label>CNPJ / CPF</label><input name="document" type="text" data-mask="cpfcnpj" inputmode="numeric"><small class="field-error-msg" data-error-for="document" style="display:none;color:#c0392b;margin-top:4px">Valor informado inválido.</small></div>
+    <div class="form-field"><label>Telefone / WhatsApp</label><input name="phone" type="tel" data-mask="phone" inputmode="numeric"></div>
+    <div class="form-field"><label>E-mail</label><input name="email" type="email"></div>
+    <div class="form-field"><label>Site</label><input name="website" type="text"></div>
+    <div class="form-field full"><label>Endereço</label><input name="address" type="text"></div>
+    <div class="form-field full"><label>Rodapé dos documentos</label><textarea name="footer" rows="3"></textarea></div>
+    <div class="form-actions"><button type="button" class="btn btn-secondary" data-close="companyProfileDialog">Cancelar</button><button class="btn btn-primary" type="submit">Salvar identidade</button></div>
+  </form>
+</dialog>
+
+<dialog id="presentationModeDialog" class="presentation-dialog">
+  <button class="presentation-close" data-close="presentationModeDialog">×</button>
+  <div class="presentation-stage"></div>
+</dialog>
+
+<div id="tutorialCoach" class="tutorial-coach" popover="manual">
+  <div class="tutorial-coach-head"><div><span id="tutorialCoachLabel" class="tutorial-coach-label">PASSO 1</span><b id="tutorialCoachTitle">Tutorial</b></div><button id="tutorialStop" class="tutorial-coach-close" title="Encerrar tutorial">×</button></div>
+  <p id="tutorialCoachText"></p>
+  <div id="tutorialCoachTip" class="tutorial-coach-tip"></div>
+  <div class="tutorial-coach-progress"><i id="tutorialCoachProgress"></i></div>
+  <div class="tutorial-coach-actions"><button id="tutorialBack" class="tutorial-mini-btn">← Voltar</button><button id="tutorialNext" class="tutorial-next-btn">Próximo passo →</button></div>
+</div>
+
+<section id="printRoot" class="print-root" aria-hidden="true"></section>
+
+<div id="toast" class="toast"></div>
+<script src="./js/app.js"></script>
+</body>
+</html>
