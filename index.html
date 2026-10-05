@@ -11,6 +11,7 @@
   <link rel="manifest" href="./manifest.json"/>
   <link rel="icon" href="./assets/icons/icon192.png"/>
   <link rel="apple-touch-icon" href="./assets/icons/icon192.png"/>
+  
   <link rel="stylesheet" href="./css/app.css"/>
 </head>
 <body>
@@ -44,15 +45,34 @@
     </div>
   </section>
 
+  <section id="lockView" class="login-shell hidden">
+    <div class="login-brand">
+      <div class="brand-emblem">R1</div>
+      <div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div>
+    </div>
+    <div class="login-panel" style="max-width:420px;margin:0 auto">
+      <span class="eyebrow">ACESSO PROTEGIDO</span>
+      <h1 style="font-size:28px">Bem-vindo de volta</h1>
+      <p>Digite sua senha de acesso para abrir seus dados. Eles ficam criptografados neste aparelho até você entrar.</p>
+      <div class="login-card" style="display:flex;flex-direction:column;gap:10px">
+        <label>Senha de acesso</label>
+        <div class="password-row"><input id="lockPass" type="password" maxlength="64" autocomplete="off"/><button id="lockTogglePass" type="button">👁</button></div>
+        <button class="btn btn-primary" id="lockEntrarBtn" type="button">Entrar</button>
+        <div id="lockErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b"></div>
+        <button class="link-btn" id="lockForgotBtn" type="button" style="text-align:left">Esqueci minha senha</button>
+      </div>
+    </div>
+  </section>
+
   <section id="appView" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.12.0</span></div>
+      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span></div>
       <div class="workspace-card">
         <span>WORKSPACE</span>
         <button id="workspaceBtn"><span class="workspace-current"><i id="workspaceDot" class="workspace-dot"></i><b id="workspaceName">Negócios</b></span><i class="workspace-chevron">⌄</i></button>
       </div>
       <nav id="sideNav" class="side-nav"></nav>
-      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.12.0</small>
+      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.18.1</small>
         <button id="tutorialBtn" class="tutorial-entry-btn"><span data-icon="help-circle"></span><span><b>Tutorial completo</b><small>Aprenda passo a passo</small></span></button>
         <button id="installBtn" class="install-btn">⬇ Instalar aplicativo</button>
         <div class="user-card"><span class="avatar">BR</span><div><b>Bruno</b><small>Administrador</small></div><button data-open-ajustes title="Ajustes">⋯</button></div>
@@ -94,6 +114,54 @@
 <dialog id="formDialog" class="modal wide">
   <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="formTitle">Novo registro</h3></div><button class="close-btn" data-close="formDialog">×</button></div>
   <form id="dynamicForm" class="form-grid"></form>
+</dialog>
+
+<dialog id="searchDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>Buscar</h3></div><button class="close-btn" data-close="searchDialog">×</button></div>
+  <div style="display:flex;gap:8px;margin-bottom:10px"><input type="text" id="searchDialogInput" placeholder="Nome do projeto, evento ou cliente (ou telefone do cliente)..." style="flex:1;margin:0" autocomplete="off"><button class="btn btn-primary" id="searchDialogGo" style="width:auto">Buscar</button></div>
+  <div id="searchDialogEmpty" style="display:none;color:#8a95a1;font-size:13px">Nada encontrado com esse termo.</div>
+</dialog>
+
+<dialog id="finConfirmDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="finConfirmTitle">Ver detalhes?</h3></div><button class="close-btn" data-close="finConfirmDialog">×</button></div>
+  <p id="finConfirmText" style="color:#4a5568;margin:0 0 16px"></p>
+  <div class="form-actions"><button class="btn btn-secondary" data-close="finConfirmDialog" style="width:auto">Não</button><button class="btn btn-primary" id="finConfirmYes" style="width:auto">Sim, ver detalhes</button></div>
+</dialog>
+
+<dialog id="pwSetupDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="pwSetupTitle">Criar senha de acesso</h3></div><button class="close-btn" data-close="pwSetupDialog">×</button></div>
+  <p style="font-size:12.5px;color:#4a5568;margin:0 0 10px">A senha protege seus eventos, clientes e financeiro neste aparelho — os dados ficam criptografados, sem ela não dá pra abrir o app nem ler o que está salvo.</p>
+  <div style="font-size:12px;color:#a15b1f;background:#fdf1e3;border:1px solid #eccb9c;border-radius:10px;padding:8px 10px;margin-bottom:12px">A senha deve ter <b>de 4 a 50 caracteres</b>, com <b>1 maiúscula, 1 minúscula, 1 número e 1 símbolo</b>.</div>
+  <div class="form-field"><label>Nova senha</label><div class="password-row"><input id="pwSetupPass" type="password" maxlength="50" autocomplete="off"/><button type="button" id="pwSetupToggle1">👁</button></div></div>
+  <div id="pwRules" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:11px">
+   <span class="pill" data-r="len">4-50 caracteres</span><span class="pill" data-r="up">1 maiúscula</span><span class="pill" data-r="low">1 minúscula</span><span class="pill" data-r="num">1 número</span><span class="pill" data-r="sp">1 símbolo</span>
+  </div>
+  <div class="form-field"><label>Digite a senha de novo</label><div class="password-row"><input id="pwSetupPass2" type="password" maxlength="50" autocomplete="off"/><button type="button" id="pwSetupToggle2">👁</button></div></div>
+  <div id="pwSetupMatch" style="min-height:18px;font-size:12px;font-weight:700;margin-top:4px"></div>
+  <div style="font-size:11px;color:#6b7a93;margin-top:10px;line-height:1.6">⚠️ Guarde bem a senha. Ela não fica salva em nenhum servidor — <b>sem ela os dados não podem ser recuperados</b>.</div>
+  <div id="pwSetupErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b;margin-top:4px"></div>
+  <div class="form-actions full" style="margin-top:12px"><button class="btn btn-secondary" data-close="pwSetupDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="pwSetupBtn" disabled style="width:auto">Criar senha e ativar</button></div>
+</dialog>
+
+<dialog id="pwRemoveDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>Remover senha de acesso?</h3></div><button class="close-btn" data-close="pwRemoveDialog">×</button></div>
+  <p style="font-size:13px;color:#4a5568;margin:0 0 16px">Seus dados voltam a ficar legíveis neste aparelho sem precisar de senha. Você pode criar uma nova senha depois, a qualquer momento.</p>
+  <div class="form-actions"><button class="btn btn-secondary" data-close="pwRemoveDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="pwRemoveConfirmBtn" style="width:auto">Remover senha</button></div>
+</dialog>
+
+<dialog id="pwWhatsDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>🔐 Guardar sua senha</h3></div><button class="close-btn" data-close="pwWhatsDialog">×</button></div>
+  <p style="font-size:13px;color:#273142;margin:0 0 12px">Envie sua senha para o <b>seu próprio WhatsApp</b>. Se um dia esquecer, você não perde o acesso aos seus dados (eles ficam criptografados e não há como recuperar sem a senha).</p>
+  <div class="form-field"><label>Seu WhatsApp (com DDD)</label><input id="pwWhatsNumero" placeholder="(11) 99999-9999"></div>
+  <p style="font-size:11px;color:#6b7a93;line-height:1.6;margin:8px 0 0">A senha vai abrir no WhatsApp pra você enviar a si mesmo. Guarde a mensagem em local seguro e evite compartilhá-la.</p>
+  <div class="form-actions" style="margin-top:14px"><button class="btn btn-secondary" id="pwWhatsCancelar" style="width:auto">Agora não</button><button class="btn btn-primary" id="pwWhatsEnviar" style="width:auto">Enviar ao meu WhatsApp</button></div>
+</dialog>
+
+<dialog id="pwForgotDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>🔑 Esqueceu a senha?</h3></div><button class="close-btn" data-close="pwForgotDialog">×</button></div>
+  <p style="font-size:13.5px;color:#273142;line-height:1.6;margin:0 0 12px">Sem a senha certa, os dados criptografados deste aparelho <b>não podem ser recuperados</b> — não existe um jeito de "resetar" só a senha mantendo os dados.</p>
+  <p style="font-size:12px;color:#6b7a93;line-height:1.6;margin:0 0 16px">Se você tiver um backup baixado (Ajustes → Backup), pode apagar tudo e restaurar a partir dele. Sem backup, o único jeito de voltar a usar o app neste aparelho é apagando tudo e recomeçando do zero.</p>
+  <div class="form-actions"><button class="btn btn-secondary" data-close="pwForgotDialog" style="width:auto">← Voltar</button><button class="btn btn-secondary" id="pwForgotWipeBtn" style="width:auto;color:#c0392b;border-color:#f3c9c4">Apagar e recomeçar</button></div>
 </dialog>
 
 <dialog id="alertsDialog" class="modal">

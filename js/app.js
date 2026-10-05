@@ -1,3 +1,4 @@
+
 const projects=[
  {id:'vetflow',name:'VetFlowCare',cat:'Gestão Veterinária',status:'Produção',version:'v2.8.4',health:92,issues:3,progress:84,url:'https://app.vetflowcare.com.br/',next:'v2.9',update:'Hoje'},
  {id:'attimo',name:'AttimoDrive',cat:'Gestão Automotiva',status:'Produção',version:'v1.7.2',health:88,issues:1,progress:78,url:'https://attimodrive.com.br/',next:'v1.8',update:'Ontem'},
@@ -193,7 +194,7 @@ const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'B
 /* ===== FINANCEIRO UNIFICADO — V:1.05.0 =====
    Modelo único para Negócios, Eventos e Pessoal. Valores em CENTAVOS (inteiros),
    datas sempre em horário LOCAL (nunca toISOString), visões inspiradas no corsyncimoveis. */
-const APP_VERSION='V:1.12.0';
+const APP_VERSION='V:1.18.1';
 const FIN_STORE='r1_fin_v2',FIN_OV='r1_fin_v2_ov',FIN_DEL='r1_fin_v2_del',FIN_CFG='r1_fin_cfg',FIN_MIG='r1_fin_v2_mig';
 const FIN_WS=['Negócios','Eventos','Pessoal'];
 const FIN_CATS={'Negócios':['Assinaturas de clientes','Licenças e ferramentas','Infraestrutura','Marketing','Impostos','Outros'],'Eventos':['Contrato','Parcela','Fornecedor','Decoração','Buffet','DJ & Música','Som & Luz','Transporte','Outros'],'Pessoal':['Renda','Moradia','Alimentação','Transporte','Assinaturas','Saúde','Lazer','Outros']};
@@ -310,12 +311,22 @@ function finTodasBody(scope,list,st){const F={all:()=>true,rec:e=>e.tipo==='rec'
  let h=`<div class="toolbar" style="margin-bottom:8px">${chips}</div>${finTotalsBar(finSum(sel,'rec'),finSum(sel,'desp'))}`,mes='';
  sel.forEach(e=>{const m=(e.data||'').slice(0,7);if(m!==mes){mes=m;const p=m.split('-');h+=`<div style="margin:14px 2px 6px"><small style="text-transform:uppercase;font-weight:800">${p[1]?FIN_MESES[parseInt(p[1])-1]+' '+p[0]:'Sem data'}</small></div>`}h+=finRowHTML(e,scope==='*')});
  return sel.length?h:h+'<div class="empty-state"><b>Nenhum lançamento.</b></div>'}
+function finCardSummaryView(scope,kind){
+ const list=finScopeList(scope),hoje=finLocalISO(),abertos=list.filter(e=>!e.dataReal&&e.data),atr=abertos.filter(e=>e.data<hoje);
+ let rows,title,desc,total;
+ if(kind==='caixa'){rows=list.filter(e=>e.dataReal);title='Caixa atual';desc='Saldo inicial + tudo que já foi realizado (recebido ou pago).';total=finCaixa(list,scope)}
+ else if(kind==='receber'){rows=abertos.filter(e=>e.tipo==='rec');title='A receber (em aberto)';desc='Receitas lançadas que ainda não foram recebidas.';total=finSum(rows,'rec')}
+ else if(kind==='pagar'){rows=abertos.filter(e=>e.tipo==='desp');title='A pagar (em aberto)';desc='Despesas lançadas que ainda não foram pagas.';total=finSum(rows,'desp')}
+ else{rows=atr;title='Atrasados';desc='Lançamentos em aberto cujo vencimento já passou.';total=null}
+ rows=rows.slice().sort((a,b)=>String(b.data||'').localeCompare(String(a.data||'')));
+ let h='';rows.forEach(e=>h+=finRowHTML(e,scope==='*'));
+ return `<button class="link-btn" data-back>← Voltar</button><div class="section-title"><div><span class="eyebrow">RESUMO FINANCEIRO</span><h3>${title}</h3><p>${desc}</p></div></div>${total!==null?`<section class="metrics"><article class="metric-card"><small>Total</small><strong>${finFmt(total)}</strong></article><article class="metric-card"><small>Lançamentos</small><strong>${rows.length}</strong></article></section>`:''}<div class="panel">${h||'<div class="empty-state"><b>Nenhum lançamento aqui.</b></div>'}</div>`}
 function finView(scope){
  const st=finSt(scope),list=finScopeList(scope),hoje=finLocalISO(),abertos=list.filter(e=>!e.dataReal&&e.data),atr=abertos.filter(e=>e.data<hoje);
  const caixa=finCaixa(list,scope),rec=finSum(abertos,'rec'),desp=finSum(abertos,'desp');
  const nome=scope==='*'?'Consolidado':scope,pessoal=scope==='Pessoal';
  const head=`${scope==='*'?'<button class="link-btn" data-back>← Voltar</button>':''}<div class="section-title"><div><span class="eyebrow">FINANCEIRO ${nome.toUpperCase()}</span><h3>${scope==='*'?'Financeiro consolidado':pessoal?'Finanças pessoais':'Receitas, despesas e fluxo de caixa'}</h3><p>${scope==='*'?'Negócios, Eventos e Pessoal no mesmo modelo de lançamento.':'Lançamentos em aberto e realizados, com fluxo diário e caixa.'}</p></div><div class="event-head-actions"><button class="btn btn-secondary" data-fin-act="new" data-tipo="rec">＋ Receita</button><button class="btn btn-secondary" data-fin-act="new" data-tipo="desp">＋ Despesa</button>${scope!=='*'?`<button class="btn btn-primary" data-create="${pessoal?'personalFinance':'finance'}">＋ Novo lançamento</button>`:''}${(scope==='Negócios'||scope==='Eventos')?'<button class="copper-btn" data-print="finance">Extrato PDF</button>':''}<button class="small-btn" data-fin-act="cfg" title="Saldo inicial de caixa e dia do cartão">⚙️</button></div></div>`;
- const cards=`<section class="metrics"><article class="metric-card"><small>Caixa atual</small><strong>${finFmt(caixa)}</strong><span class="metric-meta">Saldo inicial + realizados</span></article><article class="metric-card"><small>A receber (em aberto)</small><strong>${finFmt(rec)}</strong><span class="metric-meta">${abertos.filter(e=>e.tipo==='rec').length} lançamento(s)</span></article><article class="metric-card"><small>A pagar (em aberto)</small><strong>${finFmt(desp)}</strong><span class="metric-meta">${abertos.filter(e=>e.tipo==='desp').length} lançamento(s)</span></article><article class="metric-card"><small>Atrasados</small><strong>${atr.length}</strong><span class="metric-meta">Receber ${finFmt(finSum(atr,'rec'))} · Pagar ${finFmt(finSum(atr,'desp'))}</span></article></section>`;
+ const cards=`<section class="metrics"><article class="metric-card fin-clickable" data-fin-card-summary="caixa" data-fin-scope="${scope}"><small>Caixa atual</small><strong>${finFmt(caixa)}</strong><span class="metric-meta">Saldo inicial + realizados</span></article><article class="metric-card fin-clickable" data-fin-card-summary="receber" data-fin-scope="${scope}"><small>A receber (em aberto)</small><strong>${finFmt(rec)}</strong><span class="metric-meta">${abertos.filter(e=>e.tipo==='rec').length} lançamento(s)</span></article><article class="metric-card fin-clickable" data-fin-card-summary="pagar" data-fin-scope="${scope}"><small>A pagar (em aberto)</small><strong>${finFmt(desp)}</strong><span class="metric-meta">${abertos.filter(e=>e.tipo==='desp').length} lançamento(s)</span></article><article class="metric-card fin-clickable" data-fin-card-summary="atrasados" data-fin-scope="${scope}"><small>Atrasados</small><strong>${atr.length}</strong><span class="metric-meta">Receber ${finFmt(finSum(atr,'rec'))} · Pagar ${finFmt(finSum(atr,'desp'))}</span></article></section>`;
  let wsRow='',brk='';
  if(scope==='*'){wsRow=`<div class="toolbar" style="margin-bottom:10px">${['Todos',...FIN_WS].map(w=>`<button class="filter-chip ${st.ws===w?'active':''}" data-fin-act="ws" data-ws="${w}">${w}</button>`).join('')}</div>`;
   const all=finAll();brk=`<section class="metrics">${FIN_WS.map(w=>{const l=all.filter(e=>e.ws===w),a=l.filter(e=>!e.dataReal);return `<article class="metric-card" data-fin-ws="${w}"><small>${w}</small><strong>${finFmt(finCaixa(l,w))}</strong><span class="metric-meta">Caixa · aberto: receber ${finFmt(finSum(a,'rec'))} / pagar ${finFmt(finSum(a,'desp'))}</span></article>`}).join('')}</section>`}
@@ -460,22 +471,22 @@ const agendaTypeClass=type=>({'Evento':'event','Compromisso':'appointment','Pess
 function dashboardView(workspace='Negócios'){
  const allProjects=getProjects(),ideaBoard=getIdeasBoard(),events=getEvents().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))),finance=getFinance(),suppliers=getSuppliers(),clients=getClients(),pending=finance.filter(x=>x.status==='Pendente');
  if(workspace==='Eventos') return `
- <section class="workspace-banner"><div><span class="eyebrow">WORKSPACE EVENTOS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.12.0</span><h3>Produção rigorosa do briefing ao último convidado.</h3><p>Eventos, clientes, fornecedores, contratos, catálogo, financeiro, checklist e cronograma trabalhando no mesmo fluxo.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="eventos"><span data-icon="calendar-heart"></span> Abrir central de eventos</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
+ <section class="workspace-banner"><div><span class="eyebrow">WORKSPACE EVENTOS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span><h3>Produção rigorosa do briefing ao último convidado.</h3><p>Eventos, clientes, fornecedores, contratos, catálogo, financeiro, checklist e cronograma trabalhando no mesmo fluxo.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="eventos"><span data-icon="calendar-heart"></span> Abrir central de eventos</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
  <section class="metrics"><article class="metric-card"><small>Eventos ativos</small><strong>${events.length}</strong><span class="metric-meta">Em produção</span>${spark([22,34,48,58,68,80],true)}</article><article class="metric-card"><small>Itens de checklist</small><strong>${getChecklist().filter(x=>!x.done).length}</strong><span class="metric-meta">Ainda em aberto</span>${spark([70,58,50,42,34,26])}</article><article class="metric-card"><small>Fornecedores</small><strong>${suppliers.length}</strong><span class="metric-meta">Rede operacional</span>${spark([28,38,48,58,68,78],true)}</article><article class="metric-card"><small>Pendências financeiras</small><strong>${pending.length}</strong><span class="metric-meta">Cobrar ou pagar</span>${spark([60,54,46,38,32,24])}</article></section>
- <section class="main-grid"><div class="panel"><div class="panel-head"><h3>Eventos em andamento</h3><button class="link-btn" data-nav="eventos">Ver todos</button></div><div class="event-mini-grid">${events.map(e=>`<article class="event-mini"><div><span class="event-type">${e.type}</span><h4>${e.title}</h4><p>${e.venue} • ${e.guests} convidados</p></div><div class="event-mini-foot"><div><small>Produção</small><b>${e.progress}%</b></div><div class="progress"><i style="width:${e.progress}%"></i></div><button class="small-btn" data-open-event="${e.id}">Abrir detalhes</button></div></article>`).join('')}</div></div><div class="stack"><div class="panel"><div class="panel-head"><h3>Atalhos de produção</h3></div><div class="quick-grid"><button data-nav="catalogo"><span data-icon="book-open"></span><span>Catálogo</span></button><button data-nav="fornecedores"><span data-icon="briefcase"></span><span>Fornecedores</span></button><button data-nav="contratos"><span data-icon="file-signature"></span><span>Contratos</span></button><button data-nav="apresentacoes"><span data-icon="presentation"></span><span>Apresentações</span></button><button data-create="event"><span data-icon="plus-circle"></span><span>Novo evento</span></button><button data-nav="financeiro"><span data-icon="wallet"></span><span>Financeiro</span></button></div></div><div class="panel"><div class="panel-head"><h3>Atenção agora</h3></div><div class="attention-list"><button data-open-event="ev-ana-lucas"><span class="status-dot danger"></span><div><b>Casamento • Ana & Lucas</b><small>5 pontos críticos ainda em produção</small></div><em>Hoje</em></button><button data-nav="financeiro"><span class="status-dot warn"></span><div><b>Financeiro</b><small>${pending.length} lançamentos pendentes</small></div><em>Agora</em></button></div></div></div></section>`;
+ <section class="main-grid"><div class="panel"><div class="panel-head"><h3>Eventos em andamento</h3><button class="link-btn" data-nav="eventos">Ver todos</button></div><div class="event-mini-grid">${events.map(e=>`<article class="event-mini"><div><span class="event-type">${e.type}</span><span class="event-mini-date">${new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR')}</span><h4>${e.title}</h4><p>${e.venue} • ${e.guests} convidados</p></div><div class="event-mini-foot"><div><small>Produção</small><b>${e.progress}%</b></div><div class="progress"><i style="width:${e.progress}%"></i></div><button class="small-btn" data-open-event="${e.id}">Abrir detalhes</button></div></article>`).join('')}</div></div><div class="stack"><div class="panel"><div class="panel-head"><h3>Atalhos de produção</h3></div><div class="quick-grid"><button data-nav="catalogo"><span data-icon="book-open"></span><span>Catálogo</span></button><button data-nav="fornecedores"><span data-icon="briefcase"></span><span>Fornecedores</span></button><button data-nav="contratos"><span data-icon="file-signature"></span><span>Contratos</span></button><button data-nav="apresentacoes"><span data-icon="presentation"></span><span>Apresentações</span></button><button data-create="event"><span data-icon="plus-circle"></span><span>Novo evento</span></button><button data-nav="financeiro"><span data-icon="wallet"></span><span>Financeiro</span></button></div></div><div class="panel"><div class="panel-head"><h3>Atenção agora</h3></div><div class="attention-list"><button data-open-event="ev-ana-lucas"><span class="status-dot danger"></span><div><b>Casamento • Ana & Lucas</b><small>5 pontos críticos ainda em produção</small></div><em>Hoje</em></button><button data-nav="financeiro"><span class="status-dot warn"></span><div><b>Financeiro</b><small>${pending.length} lançamentos pendentes</small></div><em>Agora</em></button></div></div></div></section>`;
  if(workspace==='Pessoal'){
    const goals=getPersonalGoals(),routine=getRoutine(),appointments=getAppointments(),pf=getPersonalFinance();
-   return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE PESSOAL</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.12.0</span><h3>Sua vida organizada sem misturar com a operação profissional.</h3><p>Objetivos, rotina, agenda, documentos e finanças pessoais em um ambiente separado e visualmente identificável.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="objetivos"><span data-icon="target"></span> Ver objetivos</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
+   return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE PESSOAL</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span><h3>Sua vida organizada sem misturar com a operação profissional.</h3><p>Objetivos, rotina, agenda, documentos e finanças pessoais em um ambiente separado e visualmente identificável.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="objetivos"><span data-icon="target"></span> Ver objetivos</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
    <section class="metrics"><article class="metric-card"><small>Objetivos ativos</small><strong>${goals.length}</strong><span class="metric-meta">Metas pessoais</span>${spark([30,38,48,58,66,74])}</article><article class="metric-card"><small>Rotinas pendentes</small><strong>${routine.filter(x=>!x.done).length}</strong><span class="metric-meta">Nesta semana</span>${spark([62,54,46,38,30,24])}</article><article class="metric-card"><small>Próximos compromissos</small><strong>${appointments.length}</strong><span class="metric-meta">Agenda pessoal</span>${spark([24,34,46,56,64,72],true)}</article><article class="metric-card"><small>Saldo demonstrativo</small><strong>${money(pf.filter(x=>x.type==='Entrada').reduce((a,x)=>a+x.value,0)-pf.filter(x=>x.type==='Saída').reduce((a,x)=>a+x.value,0))}</strong><span class="metric-meta">Prévia pessoal</span>${spark([34,44,54,62,72,80])}</article></section>
    <section class="main-grid"><div class="panel"><div class="panel-head"><h3>Objetivos em andamento</h3><button class="link-btn" data-nav="objetivos">Abrir objetivos</button></div>${goals.map(g=>`<div class="goal-row"><div><b>${g.title}</b><small>${g.area} • até ${new Date(g.due+'T12:00:00').toLocaleDateString('pt-BR')}</small></div><span>${g.progress}%</span><div class="progress"><i style="width:${g.progress}%"></i></div></div>`).join('')}</div><div class="panel"><div class="panel-head"><h3>Rotina da semana</h3><button class="link-btn" data-nav="rotina">Abrir rotina</button></div><div class="routine-list">${routine.map(r=>`<label class="routine-row ${r.done?'done':''}"><input type="checkbox" data-routine-toggle="${r.id}" ${r.done?'checked':''}><span class="custom-check"></span><div><b>${r.title}</b><small>${r.period}</small></div></label>`).join('')}</div></div></section>`;
  }
  if(workspace==='Ideias'){
    const validations=getValidations(),decisions=getDecisions();
-   return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE IDEIAS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.12.0</span><h3>Capture, valide e transforme ideias em projetos executáveis.</h3><p>Canvas, hipóteses, evidências, decisões e roadmap antes de gastar energia no desenvolvimento.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="ideias"><span data-icon="lightbulb"></span> Abrir incubadora</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
+   return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE IDEIAS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span><h3>Capture, valide e transforme ideias em projetos executáveis.</h3><p>Canvas, hipóteses, evidências, decisões e roadmap antes de gastar energia no desenvolvimento.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="ideias"><span data-icon="lightbulb"></span> Abrir incubadora</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
    <section class="metrics"><article class="metric-card"><small>Ideias no funil</small><strong>${Object.values(ideaBoard).flat().length}</strong><span class="metric-meta">Da ideia à produção</span>${spark([26,36,48,58,68,82],true)}</article><article class="metric-card"><small>Validações</small><strong>${validations.length}</strong><span class="metric-meta">Hipóteses em teste</span>${spark([18,28,38,48,58,70])}</article><article class="metric-card"><small>Decisões registradas</small><strong>${decisions.length}</strong><span class="metric-meta">Histórico rastreável</span>${spark([28,34,42,52,64,76],true)}</article><article class="metric-card"><small>Em produção</small><strong>${ideaBoard['PRODUÇÃO'].length}</strong><span class="metric-meta">Ideias que viraram produto</span>${spark([22,30,42,54,68,84])}</article></section>
    <section class="main-grid"><div class="panel"><div class="panel-head"><h3>Funil de ideias</h3><button class="link-btn" data-nav="ideias">Abrir incubadora</button></div><div class="idea-pipeline">${Object.entries(ideaBoard).map(([stage,arr])=>`<div><span>${stage}</span><b>${arr.length}</b></div>`).join('')}</div></div><div class="panel"><div class="panel-head"><h3>Últimas decisões</h3><button class="link-btn" data-nav="decisoes">Ver decisões</button></div>${decisions.map(d=>`<div class="decision-row"><b>${d.title}</b><small>${d.context}</small><span>${d.status}</span></div>`).join('')}</div></section>`;
  }
- return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE NEGÓCIOS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.12.0</span><h3>Comande projetos, produtos, clientes e resultados em um único painel.</h3><p>Visão executiva para administrar aplicativos, estratégia, finanças e operação sem misturar com os demais contextos.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="projetos"><span data-icon="grid"></span> Abrir portfólio</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
+ return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE NEGÓCIOS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span><h3>Comande projetos, produtos, clientes e resultados em um único painel.</h3><p>Visão executiva para administrar aplicativos, estratégia, finanças e operação sem misturar com os demais contextos.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="projetos"><span data-icon="grid"></span> Abrir portfólio</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
  <section class="metrics"><article class="metric-card"><small>Projetos ativos</small><strong>${allProjects.length}</strong><span class="metric-meta">Produtos em produção</span>${spark([30,35,42,48,58,66])}</article><article class="metric-card"><small>Clientes cadastrados</small><strong>${clients.length}</strong><span class="metric-meta">CRM centralizado</span>${spark([24,32,44,56,68,78],true)}</article><article class="metric-card"><small>Saúde média dos apps</small><strong>${Math.round(allProjects.reduce((a,p)=>a+p.health,0)/Math.max(1,allProjects.length))}</strong><span class="metric-meta">Score operacional</span>${spark([62,68,74,80,86,90])}</article><article class="metric-card"><small>Pendências críticas</small><strong>${allProjects.reduce((a,p)=>a+p.issues,0)}</strong><span class="metric-meta">Roadmap e bugs</span>${spark([68,60,52,44,36,28],true)}</article></section>
  <section class="main-grid"><div class="panel"><div class="panel-head"><h3>Portfólio de produtos</h3><button class="link-btn" data-nav="projetos">Ver todos</button></div><div class="project-mini-list">${allProjects.map(p=>`<article><div class="project-logo">${p.name.slice(0,2).toUpperCase()}</div><div><b>${p.name}</b><small>${p.cat} • ${p.version}</small></div><span>${p.health}/100</span><button class="small-btn" data-open-project="${p.id}">Hub</button></article>`).join('')}</div></div><div class="stack"><div class="panel"><div class="panel-head"><h3>Atalhos executivos</h3></div><div class="quick-grid"><button data-nav="projetos"><span data-icon="grid"></span><span>Projetos</span></button><button data-nav="clientes"><span data-icon="users"></span><span>Clientes</span></button><button data-nav="financeiro"><span data-icon="wallet"></span><span>Financeiro</span></button><button data-nav="estrategia"><span data-icon="target"></span><span>Estratégia</span></button><button data-nav="administracao"><span data-icon="settings"></span><span>Administração</span></button><button data-nav="seguranca"><span data-icon="shield"></span><span>Segurança</span></button></div></div></div></section>`;
 }
@@ -496,7 +507,7 @@ function projectCard(p){return `<article class="project-card"><div class="projec
 function projectsView(){const rows=getProjects();return `<div class="section-title"><div><span class="eyebrow">APPS & PRODUTOS</span><h3>Portfólio de projetos</h3><p>Controle versão, saúde, roadmap, pendências e acesso aos seus produtos em um único lugar.</p></div><button class="btn btn-primary" data-create="project">＋ Novo projeto</button></div><div class="toolbar"><input id="projectsSearch" class="search-input" placeholder="Buscar projeto..."><button class="filter-chip active" data-project-filter="Todos">Todos</button><button class="filter-chip" data-project-filter="Produção">Produção</button><button class="filter-chip" data-project-filter="Desenvolvimento">Desenvolvimento</button><button class="filter-chip" data-project-filter="Análise">Análise</button><button class="filter-chip" data-project-filter="Teste">Teste</button><button class="filter-chip" data-project-filter="Ideia">Ideia</button><span id="projectsCounter" class="toolbar-counter">${rows.length} projetos</span></div><div class="project-grid" id="projectsGrid">${rows.map(p=>`<article class="project-card" data-project-card data-project-status="${p.status}" data-project-name="${`${p.name} ${p.cat} ${p.version} ${p.owner||''}`.toLowerCase()}">${projectCard(p).replace('<article class="project-card">','').replace(/<\/article>$/,'')}</article>`).join('')}</div><div id="projectsEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum projeto encontrado.</b><small>Altere os filtros ou cadastre um novo projeto.</small></div>`}
 function projectHubView(id){const rows=getProjects(),p=rows.find(x=>x.id===id)||rows[0];const agenda=getProjectAgenda(p.id).sort((a,b)=>String(b.startDate||'').localeCompare(String(a.startDate||'')));return `<button class="link-btn" data-back>← Voltar</button><div class="section-title"><div><span class="eyebrow">HUB DO PRODUTO</span><h3>${p.name}</h3><p>${p.cat}</p></div><div class="event-head-actions"><button class="btn btn-secondary" data-edit="project::${p.id}">✏️ Editar projeto</button>${p.url?`<a class="btn btn-primary open-link" href="${p.url}" target="_blank" rel="noopener">Abrir produto ↗</a>`:`<button class="btn btn-secondary" data-edit="project::${p.id}" style="opacity:.7" title="Cadastre a URL para liberar este botão">Sem link publicado</button>`}</div></div><section class="project-detail-grid"><div class="hero-card"><span class="eyebrow">STATUS OPERACIONAL</span><h3>${p.health}/100 <span style="font-size:18px;color:var(--green)">saúde geral</span></h3><div class="progress"><i style="width:${p.health}%"></i></div><p>Versão atual <b>${p.version}</b> • próxima versão <b>${p.next}</b> • ${p.issues} pendências.</p></div><div class="panel"><div class="summary-list"><div><small>Ambiente</small><b>${p.status}</b></div><div><small>Última atualização</small><b>${p.update}</b></div><div><small>Próxima versão</small><b>${p.progress}%</b></div></div></div></section><section class="panel"><div class="panel-head"><h3>Agenda do projeto</h3><button class="btn btn-primary" data-create="projectAgenda" data-event-id="${p.id}"><span data-icon="plus-circle"></span> Novo lançamento</button></div><div class="attention-list">${agenda.length?agenda.map(a=>`<div class="list-row"><span class="status-dot info"></span><div><b>${a.startDate?new Date(a.startDate+'T12:00:00').toLocaleDateString('pt-BR'):'—'} → ${a.endDate?new Date(a.endDate+'T12:00:00').toLocaleDateString('pt-BR'):'—'}</b><small>${a.notes||''}</small></div><button class="small-btn" data-edit="projectAgenda::${a.id}">✏️</button></div>`).join(''):'<p style="color:#6c7887">Nenhum lançamento registrado ainda.</p>'}</div></section>`}
 
-function eventsView(){const events=getEvents().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));return `<div class="section-title"><div><span class="eyebrow">EVENTOS & EXPERIÊNCIAS</span><h3>Central de produção</h3><p>Do briefing ao último pagamento: cronograma, checklist, fornecedores, contratos, apresentação e execução.</p></div><button class="btn btn-primary" data-create="event">＋ Novo evento</button></div><section class="metrics"><article class="metric-card"><small>Eventos ativos</small><strong>${events.length}</strong><span class="metric-meta">Todos com responsável definido</span>${spark([22,30,42,54,62,74])}</article><article class="metric-card"><small>Checklists</small><strong>${getChecklist().filter(x=>!x.done).length}</strong><span class="metric-meta">Itens ainda em aberto</span>${spark([62,58,50,42,34,28],true)}</article><article class="metric-card"><small>Valor contratado</small><strong>${money(events.reduce((a,e)=>a+e.budget,0))}</strong><span class="metric-meta">Carteira demonstrativa</span>${spark([30,38,48,58,68,80])}</article><article class="metric-card"><small>Fornecedores</small><strong>${getSuppliers().length}</strong><span class="metric-meta">Base reutilizável entre eventos</span>${spark([26,34,46,54,62,76],true)}</article></section><div class="toolbar"><input id="eventsSearch" class="search-input" placeholder="Buscar evento, cliente, local..."><button class="filter-chip active" data-event-filter="Todos">Todos</button><button class="filter-chip" data-event-filter="Casamento">Casamentos</button><button class="filter-chip" data-event-filter="Debutante">Debutantes</button><button class="filter-chip" data-event-filter="Corporativo">Corporativo</button><span id="eventsCounter" class="toolbar-counter">${events.length} eventos</span></div><div class="event-grid" id="eventsGrid">${events.map(e=>{const pend=getChecklist(e.id).filter(x=>!x.done).length,crit=getChecklist(e.id).filter(x=>x.critical&&!x.done).length,d=daysUntil(e.date);
+function eventsView(){const events=getEvents().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));return `<div class="section-title"><div><span class="eyebrow">EVENTOS & EXPERIÊNCIAS</span><h3>Central de produção</h3><p>Do briefing ao último pagamento: cronograma, checklist, fornecedores, contratos, apresentação e execução.</p></div><button class="btn btn-primary" data-create="event">＋ Novo evento</button></div><section class="metrics"><article class="metric-card"><small>Eventos ativos</small><strong>${events.length}</strong><span class="metric-meta">Todos com responsável definido</span>${spark([22,30,42,54,62,74])}</article><article class="metric-card"><small>Checklists</small><strong>${getChecklist().filter(x=>!x.done).length}</strong><span class="metric-meta">Itens ainda em aberto</span>${spark([62,58,50,42,34,28],true)}</article><article class="metric-card"><small>Valor contratado</small><strong>${money(events.reduce((a,e)=>a+e.budget,0))}</strong><span class="metric-meta">Carteira demonstrativa</span>${spark([30,38,48,58,68,80])}</article><article class="metric-card"><small>Fornecedores</small><strong>${getSuppliers().length}</strong><span class="metric-meta">Base reutilizável entre eventos</span>${spark([26,34,46,54,62,76],true)}</article></section><div class="toolbar"><input id="eventsSearch" class="search-input" placeholder="Buscar evento, cliente, local..."><button class="filter-chip active" data-event-filter="Todos">Todos</button>${getEventTypes().filter(t=>t.visible).map(t=>`<button class="filter-chip" data-event-filter="${t.name}">${t.name}</button>`).join('')}<span id="eventsCounter" class="toolbar-counter">${events.length} eventos</span></div><div class="event-grid" id="eventsGrid">${events.map(e=>{const pend=getChecklist(e.id).filter(x=>!x.done).length,crit=getChecklist(e.id).filter(x=>x.critical&&!x.done).length,d=daysUntil(e.date);
  const bellCfg=ajEventBell();const urgent=d<=bellCfg.urgentDays&&pend>0,warn=!urgent&&d<=bellCfg.warnDays&&d>=0;
  const bell=urgent?`<span class="event-alert-bell blinking" title="Faltam ${d} dia(s) e há ${pend} item(ns) pendente(s) no checklist${crit?`, ${crit} crítico(s)`:''}">🔔</span>`:warn?`<span class="event-alert-bell" title="Faltam ${d} dia(s) para o evento">🔔</span>`:'';
  return `<article class="event-card" data-event-card data-event-type="${e.type}" data-event-search="${`${e.title} ${e.client} ${e.venue}`.toLowerCase()}"><div class="event-card-head"><div><span class="event-type">${e.type}</span><h4>${e.title}</h4><p>${e.client}</p></div>${eventStatus(e.status)}</div><div class="event-stats"><div><small>Data</small><b>${new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR')} ${bell}</b><em>${d} dias</em></div><div><small>Local</small><b>${e.venue}</b></div><div><small>Convidados</small><b>${e.guests}</b></div><div><small>Orçamento</small><b>${money(e.budget)}</b></div></div><div class="progress"><i style="width:${e.progress}%"></i></div><div class="event-card-foot"><span>${e.progress}% produzido • ${e.critical} críticos</span><button class="small-btn" data-open-event="${e.id}">Abrir detalhes</button><button class="small-btn" data-edit="event::${e.id}">✏️ Editar</button></div></article>`}).join('')}</div><div id="eventsEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum evento encontrado.</b><small>Altere os filtros ou cadastre um novo evento.</small></div>`}
@@ -504,15 +515,15 @@ function eventHubView(id){const e=getEvents().find(x=>x.id===id)||getEvents()[0]
 
 function clientsView(){const list=getClients();return `<div class="section-title"><div><span class="eyebrow">CRM DE CLIENTES</span><h3>Clientes & contratantes</h3><p>Cadastre pessoas, casais e empresas com histórico, eventos, documentos e contatos centralizados.</p></div><button class="btn btn-primary" data-create="client">＋ Novo cliente</button></div><section class="metrics"><article class="metric-card"><small>Clientes ativos</small><strong>${list.length}</strong><span class="metric-meta">Base única para contratos e eventos</span>${spark([24,32,44,58,68,78])}</article><article class="metric-card"><small>Eventos vinculados</small><strong>${list.reduce((a,x)=>a+Number(x.events||0),0)}</strong><span class="metric-meta">Relacionamento por projeto</span>${spark([18,26,38,50,62,72],true)}</article><article class="metric-card"><small>Perfis PF</small><strong>${list.filter(x=>x.type!=='Empresa').length}</strong><span class="metric-meta">Casais, famílias e pessoas</span>${spark()}</article><article class="metric-card"><small>Perfis PJ</small><strong>${list.filter(x=>x.type==='Empresa').length}</strong><span class="metric-meta">Corporativos e parceiros</span>${spark([30,36,42,52,58,66],true)}</article></section><div class="toolbar"><input id="clientsSearch" class="search-input" placeholder="Buscar cliente, telefone, e-mail..."><button class="filter-chip active" data-client-filter="Todos">Todos</button><button class="filter-chip" data-client-filter="Pessoa física">Pessoa física</button><button class="filter-chip" data-client-filter="Empresa">Empresa</button><span id="clientsCounter" class="toolbar-counter">${list.length} clientes</span></div><div class="client-crm-grid" id="clientsGrid">${list.map(c=>`<article class="crm-card" data-client-card data-client-type="${c.type}" data-client-search="${`${c.name} ${c.secondary||''} ${c.phone||''} ${c.email||''} ${c.city||''} ${c.state||''}`.toLowerCase()}"><div class="crm-avatar">${c.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div><div class="crm-main"><span class="eyebrow">${c.type}</span><h4>${c.name}${c.secondary?` & ${c.secondary}`:''}</h4><p>${c.phone} • ${c.email}</p><div class="crm-meta"><span>${c.city}${c.state?` • ${c.state}`:''}</span><span>${c.events} evento(s)</span>${c.createdAt?`<span>Desde: ${finBR(c.createdAt)}</span>`:''}<span class="pill info">${c.status}</span></div><small>${c.notes||''}</small></div><div class="crm-actions"><button class="small-btn" data-open-client-history="${c.id}">Abrir histórico</button><button class="small-btn" data-edit="client::${c.id}">✏️ Editar</button><button class="small-btn" data-create="event">Novo evento</button></div></article>`).join('')}</div><div id="clientsEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum cliente encontrado.</b><small>Tente outro termo ou cadastre um novo cliente.</small></div>`}
 
-function suppliersView(){const list=getSuppliers();const cats=[...new Set(list.map(x=>x.category))];return `<div class="section-title"><div><span class="eyebrow">REDE DE FORNECEDORES</span><h3>Parceiros que executam o projeto</h3><p>Contato, categoria, preço, avaliação, contratos e histórico de uso em eventos.</p></div><div class="event-head-actions"><button class="copper-btn" data-print="suppliers">Gerar lista PDF</button><button class="btn btn-primary" data-create="supplier">＋ Novo fornecedor</button></div></div><section class="metrics"><article class="metric-card"><small>Fornecedores</small><strong>${list.length}</strong><span class="metric-meta">Base reutilizável</span>${spark()}</article><article class="metric-card"><small>Homologados</small><strong>${list.filter(x=>x.status==='Homologado'||x.status==='Preferencial').length}</strong><span class="metric-meta">Prontos para contratação</span>${spark([28,38,48,58,68,80],true)}</article><article class="metric-card"><small>Categorias</small><strong>${cats.length}</strong><span class="metric-meta">Cobertura operacional</span>${spark([22,32,40,52,62,74])}</article><article class="metric-card"><small>Avaliação média</small><strong>${(list.reduce((a,x)=>a+Number(x.rating||0),0)/Math.max(1,list.length)).toFixed(1)}</strong><span class="metric-meta">Histórico demonstrativo</span>${spark([60,68,72,80,86,92],true)}</article></section><div class="toolbar"><input id="suppliersSearch" class="search-input" placeholder="Buscar fornecedor, serviço ou contato..."><button class="filter-chip active" data-supplier-filter="Todos">Todos</button>${cats.slice(0,5).map(x=>`<button class="filter-chip" data-supplier-filter="${x}">${x}</button>`).join('')}<span id="suppliersCounter" class="toolbar-counter">${list.length} fornecedores</span></div><div class="supplier-grid" id="suppliersGrid">${list.map(s=>`<article class="supplier-card" data-supplier-card data-supplier-category="${s.category}" data-supplier-search="${`${s.name} ${s.category} ${s.contact||''} ${s.phone||''} ${s.email||''}`.toLowerCase()}"><div class="supplier-head"><div class="supplier-icon">${s.category==='Buffet'?'🍽️':s.category.includes('DJ')?'🎧':s.category==='Decoração'?'🌿':s.category.includes('Foto')?'📷':s.category.includes('Bar')?'🍸':'⚙️'}</div><div><span class="eyebrow">${s.category}</span><h4>${s.name}</h4></div><span class="pill ${s.status==='Em avaliação'?'warn':'info'}">${s.status}</span></div><p>${s.notes}</p><div class="supplier-facts"><div><small>Contato</small><b>${s.contact}</b><span>${s.phone}</span></div><div><small>Referência</small><b>${s.price}</b><span>${s.events} eventos</span></div><div><small>Avaliação</small><b>★ ${s.rating}</b><span>${s.email}</span></div>${s.createdAt?`<div><small>Desde</small><b>${finBR(s.createdAt)}</b></div>`:''}</div><div class="project-actions"><button class="small-btn" data-whatsapp="${s.phone}" data-name="${s.name}">WhatsApp</button><button class="small-btn" data-edit="supplier::${s.id}">✏️ Editar</button><button class="small-btn" data-create="contract">Contrato</button></div></article>`).join('')}</div><div id="suppliersEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum fornecedor encontrado.</b><small>Ajuste a busca ou o filtro selecionado.</small></div>`}
+function suppliersView(){const list=getSuppliers();const cats=[...new Set(list.map(x=>x.category))];return `<div class="section-title"><div><span class="eyebrow">REDE DE FORNECEDORES</span><h3>Parceiros que executam o projeto</h3><p>Contato, categoria, preço, avaliação, contratos e histórico de uso em eventos.</p></div><div class="event-head-actions"><button class="copper-btn" data-print="suppliers">Gerar lista PDF</button><button class="btn btn-primary" data-create="supplier">＋ Novo fornecedor</button></div></div><section class="metrics"><article class="metric-card"><small>Fornecedores</small><strong>${list.length}</strong><span class="metric-meta">Base reutilizável</span>${spark()}</article><article class="metric-card"><small>Homologados</small><strong>${list.filter(x=>x.status==='Homologado'||x.status==='Preferencial').length}</strong><span class="metric-meta">Prontos para contratação</span>${spark([28,38,48,58,68,80],true)}</article><article class="metric-card"><small>Categorias</small><strong>${cats.length}</strong><span class="metric-meta">Cobertura operacional</span>${spark([22,32,40,52,62,74])}</article><article class="metric-card"><small>Avaliação média</small><strong>${(list.reduce((a,x)=>a+Number(x.rating||0),0)/Math.max(1,list.length)).toFixed(1)}</strong><span class="metric-meta">Histórico demonstrativo</span>${spark([60,68,72,80,86,92],true)}</article></section><div class="toolbar"><input id="suppliersSearch" class="search-input" placeholder="Buscar fornecedor, serviço ou contato..."><button class="filter-chip active" data-supplier-filter="Todos">Todos</button>${cats.map(x=>`<button class="filter-chip" data-supplier-filter="${x}">${x}</button>`).join('')}<span id="suppliersCounter" class="toolbar-counter">${list.length} fornecedores</span></div><div class="supplier-grid" id="suppliersGrid">${list.map(s=>`<article class="supplier-card" data-supplier-card data-supplier-category="${s.category}" data-supplier-search="${`${s.name} ${s.category} ${s.contact||''} ${s.phone||''} ${s.email||''}`.toLowerCase()}"><div class="supplier-head"><div class="supplier-icon">${s.category==='Buffet'?'🍽️':s.category.includes('DJ')?'🎧':s.category==='Decoração'?'🌿':s.category.includes('Foto')?'📷':s.category.includes('Bar')?'🍸':'⚙️'}</div><div><span class="eyebrow">${s.category}</span><h4>${s.name}</h4></div><span class="pill ${s.status==='Em avaliação'?'warn':'info'}">${s.status}</span></div><p>${s.notes}</p><div class="supplier-facts"><div><small>Contato</small><b>${s.contact}</b><span>${s.phone}</span></div>${s.createdAt?`<div><small>Desde</small><b>${finBR(s.createdAt)}</b></div>`:''}<div><small>Referência</small><b>${s.price}</b><span>${s.events} eventos</span></div><div><small>Avaliação</small><b>★ ${s.rating}</b><span>${s.email}</span></div></div><div class="project-actions"><button class="small-btn" data-whatsapp="${s.phone}" data-name="${s.name}">WhatsApp</button><button class="small-btn" data-edit="supplier::${s.id}">✏️ Editar</button><button class="small-btn" data-create="contract">Contrato</button></div></article>`).join('')}</div><div id="suppliersEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum fornecedor encontrado.</b><small>Ajuste a busca ou o filtro selecionado.</small></div>`}
 
 
 function checklistView(eventId){const e=getEvents().find(x=>x.id===eventId)||getEvents()[0],rows=getChecklist(e.id),done=rows.filter(x=>x.done).length,pct=rows.length?Math.round(done/rows.length*100):0;const groups=[...new Set(rows.map(x=>x.group))];
  const critItems=rows.filter(x=>x.critical&&!x.done),openItems=rows.filter(x=>!x.done),doneItems=rows.filter(x=>x.done);
  const preview=list=>list.length?finEsc(list.slice(0,2).map(x=>x.title).join(', '))+(list.length>2?` +${list.length-2}`:''):'Nenhum';
- return `<button class="link-btn" data-open-event="${e.id}">← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">CHECKLIST REAL</span><h3>${e.title}</h3><p>Itens obrigatórios, responsáveis, prazos e criticidade.</p></div><div class="event-head-actions"><button class="small-btn" data-share-checklist="${e.id}">📲 WhatsApp</button><button class="copper-btn" data-print="checklist" data-id="${e.id}">Checklist PDF</button><button class="btn btn-primary" data-create="checklist" data-event-id="${e.id}">＋ Novo item</button></div></div><section class="hero-grid compact"><div class="hero-card"><span class="eyebrow">PROGRESSO OPERACIONAL</span><h3>${pct}% concluído</h3><div class="progress"><i style="width:${pct}%"></i></div><p>${done} de ${rows.length} itens concluídos. ${critItems.length} itens críticos ainda abertos.</p></div><div class="panel"><div class="summary-list"><div><small>Críticos</small><b>${critItems.length}</b><span class="metric-meta" style="display:block;margin-top:4px">${preview(critItems)}</span></div><div><small>Em aberto</small><b>${openItems.length}</b><span class="metric-meta" style="display:block;margin-top:4px">${preview(openItems)}</span></div><div><small>Concluídos</small><b>${done}</b><span class="metric-meta" style="display:block;margin-top:4px">${preview(doneItems)}</span></div></div></div></section><div class="checklist-board">${groups.map(g=>`<section class="check-group"><div class="panel-head"><h3>${g}</h3><span class="pill">${rows.filter(x=>x.group===g).length}</span></div>${rows.filter(x=>x.group===g).map(x=>`<div style="display:flex;align-items:center;gap:8px"><label class="check-row ${x.done?'done':''}" style="flex:1"><input type="checkbox" data-checklist-toggle="${x.id}" ${x.done?'checked':''}><span class="custom-check"></span><div><b>${x.title}</b><small>${x.owner} • prazo ${new Date(x.due+'T12:00:00').toLocaleDateString('pt-BR')}</small></div>${x.critical?'<span class="pill warn">Crítico</span>':''}</label><button class="small-btn" data-edit="checklist::${x.id}">✏️</button></div>`).join('')}</section>`).join('')}</div>`}
+ return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">CHECKLIST REAL</span><h3>${e.title}</h3><p>Itens obrigatórios, responsáveis, prazos e criticidade.</p></div><div class="event-head-actions"><button class="small-btn" data-share-checklist="${e.id}">📲 WhatsApp</button><button class="copper-btn" data-print="checklist" data-id="${e.id}">Checklist PDF</button><button class="btn btn-primary" data-create="checklist" data-event-id="${e.id}">＋ Novo item</button></div></div><section class="hero-grid compact"><div class="hero-card"><span class="eyebrow">PROGRESSO OPERACIONAL</span><h3>${pct}% concluído</h3><div class="progress"><i style="width:${pct}%"></i></div><p>${done} de ${rows.length} itens concluídos. ${critItems.length} itens críticos ainda abertos.</p></div><div class="panel"><div class="summary-list"><div><small>Críticos</small><b>${critItems.length}</b><span class="metric-meta" style="display:block;margin-top:4px">${preview(critItems)}</span></div><div><small>Em aberto</small><b>${openItems.length}</b><span class="metric-meta" style="display:block;margin-top:4px">${preview(openItems)}</span></div><div><small>Concluídos</small><b>${done}</b><span class="metric-meta" style="display:block;margin-top:4px">${preview(doneItems)}</span></div></div></div></section><div class="checklist-board">${groups.map(g=>`<section class="check-group"><div class="panel-head"><h3>${g}</h3><span class="pill">${rows.filter(x=>x.group===g).length}</span></div>${rows.filter(x=>x.group===g).map(x=>`<div style="display:flex;align-items:center;gap:8px"><label class="check-row ${x.done?'done':''}" style="flex:1"><input type="checkbox" data-checklist-toggle="${x.id}" ${x.done?'checked':''}><span class="custom-check"></span><div><b>${x.title}</b><small>${x.owner} • prazo ${new Date(x.due+'T12:00:00').toLocaleDateString('pt-BR')}</small></div>${x.critical?'<span class="pill warn">Crítico</span>':''}</label><button class="small-btn" data-edit="checklist::${x.id}">✏️</button></div>`).join('')}</section>`).join('')}</div>`}
 
-function timelineView(eventId){const e=getEvents().find(x=>x.id===eventId)||getEvents()[0],rows=getTimeline(e.id).sort((a,b)=>a.time.localeCompare(b.time));return `<button class="link-btn" data-open-event="${e.id}">← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">CRONOGRAMA DO DIA</span><h3>${e.title}</h3><p>Horários, responsáveis, locais e confirmação de cada marco operacional.</p></div><div class="event-head-actions"><button class="small-btn" data-share-timeline="${e.id}">📲 WhatsApp</button><button class="copper-btn" data-print="timeline" data-id="${e.id}">Cronograma PDF</button><button class="btn btn-primary" data-create="timeline" data-event-id="${e.id}">＋ Novo marco</button></div></div><section class="timeline-command"><div class="timeline-summary"><div><small>Primeiro acesso</small><b>${rows[0]?.time||'—'}</b></div><div><small>Abertura</small><b>${rows.find(x=>x.title.toLowerCase().includes('recep'))?.time||'—'}</b></div><div><small>Marcos</small><b>${rows.length}</b></div><div><small>Confirmados</small><b>${rows.filter(x=>x.status==='Confirmado').length}</b></div></div><div class="day-timeline">${rows.map(x=>`<article class="day-item ${x.status==='Confirmado'?'confirmed':''}"><div class="time-badge">${x.time}</div><div class="day-line"></div><div class="day-content"><div><span class="eyebrow">${x.location}</span><h4>${x.title}</h4><p>Responsável: ${x.owner}</p></div><button class="timeline-status" data-timeline-toggle="${x.id}">${x.status==='Confirmado'?'✓ Confirmado':'Confirmar'}</button><button class="small-btn" data-edit="timeline::${x.id}">✏️</button></div></article>`).join('')}</div></section>`}
+function timelineView(eventId){const e=getEvents().find(x=>x.id===eventId)||getEvents()[0],rows=getTimeline(e.id).sort((a,b)=>a.time.localeCompare(b.time));return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">CRONOGRAMA DO DIA</span><h3>${e.title}</h3><p>Horários, responsáveis, locais e confirmação de cada marco operacional.</p></div><div class="event-head-actions"><button class="small-btn" data-share-timeline="${e.id}">📲 WhatsApp</button><button class="copper-btn" data-print="timeline" data-id="${e.id}">Cronograma PDF</button><button class="btn btn-primary" data-create="timeline" data-event-id="${e.id}">＋ Novo marco</button></div></div><section class="timeline-command"><div class="timeline-summary"><div><small>Primeiro acesso</small><b>${rows[0]?.time||'—'}</b></div><div><small>Abertura</small><b>${rows.find(x=>x.title.toLowerCase().includes('recep'))?.time||'—'}</b></div><div><small>Marcos</small><b>${rows.length}</b></div><div><small>Confirmados</small><b>${rows.filter(x=>x.status==='Confirmado').length}</b></div></div><div class="day-timeline">${rows.map(x=>`<article class="day-item ${x.status==='Confirmado'?'confirmed':''}"><div class="time-badge">${x.time}</div><div class="day-line"></div><div class="day-content"><div><span class="eyebrow">${x.location}</span><h4>${x.title}</h4><p>Responsável: ${x.owner}</p></div><button class="timeline-status" data-timeline-toggle="${x.id}">${x.status==='Confirmado'?'✓ Confirmado':'Confirmar'}</button><button class="small-btn" data-edit="timeline::${x.id}">✏️</button></div></article>`).join('')}</div></section>`}
 
 function catalogView(){const list=getCatalog(),events=getEvents();const cats=[...new Set(list.map(x=>x.category))];return `<div class="section-title"><div><span class="eyebrow">CATÁLOGO COMERCIAL</span><h3>Opções que viram proposta e operação</h3><p>Agora os filtros são executáveis: escolha uma categoria, abra o detalhe e vincule a opção ao evento.</p></div><button class="btn btn-primary" data-create="catalog"><span data-icon="plus-circle"></span> Novo item</button></div><section class="hero-grid compact"><div class="hero-card"><span class="eyebrow">VENDA + EXECUÇÃO</span><h3>Um catálogo que alimenta <span class="accent-text">apresentação, orçamento e produção.</span></h3><p>Clique em uma categoria para filtrar. Abra o item para ver detalhes, selecionar o evento e registrar a escolha.</p></div><div class="panel"><div class="summary-list"><div><small>Itens</small><b>${list.length}</b></div><div><small>Categorias</small><b>${cats.length}</b></div><div><small>Fornecedores vinculados</small><b>${new Set(list.map(x=>x.supplier)).size}</b></div></div></div></section><div class="toolbar catalog-toolbar"><button class="filter-chip active" data-catalog-filter="Todos">Todos</button>${cats.map(c=>`<button class="filter-chip" data-catalog-filter="${c}">${c}</button>`).join('')}<span id="catalogFilterCount" class="toolbar-counter">${list.length} itens</span></div><div class="catalog-grid" id="catalogGrid">${list.map(item=>`<article class="catalog-card" data-catalog-category="${item.category}" data-catalog-id="${item.id}"><button class="catalog-visual ${item.image?'has-image':''}" data-catalog-open="${item.id}" ${item.image?`style="background-image:url('${item.image}')"`:''}><span>${item.category}</span><i data-icon="arrow-up-right"></i></button><div class="catalog-body"><span class="eyebrow">${item.supplier}</span><h4>${item.name}</h4><p>${item.description}</p><div class="catalog-tags">${(item.tags||[]).map(t=>`<span>${t}</span>`).join('')}</div><div class="catalog-price"><strong>${money(item.price)}</strong><small>${item.unit}</small></div><div class="catalog-actions"><button class="small-btn" data-catalog-open="${item.id}"><span data-icon="eye"></span> Detalhes</button><button class="small-btn" data-edit="catalog::${item.id}">✏️ Editar</button><select class="catalog-event-select" data-catalog-event="${item.id}">${events.map(e=>`<option value="${e.id}">${e.title}</option>`).join('')}</select><button class="btn btn-primary" data-add-catalog="${item.id}"><span data-icon="plus-circle"></span> Adicionar ao projeto</button></div></div></article>`).join('')}</div><div id="catalogEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum item nesta categoria.</b><small>Cadastre uma nova opção ou escolha outro filtro.</small></div>`}
 
@@ -521,20 +532,38 @@ function presentationBuilderView(id){const p=getPresentations().find(x=>x.id===i
 
 function guestsView(eventId){const e=getEvents().find(x=>x.id===eventId)||getEvents()[0],rows=getGuests(e.id).slice().sort((a,b)=>a.name.localeCompare(b.name));
  const conf=rows.filter(x=>x.status==='Confirmado').length,pend=rows.filter(x=>x.status==='Pendente').length,rec=rows.filter(x=>x.status==='Recusado').length;
- return `<button class="link-btn" data-open-event="${e.id}">← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">LISTA DE CONVIDADOS</span><h3>${e.title}</h3><p>Confirmação de presença, telefone e mesa de cada convidado.</p></div><div class="event-head-actions"><button class="small-btn" data-share-guests="${e.id}">📲 WhatsApp</button><button class="btn btn-primary" data-create="guest" data-event-id="${e.id}">＋ Novo convidado</button></div></div><section class="metrics"><article class="metric-card"><small>Confirmados</small><strong>${conf}</strong><span class="metric-meta">de ${rows.length} na lista • ${e.guests||0} previstos</span>${spark([20,30,42,54,66,78])}</article><article class="metric-card"><small>Pendentes</small><strong>${pend}</strong><span class="metric-meta">aguardando resposta</span>${spark([44,38,34,30,26,22],true)}</article><article class="metric-card"><small>Recusados</small><strong>${rec}</strong><span class="metric-meta">não comparecerão</span>${spark([12,12,12,12,12,12])}</article></section><div class="panel"><div class="panel-head"><h3>Adicionar vários de uma vez</h3></div><p style="color:#6c7887;margin:0 0 10px">Cole uma lista de nomes, um por linha — todos entram como "Pendente".</p><textarea id="guestBulkInput" rows="3" placeholder="Ex.:
+ return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">LISTA DE CONVIDADOS</span><h3>${e.title}</h3><p>Confirmação de presença, telefone e mesa de cada convidado.</p></div><div class="event-head-actions"><button class="small-btn" data-share-guests="${e.id}">📲 WhatsApp</button><button class="btn btn-primary" data-create="guest" data-event-id="${e.id}">＋ Novo convidado</button></div></div><section class="metrics"><article class="metric-card"><small>Confirmados</small><strong>${conf}</strong><span class="metric-meta">de ${rows.length} na lista • ${e.guests||0} previstos</span>${spark([20,30,42,54,66,78])}</article><article class="metric-card"><small>Pendentes</small><strong>${pend}</strong><span class="metric-meta">aguardando resposta</span>${spark([44,38,34,30,26,22],true)}</article><article class="metric-card"><small>Recusados</small><strong>${rec}</strong><span class="metric-meta">não comparecerão</span>${spark([12,12,12,12,12,12])}</article></section><div class="panel"><div class="panel-head"><h3>Adicionar vários de uma vez</h3></div><p style="color:#6c7887;margin:0 0 10px">Cole uma lista de nomes, um por linha — todos entram como "Pendente".</p><textarea id="guestBulkInput" rows="3" placeholder="Ex.:
 Maria Silva
-João Pereira" style="width:100%;resize:vertical"></textarea><button class="btn btn-secondary" id="guestBulkAdd" data-event-id="${e.id}" style="margin-top:8px">＋ Adicionar à lista</button></div><input type="text" id="guestSearch" placeholder="Buscar convidado pelo nome..." style="margin:16px 0 10px;width:100%"/><div class="guest-list">${rows.length?rows.map(g=>`<article class="guest-row" data-guest-row data-guest-search="${g.name.toLowerCase()}"><div class="guest-main"><b>${g.name}</b><small>${g.phone||'sem telefone'}${g.table?' • '+g.table:''}</small></div><div class="guest-status-group"><button class="guest-status-btn ${g.status==='Confirmado'?'active confirmado':''}" data-guest-set="${g.id}" data-status="Confirmado" title="Confirmado">✓</button><button class="guest-status-btn ${g.status==='Pendente'?'active pendente':''}" data-guest-set="${g.id}" data-status="Pendente" title="Pendente">?</button><button class="guest-status-btn ${g.status==='Recusado'?'active recusado':''}" data-guest-set="${g.id}" data-status="Recusado" title="Recusado">✕</button></div><button class="small-btn" data-edit="guest::${g.id}">✏️</button></article>`).join(''):'<p style="color:#6c7887">Nenhum convidado cadastrado ainda. Cole uma lista acima ou use "Novo convidado".</p>'}</div>`}
+João Pereira" style="width:100%;resize:vertical"></textarea><button class="btn btn-secondary" id="guestBulkAdd" data-event-id="${e.id}" style="margin-top:8px">＋ Adicionar à lista</button></div><input type="text" id="guestSearch" placeholder="Buscar convidado por nome ou telefone..." style="margin:16px 0 10px;width:100%"/><div class="guest-list">${rows.length?rows.map(g=>`<article class="guest-row" data-guest-row data-guest-search="${`${g.name} ${g.phone||''}`.toLowerCase()}"><div class="guest-main"><b>${g.name}</b><small>${g.phone||'sem telefone'}${g.table?' • '+g.table:''}</small></div><div class="guest-status-group"><button class="guest-status-btn ${g.status==='Confirmado'?'active confirmado':''}" data-guest-set="${g.id}" data-status="Confirmado" title="Confirmado">✓</button><button class="guest-status-btn ${g.status==='Pendente'?'active pendente':''}" data-guest-set="${g.id}" data-status="Pendente" title="Pendente">?</button><button class="guest-status-btn ${g.status==='Recusado'?'active recusado':''}" data-guest-set="${g.id}" data-status="Recusado" title="Recusado">✕</button></div><button class="small-btn" data-edit="guest::${g.id}">✏️</button></article>`).join(''):'<p style="color:#6c7887">Nenhum convidado cadastrado ainda. Cole uma lista acima ou use "Novo convidado".</p>'}</div>`}
 const getEventTables=eventId=>readJSON(`r1_event_tables_${eventId}`,[]);
+const defaultEventTypes=[{name:'Casamento',visible:true},{name:'Debutante',visible:true},{name:'Corporativo',visible:true},{name:'Aniversário',visible:false},{name:'Formatura',visible:false},{name:'Outro',visible:false}];
+const getEventTypes=()=>{const saved=readJSON('r1_event_types',null);return (saved&&saved.length)?saved:defaultEventTypes};
+const saveEventTypes=list=>storage.setItem('r1_event_types',JSON.stringify(list));
+const defaultSupplierCategories=['Buffet','DJ & Música','Decoração','Foto & Vídeo','Som & Luz','Bar & Bebidas','Espaço','Segurança'];
+const getSupplierCategories=()=>{const saved=readJSON('r1_supplier_categories',null);return (saved&&saved.length)?saved:defaultSupplierCategories};
+const saveSupplierCategories=list=>storage.setItem('r1_supplier_categories',JSON.stringify(list));
+const defaultCatalogCategories=['Cardápio','Decoração','DJ & Música','Foto & Vídeo','Bar & Bebidas','Som & Luz'];
+const getCatalogCategories=()=>{const saved=readJSON('r1_catalog_categories',null);return (saved&&saved.length)?saved:defaultCatalogCategories};
+const saveCatalogCategories=list=>storage.setItem('r1_catalog_categories',JSON.stringify(list));
+const defaultAppointmentTypes=['Compromisso','Pessoal','Planejamento','Evento','Cliente','Fornecedor','Financeiro'];
+const getAppointmentTypes=()=>{const saved=readJSON('r1_appointment_types',null);return (saved&&saved.length)?saved:defaultAppointmentTypes};
+const saveAppointmentTypes=list=>storage.setItem('r1_appointment_types',JSON.stringify(list));
+const MANAGED_LIST_FIELDS={
+ eventTypeSelect:{get:getEventTypes,save:saveEventTypes,isObj:true},
+ supplierCategorySelect:{get:getSupplierCategories,save:saveSupplierCategories,isObj:false},
+ catalogCategorySelect:{get:getCatalogCategories,save:saveCatalogCategories,isObj:false},
+ appointmentTypeSelect:{get:getAppointmentTypes,save:saveAppointmentTypes,isObj:false}
+};
 function seatingView(eventId){const e=getEvents().find(x=>x.id===eventId)||getEvents()[0],guests=getGuests(e.id);
  const tables=[...new Set([...getEventTables(e.id),...guests.map(g=>g.table).filter(Boolean)])].sort();
  const semMesa=guests.filter(g=>!g.table);
  const chip=g=>`<div class="seat-chip" draggable="true" data-guest-id="${g.id}"><span>${g.name}</span><select data-seat-select="${g.id}"><option value="">Sem mesa</option>${tables.map(t=>`<option value="${t}" ${g.table===t?'selected':''}>${t}</option>`).join('')}</select></div>`;
- return `<button class="link-btn" data-open-event="${e.id}">← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">MAPA DE MESAS</span><h3>${e.title}</h3><p>Arraste um convidado para uma mesa, ou use o menu de cada card.</p></div><div class="event-head-actions"><button class="small-btn" id="seatAddTable" data-seating-event="${e.id}">＋ Nova mesa</button></div></div><div class="seating-board" data-seating-event="${e.id}"><div class="seating-table seating-pool" data-table-zone=""><h4>Sem mesa <span>${semMesa.length}</span></h4><div class="seating-chips">${semMesa.map(chip).join('')||'<p class="seating-empty">Nenhum convidado sem mesa.</p>'}</div></div>${tables.map(t=>`<div class="seating-table" data-table-zone="${t}"><h4>${t} <span>${guests.filter(g=>g.table===t).length}</span></h4><div class="seating-chips">${guests.filter(g=>g.table===t).map(chip).join('')||'<p class="seating-empty">Arraste alguém aqui.</p>'}</div></div>`).join('')}</div>`}
+ return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">MAPA DE MESAS</span><h3>${e.title}</h3><p>Arraste um convidado para uma mesa, ou use o menu de cada card.</p></div></div><div class="panel" style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input type="text" id="seatNewTableName" placeholder="Nome da nova mesa (ex.: Mesa 7)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="seatAddTable" data-seating-event="${e.id}" style="width:auto">＋ Adicionar mesa</button></div><div class="seating-board" data-seating-event="${e.id}"><div class="seating-table seating-pool" data-table-zone=""><h4>Sem mesa <span>${semMesa.length}</span></h4><div class="seating-chips">${semMesa.map(chip).join('')||'<p class="seating-empty">Nenhum convidado sem mesa.</p>'}</div></div>${tables.map(t=>`<div class="seating-table" data-table-zone="${t}"><h4>${t} <span>${guests.filter(g=>g.table===t).length}</span></h4><div class="seating-chips">${guests.filter(g=>g.table===t).map(chip).join('')||'<p class="seating-empty">Arraste alguém aqui.</p>'}</div></div>`).join('')}</div>`}
 function clientFinanceSummaryView(clientId){const client=getClients().find(x=>x.id===clientId);if(!client)return'<p>Cliente não encontrado.</p>';
  const events=getEvents().filter(e=>String(e.client).toLowerCase().includes(client.name.toLowerCase())||(client.secondary&&String(e.client).toLowerCase().includes(String(client.secondary).toLowerCase())));
  const rows=getFinance().filter(f=>events.some(e=>e.id===f.eventId)).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
  const receitas=rows.filter(x=>x.type==='Receita').reduce((a,x)=>a+Number(x.value||0),0),despesas=rows.filter(x=>x.type==='Despesa').reduce((a,x)=>a+Number(x.value||0),0);
- return `<button class="link-btn" data-open-client-history="${client.id}">← Voltar ao cliente</button><div class="section-title"><div><span class="eyebrow">RESUMO FINANCEIRO</span><h3>${client.name}${client.secondary?` & ${client.secondary}`:''}</h3><p>Receitas e despesas ligadas aos eventos deste cliente.</p></div></div><section class="metrics"><article class="metric-card"><small>Receitas</small><strong>${money(receitas)}</strong></article><article class="metric-card"><small>Despesas</small><strong>${money(despesas)}</strong></article><article class="metric-card"><small>Saldo</small><strong>${money(receitas-despesas)}</strong></article></section><section class="panel"><div class="panel-head"><h3>Lançamentos</h3></div>${rows.length?rows.map(f=>`<div class="list-row"><span class="status-dot ${f.type==='Receita'?'success':'warn'}"></span><div><b>${f.description||f.category||f.type}</b><small>${new Date(f.date+'T12:00:00').toLocaleDateString('pt-BR')} • ${f.status}</small></div><b style="color:${f.type==='Receita'?'#1f9d55':'#c0392b'}">${f.type==='Despesa'?'-':''}${money(f.value)}</b></div>`).join(''):'<p style="color:#6c7887">Nenhum lançamento financeiro ligado a este cliente ainda.</p>'}</section>`}
+ return `<button class="link-btn" data-back>← Voltar ao cliente</button><div class="section-title"><div><span class="eyebrow">RESUMO FINANCEIRO</span><h3>${client.name}${client.secondary?` & ${client.secondary}`:''}</h3><p>Receitas e despesas ligadas aos eventos deste cliente.</p></div></div><section class="metrics"><article class="metric-card"><small>Receitas</small><strong>${money(receitas)}</strong></article><article class="metric-card"><small>Despesas</small><strong>${money(despesas)}</strong></article><article class="metric-card"><small>Saldo</small><strong>${money(receitas-despesas)}</strong></article></section><section class="panel"><div class="panel-head"><h3>Lançamentos</h3></div>${rows.length?rows.map(f=>`<div class="list-row"><span class="status-dot ${f.type==='Receita'?'success':'warn'}"></span><div><b>${f.description||f.category||f.type}</b><small>${new Date(f.date+'T12:00:00').toLocaleDateString('pt-BR')} • ${f.status}</small></div><b style="color:${f.type==='Receita'?'#1f9d55':'#c0392b'}">${f.type==='Despesa'?'-':''}${money(f.value)}</b></div>`).join(''):'<p style="color:#6c7887">Nenhum lançamento financeiro ligado a este cliente ainda.</p>'}</section>`}
 function contractsSummaryView(kind){const list=getContracts();let filtered,title,desc;
  if(kind==='enviados'){filtered=list.filter(x=>x.status==='Enviado');title='Contratos enviados';desc='Aguardando retorno do cliente ou fornecedor.'}
  else if(kind==='valor'){filtered=list;title='Valor documentado';desc='Soma de todos os contratos registrados.'}
@@ -711,7 +740,11 @@ const tutorialFlows={
   {target:'#ajTplEvent, #ajTplChecklist',title:'Personalize as mensagens de WhatsApp',text:'O texto que você escrever aqui entra na frente de todo resumo compartilhado — do evento, checklist, cronograma ou convidados.',tip:'Deixe em branco pra enviar só o resumo automático, sem introdução.'},
   {target:'#ajBellWarn, #ajBellUrgent',title:'Ajuste os prazos do sino de eventos',text:'Controla quando o sino aparece do lado da data (aviso simples) e quando ele pisca (evento próximo com pendência no checklist).',tip:'O padrão é avisar com 15 dias e piscar com 7 — mude se sua operação precisar de mais ou menos antecedência.'},
   {target:'#ajBackupBaixar',title:'Baixe um backup regularmente',text:'Os dados ficam só neste navegador. A tela avisa há quantos dias foi o último backup, pra você não esquecer.',tip:'Baixe antes de trocar de celular ou de navegador.'},
-  {target:'#ajPermissoes',title:'Veja o que o app realmente acessa',text:'Câmera/galeria só quando você escolhe uma foto, e os avisos são só dentro do app — nada de permissão de notificação do celular.',tip:'Bom pra responder rápido quando alguém perguntar "esse app acessa o quê?".'}
+  {target:'#ajPermissoes',title:'Veja o que o app realmente acessa',text:'Câmera/galeria só quando você escolhe uma foto, e os avisos são só dentro do app — nada de permissão de notificação do celular.',tip:'Bom pra responder rápido quando alguém perguntar "esse app acessa o quê?".'},
+  {target:'[data-ev-type-toggle]',title:'Escolha quais tipos de evento aparecem no filtro',text:'Esconder um tipo não apaga os eventos que já usam ele — só tira aquele botão de filtro da tela de Eventos.',tip:'Dá pra adicionar tipos novos (ex.: Chá de bebê) logo abaixo da lista.'},
+  {target:'#ajNewSupplierCategory, #ajAddSupplierCategory',title:'Adicione categorias de fornecedor permanentes',text:'Uma vez cadastrada (ex.: Florista), a categoria fica disponível pra sempre ao cadastrar fornecedores — sem precisar usar "Outro" de novo a cada vez.',tip:'A tela de Fornecedores mostra o filtro automaticamente assim que existir pelo menos um fornecedor com aquela categoria.'},
+  {target:'#ajNewCatalogCategory, #ajAddCatalogCategory',title:'Categorias de catálogo permanentes',text:'Mesma lógica: cadastre uma categoria nova (ex.: Doces finos) e ela fica disponível pra sempre ao cadastrar itens do catálogo.',tip:'Também funciona digitando em "Outro" na hora de cadastrar o item — o app registra sozinho pra próxima vez.'},
+  {target:'#ajNewAppointmentType, #ajAddAppointmentType',title:'Tipos de compromisso permanentes',text:'E o mesmo vale pros tipos de compromisso da agenda — cadastre um tipo novo (ex.: Reunião de equipe) e ele fica disponível pra sempre.',tip:'Em qualquer um dos três (tipo de evento, categoria de fornecedor, categoria de catálogo ou tipo de compromisso), digitar em "Outro" já cadastra automaticamente — essa tela é só pra quem prefere cadastrar antes, com calma.'}
  ]},
  seating:{title:'Mapa de mesas',group:'Eventos',workspace:'Eventos',icon:'layout-grid',minutes:4,description:'Organize qual convidado senta em qual mesa, arrastando ou pelo menu de cada card.',steps:[
   {workspace:'Eventos',nav:'eventos',action:'eventHub',target:'[data-open-seating]',title:'Abra o mapa pelo hub do evento',text:'O mapa de mesas usa a mesma lista de convidados — cadastre os convidados primeiro.',tip:'Convidados sem mesa aparecem na coluna "Sem mesa".'},
@@ -782,11 +815,238 @@ let current='dashboard',deferredPrompt=null,presentationAssets=[];
 
 const defaultProfile={businessName:'RIZZIERI ONE • Codename',legalName:'Empresa / Profissional',document:'',phone:'(11) 99999-9999',email:'contato@empresa.com.br',address:'São Paulo • SP',website:'www.seusite.com.br',footer:'Documento emitido eletronicamente pelo ecossistema de gestão.',logo:''};
 const memoryStore=globalThis.__r1StorageMemory||(globalThis.__r1StorageMemory={});
+let _cryptoKey=null;// chave AES-GCM derivada da senha nesta sessão (null = sem senha ativa ou ainda bloqueado)
+const R1_AUTH_KEY='r1_auth';// nunca passa pelo wrapper de criptografia (precisa ser legível antes de desbloquear)
+const b64e=bytes=>{let s='';bytes.forEach(b=>s+=String.fromCharCode(b));return btoa(s)};
+const b64d=str=>Uint8Array.from(atob(str),c=>c.charCodeAt(0));
+async function deriveKey(pass,saltU8){
+ const km=await crypto.subtle.importKey('raw',new TextEncoder().encode(pass),'PBKDF2',false,['deriveKey']);
+ return crypto.subtle.deriveKey({name:'PBKDF2',salt:saltU8,iterations:150000,hash:'SHA-256'},km,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function makeCheck(key){
+ const iv=crypto.getRandomValues(new Uint8Array(12));
+ const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode('rizzieri-ok'));
+ return {iv:b64e(iv),ct:b64e(new Uint8Array(ct))};
+}
+async function verifyKey(key,check){
+ try{const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(check.iv)},key,b64d(check.ct));return new TextDecoder().decode(pt)==='rizzieri-ok'}catch(e){return false}
+}
+async function encryptForStorage(key,plain){
+ const iv=crypto.getRandomValues(new Uint8Array(12));
+ const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(plain));
+ return JSON.stringify({__r1enc:1,iv:b64e(iv),ct:b64e(new Uint8Array(ct))});
+}
+async function decryptFromStorage(key,blobStr){
+ const blob=JSON.parse(blobStr);
+ const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64d(blob.iv)},key,b64d(blob.ct));
+ return new TextDecoder().decode(pt);
+}
+function looksEncrypted(raw){try{const b=JSON.parse(raw);return !!(b&&b.__r1enc)}catch(e){return false}}
 const storage={
- getItem(key){try{return globalThis.localStorage?.getItem(key)??memoryStore[key]??null}catch{return memoryStore[key]??null}},
- setItem(key,value){const normalized=String(value);try{globalThis.localStorage?.setItem(key,normalized)}catch{}memoryStore[key]=normalized;return normalized},
+ getItem(key){
+  if(key in memoryStore)return memoryStore[key];
+  try{return globalThis.localStorage?.getItem(key)??null}catch{return null}
+ },
+ setItem(key,value){
+  const normalized=String(value);
+  memoryStore[key]=normalized;
+  if(_cryptoKey&&key!==R1_AUTH_KEY&&key.indexOf('r1_')===0){
+   encryptForStorage(_cryptoKey,normalized).then(enc=>{try{globalThis.localStorage?.setItem(key,enc)}catch{}}).catch(()=>{});
+  }else{
+   try{globalThis.localStorage?.setItem(key,normalized)}catch{}
+  }
+  return normalized;
+ },
  removeItem(key){try{globalThis.localStorage?.removeItem(key)}catch{}delete memoryStore[key]}
 };
+// Descriptografa tudo que estiver cifrado em localStorage pra memoryStore (chamado 1x ao desbloquear).
+// Dados ainda em texto puro (de antes da senha existir) continuam legíveis normalmente.
+async function unlockAllData(key){
+ let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
+ const alvo=names.filter(k=>k.indexOf('r1_')===0&&k!==R1_AUTH_KEY);
+ await Promise.all(alvo.map(async k=>{
+  const raw=globalThis.localStorage.getItem(k);
+  if(raw==null)return;
+  if(looksEncrypted(raw)){
+   try{memoryStore[k]=await decryptFromStorage(key,raw)}catch(e){/* senha errada não chega aqui; corrupção isolada não trava o resto */}
+  }else{
+   memoryStore[k]=raw;
+  }
+ }));
+}
+// Criptografa tudo que ainda estiver em texto puro (chamado 1x ao criar a senha, sem apagar nada).
+async function encryptAllExistingData(key){
+ let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
+ const alvo=names.filter(k=>k.indexOf('r1_')===0&&k!==R1_AUTH_KEY);
+ await Promise.all(alvo.map(async k=>{
+  const raw=globalThis.localStorage.getItem(k);
+  if(raw==null||looksEncrypted(raw))return;
+  memoryStore[k]=raw;
+  const enc=await encryptForStorage(key,raw);
+  try{globalThis.localStorage.setItem(k,enc)}catch(e){}
+ }));
+}
+// Reverte tudo pra texto puro (usado ao remover a senha).
+async function decryptAllExistingData(key){
+ let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
+ const alvo=names.filter(k=>k.indexOf('r1_')===0&&k!==R1_AUTH_KEY);
+ await Promise.all(alvo.map(async k=>{
+  const raw=globalThis.localStorage.getItem(k);
+  if(raw==null||!looksEncrypted(raw))return;
+  try{const plain=await decryptFromStorage(key,raw);memoryStore[k]=plain;globalThis.localStorage.setItem(k,plain)}catch(e){}
+ }));
+}
+
+// Re-criptografa tudo com uma chave NOVA, cobrindo tanto "criar senha pela 1ª vez" (oldKey=null,
+// dados ainda em texto puro) quanto "trocar senha" (oldKey=chave atual, dados já cifrados com ela).
+// Varre memoryStore + localStorage juntos pra não deixar nada de fora, mesmo que algum dado antigo
+// de uma sessão anterior ainda não tenha sido lido nesta sessão.
+async function reencryptAll(oldKeyOrNull,newKey){
+ let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
+ const alvo=new Set([...Object.keys(memoryStore||{}),...names]);
+ const chaves=[...alvo].filter(k=>k.indexOf('r1_')===0&&k!==R1_AUTH_KEY);
+ await Promise.all(chaves.map(async k=>{
+  let plain;
+  if(k in memoryStore){
+   plain=memoryStore[k];
+  }else{
+   const raw=globalThis.localStorage.getItem(k);
+   if(raw==null)return;
+   if(looksEncrypted(raw)){
+    if(!oldKeyOrNull)return;
+    try{plain=await decryptFromStorage(oldKeyOrNull,raw)}catch(e){return}
+   }else{
+    plain=raw;
+   }
+  }
+  memoryStore[k]=plain;
+  const enc=await encryptForStorage(newKey,plain);
+  try{globalThis.localStorage.setItem(k,enc)}catch(e){}
+ }));
+}
+
+// ═══ Senha de acesso real (PBKDF2 + AES-256-GCM) ═══
+// Mesmo padrão do corsyncimoveis: a senha nunca é gravada, só um "check" cifrado pra validar a chave derivada.
+function hasPassword(){return !!storage.getItem(R1_AUTH_KEY)}
+function sessionUnlocked(){try{return globalThis.sessionStorage?.getItem('r1_unlocked')==='1'}catch(e){return false}}
+function markSessionUnlocked(){try{globalThis.sessionStorage?.setItem('r1_unlocked','1')}catch(e){}}
+function clearSessionUnlocked(){try{globalThis.sessionStorage?.removeItem('r1_unlocked')}catch(e){}}
+function validatePassword(v){return {len:v.length>=4&&v.length<=50,up:/[A-Z]/.test(v),low:/[a-z]/.test(v),num:/[0-9]/.test(v),sp:/[^A-Za-z0-9]/.test(v)}}
+function checkPwRules(){
+ const res=validatePassword($('#pwSetupPass')?.value||'');
+ Object.keys(res).forEach(k=>{const pill=document.querySelector(`#pwRules [data-r="${k}"]`);if(pill)pill.classList.toggle('active',res[k])});
+ return Object.values(res).every(Boolean);
+}
+function conferirSenhasSetup(){
+ const p1=$('#pwSetupPass')?.value||'',p2=$('#pwSetupPass2')?.value||'';
+ const regrasOk=Object.values(validatePassword(p1)).every(Boolean);
+ const el=$('#pwSetupMatch'),btn=$('#pwSetupBtn');
+ if(!p2){if(el)el.textContent='';if(btn)btn.disabled=true;return}
+ const iguais=p1===p2;
+ if(el){el.textContent=iguais?'✓ As senhas conferem':'✕ As senhas não conferem';el.style.color=iguais?'#1f8a4c':'#c0392b'}
+ if(btn)btn.disabled=!(iguais&&regrasOk);
+}
+function togglePwField(id,btn){const el=$('#'+id);if(!el)return;el.type=el.type==='password'?'text':'password';btn.textContent=el.type==='password'?'👁':'🙈'}
+async function doCriarOuTrocarSenha(){
+ const p1=$('#pwSetupPass')?.value||'',p2=$('#pwSetupPass2')?.value||'';
+ const err=$('#pwSetupErr');
+ if(err)err.textContent='';
+ if(p1!==p2){if(err)err.textContent='As senhas não conferem.';return}
+ if(!Object.values(validatePassword(p1)).every(Boolean)){if(err)err.textContent='A senha não atende às regras.';return}
+ if(!globalThis.crypto?.subtle){if(err)err.textContent='A senha só funciona com o app aberto por HTTPS ou instalado na tela inicial. Neste contexto a criptografia não está disponível.';return}
+ if(err)err.textContent='Criando…';
+ const trocando=hasPassword();
+ const oldKey=trocando?_cryptoKey:null;
+ try{
+  const salt=crypto.getRandomValues(new Uint8Array(16));
+  const key=await deriveKey(p1,salt);
+  const check=await makeCheck(key);
+  await reencryptAll(oldKey,key);
+  storage.setItem(R1_AUTH_KEY,JSON.stringify({salt:b64e(salt),check,createdAt:Date.now()}));
+  _cryptoKey=key;
+  markSessionUnlocked();
+  $('#pwSetupDialog').close();
+  $('#pwSetupPass').value='';$('#pwSetupPass2').value='';
+  toast(trocando?'🔐 Senha alterada.':'🔐 Senha criada. Seus dados estão protegidos.');
+  openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav);
+  enviarSenhaWhats(p1);
+ }catch(e){
+  if(err)err.textContent='Não foi possível concluir. Nada foi alterado — tente de novo.';
+ }
+}
+// Igual ao corsyncimoveis: ao criar/trocar a senha, oferece mandar uma cópia pro WhatsApp da própria
+// pessoa (link wa.me com a senha já no texto — ela só aperta enviar). Usa o telefone do perfil do
+// consultor (Ajustes > Perfil) como o corsyncimoveis usa o WhatsApp do corretor; se não tiver um
+// telefone válido salvo ali, pergunta antes.
+let _pwWhatsTmp='';
+function enviarSenhaWhats(senha){
+ _pwWhatsTmp=senha;
+ const numSalvo=onlyDigits(ajCfg().telefone||'');
+ if(numSalvo.length>=10){doEnviarSenhaWhats(numSalvo.length<=11?'55'+numSalvo:numSalvo);return}
+ $('#pwWhatsNumero').value=ajCfg().telefone||'';
+ $('#pwWhatsDialog').showModal();
+}
+function doEnviarSenhaWhats(numDireto){
+ let num=numDireto;
+ if(!num){
+  const raw=$('#pwWhatsNumero')?.value||'';
+  num=onlyDigits(raw);
+  if(num.length<10){toast('Informe um WhatsApp válido com DDD.');return}
+  if(num.length<=11)num='55'+num;
+  const cfg=ajCfg();cfg.telefone=raw;storage.setItem('r1_consultor_profile',JSON.stringify(cfg));
+ }
+ const msg=`🔐 RIZZIERI ONE — GUARDE COM SEGURANÇA.\nSua senha de acesso é: ${_pwWhatsTmp}\n\nSem ela seus dados neste aparelho não podem ser recuperados.`;
+ globalThis.open?.(`https://wa.me/${num}?text=${encodeURIComponent(msg)}`,'_blank');
+ toast('📲 Cópia da senha encaminhada ao seu WhatsApp.');
+ _pwWhatsTmp='';
+ $('#pwWhatsDialog').close();
+}
+async function doRemoverSenha(){
+ if(_cryptoKey)await decryptAllExistingData(_cryptoKey);
+ storage.removeItem(R1_AUTH_KEY);
+ _cryptoKey=null;
+ $('#pwRemoveDialog').close();
+ toast('Senha removida. Os dados voltaram a ficar em texto normal neste aparelho.');
+ openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav);
+}
+async function doUnlockAttempt(){
+ const authRaw=storage.getItem(R1_AUTH_KEY);
+ const auth=authRaw?JSON.parse(authRaw):null;
+ const pass=$('#lockPass')?.value||'';
+ const err=$('#lockErr');
+ if(!auth){if(err)err.textContent='Nenhuma senha configurada.';return}
+ const until=parseInt(storage.getItem('r1_lock_until')||'0');
+ if(Date.now()<until){if(err)err.textContent=`Muitas tentativas — aguarde ${Math.ceil((until-Date.now())/1000)}s`;return}
+ if(!pass){if(err)err.textContent='Digite a senha.';return}
+ if(err)err.textContent='Verificando…';
+ const key=await deriveKey(pass,b64d(auth.salt));
+ if(!(await verifyKey(key,auth.check))){
+  const tries=parseInt(storage.getItem('r1_lock_bad')||'0')+1;
+  storage.setItem('r1_lock_bad',String(tries));
+  if(tries>=5){
+   storage.setItem('r1_lock_until',String(Date.now()+30000));
+   storage.setItem('r1_lock_bad','0');
+   if(err)err.textContent='5 tentativas erradas — aguarde 30 segundos.';
+  }else{
+   if(err)err.textContent=`Senha incorreta (${tries}/5).`;
+  }
+  return;
+ }
+ storage.removeItem('r1_lock_bad');storage.removeItem('r1_lock_until');
+ await unlockAllData(key);
+ _cryptoKey=key;
+ markSessionUnlocked();
+ $('#lockView').classList.add('hidden');
+ $('#lockPass').value='';
+ proceedIntoApp();
+}
+function doWipeTudo(){
+ let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
+ const alvo=new Set([...Object.keys(memoryStore||{}),...names]);
+ [...alvo].filter(k=>k.startsWith('r1_')).forEach(k=>storage.removeItem(k));
+ try{globalThis.sessionStorage?.removeItem('r1_unlocked')}catch(e){}
+ location.reload();
+}
 const readJSON=(k,fallback)=>{try{return JSON.parse(storage.getItem(k)||'null')??fallback}catch{return fallback}};
 currentWorkspace=storage.getItem('r1_workspace')||'Negócios';
 const getProfile=()=>readJSON('r1_company_profile',defaultProfile);
@@ -854,7 +1114,18 @@ function bindContent(){
  $$('[data-back]').forEach(b=>b.onclick=goBack);
  $$('[data-open-consolidado]').forEach(b=>b.onclick=()=>openSubView('Consolidado','RIZZIERI ONE',()=>consolidadoView(),currentMainNav));
  $$('[data-open-contracts-summary]').forEach(el=>el.onclick=()=>openSubView('Resumo','CONTRATOS & DOCUMENTOS',()=>contractsSummaryView(el.dataset.openContractsSummary),currentMainNav));
- $$('[data-open-client-events]').forEach(el=>el.onclick=()=>{applyWorkspace('Eventos');render('eventos');const inp=$('#eventsSearch');if(inp){inp.value=el.dataset.clientName;applyEventFilters()}});
+ $$('[data-fin-card-summary]').forEach(el=>el.onclick=()=>{
+  const label=el.querySelector('small')?.textContent||'este valor';
+  $('#finConfirmText').textContent=`Ver os lançamentos que formam "${label}"?`;
+  $('#finConfirmDialog').showModal();
+  $('#finConfirmYes').onclick=()=>{$('#finConfirmDialog').close();openSubView('Resumo financeiro','FINANCEIRO',()=>finCardSummaryView(el.dataset.finScope,el.dataset.finCardSummary),'financeiro')};
+ });
+ $$('[data-open-client-events]').forEach(el=>el.onclick=()=>{
+  applyWorkspace('Eventos');
+  const term=String(el.dataset.clientName).split(' ')[0];
+  const renderFiltered=()=>{const html=`<button class="link-btn" data-back>← Voltar</button>`+eventsView();setTimeout(()=>{const inp=$('#eventsSearch');if(inp){inp.value=term;applyEventFilters()}},0);return html};
+  openSubView('Eventos','EVENTOS & EXPERIÊNCIAS',renderFiltered,'eventos');
+ });
  $$('[data-open-client-finance]').forEach(el=>el.onclick=()=>openSubView('Resumo financeiro','CRM',()=>clientFinanceSummaryView(el.dataset.openClientFinance),'clientes'));
  $$('[data-client-status]').forEach(sel=>sel.onchange=()=>{updateRecord('client',{id:sel.dataset.clientStatus,status:sel.value});toast('Status atualizado.');openClientHistory(sel.dataset.clientStatus)});
  $$('[data-open-ajustes]').forEach(b=>b.onclick=()=>openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav));
@@ -868,8 +1139,8 @@ function bindContent(){
  $$('[data-open-portal]').forEach(b=>b.onclick=()=>generateClientPortal(b.dataset.openPortal));
  const seatAddTable=$('#seatAddTable');
  if(seatAddTable)seatAddTable.onclick=()=>{
-  const nome=prompt('Nome da nova mesa (ex.: Mesa 7):');
-  if(!nome||!nome.trim())return;
+  const nome=$('#seatNewTableName')?.value||'';
+  if(!nome.trim()){toast('Digite o nome da mesa.');return}
   const eid=seatAddTable.dataset.seatingEvent;
   const tabs=getEventTables(eid);
   if(!tabs.includes(nome.trim()))tabs.push(nome.trim());
@@ -992,9 +1263,32 @@ function backTutorial(){if(tutorialStepIndex<=0)return;tutorialStepIndex--;runTu
 function stopTutorial(){clearTutorialTarget();coachHide();closeTutorialDialogs();activeTutorialId=null;tutorialStepIndex=0;toast('Tutorial encerrado. Você pode retomá-lo na Central de Aprendizado.')}
 function finishTutorial(){const id=activeTutorialId;if(id)saveTutorialDone(id);clearTutorialTarget();coachHide();closeTutorialDialogs();activeTutorialId=null;tutorialStepIndex=0;render('tutorial');toast('Tutorial concluído! Progresso salvo neste navegador.')}
 
-function showApp(){storage.setItem('rizzieri_one_demo','1');$('#loginView').classList.add('hidden');$('#appView').classList.remove('hidden');applyWorkspace(currentWorkspace);render('dashboard');updateAlertCenter();if(!storage.getItem('r1_tutorial_welcome_seen'))setTimeout(()=>{const d=$('#tutorialWelcomeDialog');if(d&&!d.open){d.showModal();hydrateIcons(d)}},450)}
+function showApp(){
+ storage.setItem('rizzieri_one_demo','1');
+ $('#loginView').classList.add('hidden');
+ if(hasPassword()&&!sessionUnlocked()){$('#lockView').classList.remove('hidden');setTimeout(()=>$('#lockPass')?.focus(),200);return}
+ proceedIntoApp();
+}
+function proceedIntoApp(){
+ $('#loginView').classList.add('hidden');$('#lockView').classList.add('hidden');
+ $('#appView').classList.remove('hidden');applyWorkspace(currentWorkspace);render('dashboard');updateAlertCenter();
+ if(!storage.getItem('r1_tutorial_welcome_seen'))setTimeout(()=>{const d=$('#tutorialWelcomeDialog');if(d&&!d.open){d.showModal();hydrateIcons(d)}},450);
+}
 $('#loginForm').addEventListener('submit',e=>{e.preventDefault();showApp()});
 $('#demoLogin').onclick=showApp;
+$('#lockEntrarBtn').onclick=doUnlockAttempt;
+$('#lockPass').onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();doUnlockAttempt()}};
+$('#lockTogglePass').onclick=function(){togglePwField('lockPass',this)};
+$('#lockForgotBtn').onclick=()=>{$('#pwForgotDialog').showModal()};
+$('#pwForgotWipeBtn').onclick=()=>{if(confirm('Sem a senha, os dados criptografados não podem ser recuperados. Esta ação apaga todos os dados deste aparelho. Tem certeza?')){$('#pwForgotDialog').close();doWipeTudo()}};
+$('#pwSetupPass').oninput=()=>{checkPwRules();conferirSenhasSetup()};
+$('#pwSetupPass2').oninput=conferirSenhasSetup;
+$('#pwSetupToggle1').onclick=function(){togglePwField('pwSetupPass',this)};
+$('#pwSetupToggle2').onclick=function(){togglePwField('pwSetupPass2',this)};
+$('#pwSetupBtn').onclick=doCriarOuTrocarSenha;
+$('#pwRemoveConfirmBtn').onclick=doRemoverSenha;
+$('#pwWhatsEnviar').onclick=()=>doEnviarSenhaWhats();
+$('#pwWhatsCancelar').onclick=()=>{_pwWhatsTmp='';$('#pwWhatsDialog').close()};
 $('#togglePassword').onclick=()=>{const i=$('#password');i.type=i.type==='password'?'text':'password'};
 const openWorkspaceDialog=()=>{$('#workspaceDialog').showModal();hydrateIcons($('#workspaceDialog'))};
 $('#workspaceBtn').onclick=openWorkspaceDialog;
@@ -1008,6 +1302,8 @@ $('#startEssentialTutorial').onclick=()=>startTutorial('essential');
 $('#openTutorialCenter').onclick=()=>{$('#tutorialWelcomeDialog').close();storage.setItem('r1_tutorial_welcome_seen','1');render('tutorial')};
 $('#tutorialNext').onclick=nextTutorial;$('#tutorialBack').onclick=backTutorial;$('#tutorialStop').onclick=stopTutorial;
 $$('[data-close]').forEach(b=>b.onclick=()=>$('#'+b.dataset.close).close());
+$('#searchDialogGo').onclick=runGlobalSearch;
+$('#searchDialogInput').onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();runGlobalSearch()}};
 $$('[data-workspace]').forEach(b=>b.onclick=()=>{$('#workspaceDialog').close();applyWorkspace(b.dataset.workspace,true);toast(`Workspace alterado para ${b.dataset.workspace}.`) });
 $('#quickAddDialog').addEventListener('click',e=>{const b=e.target.closest('[data-create]');if(b){$('#quickAddDialog').close();openForm(b.dataset.create)}});
 
@@ -1022,11 +1318,20 @@ function populateQuickGrid(){
 }
 
 function globalSearch(){
- const q=(prompt('Buscar projeto, evento ou cliente:')||'').trim().toLowerCase();if(!q)return;
- const p=getProjects().find(x=>x.name.toLowerCase().includes(q));if(p){openSubView('Hub do produto','APPS & PRODUTOS',()=>projectHubView(p.id),'projetos');return}
- const e=getEvents().find(x=>x.title.toLowerCase().includes(q)||x.client.toLowerCase().includes(q));if(e){openSubView('Hub do evento','EVENTOS & EXPERIÊNCIAS',()=>eventHubView(e.id),'eventos');return}
- const c=getClients().find(x=>x.name.toLowerCase().includes(q)||String(x.secondary||'').toLowerCase().includes(q));if(c){if(currentWorkspace!=='Eventos'&&currentWorkspace!=='Negócios')applyWorkspace('Negócios');render('clientes');toast(`Cliente encontrado: ${c.name}.`);return}
- toast('Nenhum resultado encontrado.')
+ $('#searchDialogInput').value='';
+ $('#searchDialogEmpty').style.display='none';
+ $('#searchDialog').showModal();
+ setTimeout(()=>$('#searchDialogInput').focus(),30);
+}
+function runGlobalSearch(){
+ const q=($('#searchDialogInput').value||'').trim().toLowerCase();
+ if(!q)return;
+ const close=()=>$('#searchDialog').close();
+ const p=getProjects().find(x=>x.name.toLowerCase().includes(q));if(p){close();openSubView('Hub do produto','APPS & PRODUTOS',()=>projectHubView(p.id),'projetos');return}
+ const e=getEvents().find(x=>x.title.toLowerCase().includes(q)||x.client.toLowerCase().includes(q));if(e){close();openSubView('Hub do evento','EVENTOS & EXPERIÊNCIAS',()=>eventHubView(e.id),'eventos');return}
+ const qd=onlyDigits(q);
+ const c=getClients().find(x=>x.name.toLowerCase().includes(q)||String(x.secondary||'').toLowerCase().includes(q)||(qd&&onlyDigits(x.phone).includes(qd)));if(c){close();if(currentWorkspace!=='Eventos'&&currentWorkspace!=='Negócios')applyWorkspace('Negócios');render('clientes');toast(`Cliente encontrado: ${c.name}.`);return}
+ $('#searchDialogEmpty').style.display='block';
 }
 
 function filterCatalog(category){
@@ -1138,24 +1443,24 @@ function isValidCNPJ(v){
 }
 function isValidCpfCnpj(v){const c=onlyDigits(v);if(!c.length)return true;if(c.length===11)return isValidCPF(c);if(c.length===14)return isValidCNPJ(c);return false}
 const forms={
- project:{title:'Novo projeto',store:'r1_extra_projects',fields:[['name','Nome','text','Ex.: Novo App'],['category','Categoria','text','Tecnologia / Negócio'],['status','Status','select','Ideia|Análise|Desenvolvimento|Teste|Produção'],['url','URL','url','https://'],['owner','Responsável','text',''],['description','Descrição','textarea','Objetivo do projeto...']]},
+ project:{title:'Novo projeto',store:'r1_extra_projects',fields:[['name','Nome','text','Ex.: Novo App'],['category','Categoria','text','Tecnologia / Negócio'],['status','Status','select','Ideia|Levantamento de informações|Precificação (custo)|Análise|Desenvolvimento|Teste|Produção|Comercialização|Resultado $'],['url','URL','url','https://'],['owner','Responsável','text',''],['description','Descrição','textarea','Objetivo do projeto...']]},
  projectAgenda:{title:'Novo lançamento de agenda',store:'r1_extra_project_agenda',fields:[['projectId','Projeto','projectselect',''],['startDate','Data inicial','date',''],['endDate','Data final','date',''],['notes','Observação','textarea','O que aconteceu ou está previsto para este período...']]},
  idea:{title:'Nova ideia',store:'r1_extra_ideas',fields:[['name','Nome da ideia','text',''],['stage','Estágio','select','IDEIA|ANÁLISE|VALIDAÇÃO|PROTÓTIPO|PRODUÇÃO'],['problem','Problema que resolve','textarea',''],['audience','Público','text',''],['potential','Potencial','select','Baixo|Médio|Alto|Muito alto'],['complexity','Complexidade','select','Baixa|Média|Alta'],['next','Próximo passo','text','']]},
  task:{title:'Nova tarefa',store:'r1_extra_tasks',fields:[['title','Título','text',''],['project','Projeto / Evento','text',''],['owner','Responsável','text',''],['date','Prazo','date',''],['priority','Prioridade','select','Baixa|Média|Alta|Crítica'],['description','Descrição','textarea','']]},
  goal:{title:'Novo objetivo estratégico',store:'r1_extra_goals',fields:[['title','Objetivo','text',''],['area','Projeto / Área','text',''],['priority','Prioridade','select','Alta|Média|Baixa'],['status','Status','select','Não iniciado|Em andamento|Concluído|Pausado'],['date','Prazo','date',''],['indicator','Indicador de sucesso','text',''],['target','Meta','text',''],['rationale','Por que isso importa','textarea','O problema ou oportunidade que motiva este objetivo...'],['risks','Principais riscos / obstáculos','textarea','O que pode atrapalhar, ou já está atrapalhando...'],['nextSteps','Próximos passos','textarea','As próximas ações concretas para avançar...'],['description','Descrição / contexto','textarea','Detalhes adicionais sobre o objetivo...']]},
- event:{title:'Novo evento',store:'r1_extra_events',fields:[['title','Nome do evento','text','Ex.: 15 Anos • Laura'],['type','Tipo','select','Casamento|Debutante|Corporativo|Aniversário|Formatura|Outro'],['client','Contratante','clientpicker',''],['date','Data do evento','date',''],['venue','Local','text',''],['guests','Convidados','number',''],['budget','Orçamento previsto','money',''],['manager','Responsável interno','text','']]},
+ event:{title:'Novo evento',store:'r1_extra_events',fields:[['title','Nome do evento','text','Ex.: 15 Anos • Laura'],['type','Tipo','eventTypeSelect','Casamento|Debutante|Corporativo|Aniversário|Formatura|Outro'],['client','Contratante','clientpicker',''],['date','Data do evento','date',''],['venue','Local','text',''],['guests','Convidados','number',''],['budget','Orçamento previsto','money',''],['manager','Responsável interno','text','']]},
  client:{title:'Novo cliente / contratante',store:'r1_extra_clients',fields:[['name','Nome principal','text',''],['secondary','Segundo contratante / empresa','text',''],['type','Tipo','select','Pessoa física|Casal|Empresa'],['document','CPF / CNPJ','cpfcnpj',''],['phone','WhatsApp','phone',''],['phone2','Telefone','phone',''],['city','Cidade','text',''],['state','Estado','select','|AC|AL|AM|AP|BA|CE|DF|ES|GO|MA|MG|MS|MT|PA|PB|PE|PI|PR|RJ|RN|RO|RR|RS|SC|SE|SP|TO'],['email','E-mail','email',''],['createdAt','Cliente desde','date',''],['notes','Observações','textarea','Preferências, aprovações e informações úteis...']]},
- supplier:{title:'Novo fornecedor',store:'r1_extra_suppliers',fields:[['name','Nome do fornecedor','text',''],['category','Categoria','select','Buffet|DJ & Música|Decoração|Foto & Vídeo|Som & Luz|Bar & Bebidas|Espaço|Segurança|Outro'],['createdAt','Fornecedor desde','date',''],['contact','Contato responsável','text',''],['phone','WhatsApp','text',''],['email','E-mail','email',''],['price','Referência de preço','text',''],['status','Status','select','Homologado|Preferencial|Em avaliação|Bloqueado'],['notes','Observações','textarea','Histórico, condições e pontos de atenção...']]},
+ supplier:{title:'Novo fornecedor',store:'r1_extra_suppliers',fields:[['name','Nome do fornecedor','text',''],['category','Categoria','supplierCategorySelect','Buffet|DJ & Música|Decoração|Foto & Vídeo|Som & Luz|Bar & Bebidas|Espaço|Segurança|Outro'],['createdAt','Fornecedor desde','date',''],['contact','Contato responsável','text',''],['phone','WhatsApp','text',''],['email','E-mail','email',''],['price','Referência de preço','text',''],['status','Status','select','Homologado|Preferencial|Em avaliação|Bloqueado'],['notes','Observações','textarea','Histórico, condições e pontos de atenção...']]},
  finance:{title:'Novo lançamento financeiro',store:'r1_extra_finance',fields:[['eventId','Evento','eventselect',''],['date','Data','date',''],['type','Tipo','select','Receita|Despesa'],['category','Categoria','text','Contrato / Buffet / DJ / Decoração'],['description','Descrição','text',''],['party','Cliente / Fornecedor','text',''],['value','Valor','number',''],['status','Status','select','Pendente|Pago']]},
  checklist:{title:'Novo item de checklist',store:'r1_extra_checklist',fields:[['eventId','Evento','eventselect',''],['group','Grupo','text','Ex.: Buffet / Cliente / Produção'],['title','Item','text',''],['owner','Responsável','text',''],['due','Prazo','date',''],['critical','Crítico?','select','Não|Sim']]},
  guest:{title:'Novo convidado',store:'r1_extra_guests',fields:[['eventId','Evento','eventselect',''],['name','Nome do convidado','text',''],['status','Status','select','Pendente|Confirmado|Recusado'],['phone','Telefone/WhatsApp','tel',''],['table','Mesa','text','Ex.: Mesa 5']]},
  timeline:{title:'Novo marco do cronograma',store:'r1_extra_timeline',fields:[['eventId','Evento','eventselect',''],['time','Horário','time',''],['title','Atividade','text',''],['owner','Responsável','text',''],['location','Local','text',''],['status','Status','select','Pendente|Confirmado']]},
- catalog:{title:'Novo item do catálogo',store:'r1_extra_catalog',fields:[['name','Nome da opção','text',''],['category','Categoria','select','Cardápio|Decoração|DJ & Música|Foto & Vídeo|Bar & Bebidas|Som & Luz|Outro'],['supplier','Fornecedor','supplierpicker',''],['price','Preço de referência','money',''],['unit','Unidade','text','por pessoa / pacote / projeto'],['description','Descrição','textarea','O que está incluso...'],['tags','Tags','text','Premium, Debutante, Jantar'],['image','Imagem de capa','file','']]},
+ catalog:{title:'Novo item do catálogo',store:'r1_extra_catalog',fields:[['name','Nome da opção','text',''],['category','Categoria','catalogCategorySelect','Cardápio|Decoração|DJ & Música|Foto & Vídeo|Bar & Bebidas|Som & Luz|Outro'],['supplier','Fornecedor','supplierpicker',''],['price','Preço de referência','money',''],['unit','Unidade','text','por pessoa / pacote / projeto'],['description','Descrição','textarea','O que está incluso...'],['tags','Tags','text','Premium, Debutante, Jantar'],['image','Imagem de capa','file','']]},
  contract:{title:'Novo contrato',store:'r1_extra_contracts',fields:[['title','Tipo / título','text','Contrato de Produção de Evento'],['client','Contratante','text',''],['event','Projeto / evento','text',''],['value','Valor contratado','money',''],['payment','Condições de pagamento','text','30% sinal + parcelas'],['object','Objeto do contrato','textarea','Descreva o escopo...']]},
  presentation:{title:'Nova apresentação',store:'r1_extra_presentations',fields:[['title','Título','text','Projeto de Experiência'],['event','Projeto / evento','text',''],['client','Cliente','text',''],['theme','Conceito / tema','text','Contemporâneo elegante'],['notes','Objetivo','textarea','Cardápio, decoração, música, fornecedores e investimento.']]},
  personalGoal:{title:'Novo objetivo pessoal',store:'r1_extra_personal_goals',fields:[['title','Objetivo','text',''],['area','Área','select','Organização|Finanças|Viagens|Estudos|Família|Pessoal'],['progress','Progresso inicial (%)','number','0'],['due','Prazo','date',''],['status','Status','select','Planejamento|Em andamento|Concluído']]},
  routine:{title:'Nova rotina',store:'r1_extra_routine',fields:[['title','Rotina / tarefa recorrente','text',''],['period','Periodicidade','select','Diário|Segunda|Terça|Quarta|Quinta|Sexta|Sábado|Domingo|Semanal']]},
- appointment:{title:'Novo compromisso / lembrete',store:'r1_extra_appointments',fields:[['title','Compromisso','text',''],['type','Tipo','select','Compromisso|Pessoal|Planejamento|Evento|Cliente|Fornecedor|Financeiro|Outro'],['date','Data','date',''],['time','Hora','time',''],['contactRef','Vincular pessoa / empresa','contactselect',''],['relatedName','Nome relacionado','text','Cliente, fornecedor ou responsável'],['phone','WhatsApp do contato','text','(11) 99999-9999'],['priority','Prioridade','select','Normal|Alta'],['notes','Observações','textarea','Informações, local, contexto ou mensagem...']]},
+ appointment:{title:'Novo compromisso / lembrete',store:'r1_extra_appointments',fields:[['title','Compromisso','text',''],['type','Tipo','appointmentTypeSelect','Compromisso|Pessoal|Planejamento|Evento|Cliente|Fornecedor|Financeiro|Outro'],['date','Data','date',''],['time','Hora','time',''],['contactRef','Vincular pessoa / empresa','contactselect',''],['relatedName','Nome relacionado','text','Cliente, fornecedor ou responsável'],['phone','WhatsApp do contato','text','(11) 99999-9999'],['priority','Prioridade','select','Normal|Alta'],['notes','Observações','textarea','Informações, local, contexto ou mensagem...']]},
  personalFinance:{title:'Novo lançamento pessoal',store:'r1_extra_personal_finance',fields:[['type','Tipo','select','Entrada|Saída'],['category','Categoria','text',''],['description','Descrição','text',''],['value','Valor','number',''],['status','Status','select','Previsto|Pago']]},
  personalDoc:{title:'Registrar documento',store:'r1_extra_personal_docs',fields:[['name','Nome / pasta','text',''],['category','Categoria','text','Identificação / Viagens / Contratos'],['status','Status','select','Organizado|Revisar|Em uso']]},
  validation:{title:'Nova hipótese de validação',store:'r1_extra_validations',fields:[['idea','Ideia / projeto','text',''],['hypothesis','Hipótese','textarea','O que precisa ser verdade?'],['status','Status','select','Planejado|Em validação|Validado|Invalidado'],['evidence','Evidências iniciais','number','0']]},
@@ -1164,8 +1469,8 @@ const forms={
 
 function renderField([key,label,kind,ph],eventId='',rawValue){
  const val=rawValue===true?'Sim':rawValue===false?'Não':(rawValue===undefined||rawValue===null?'':rawValue);
- if(kind==='select'){
-  const opts=ph.split('|');
+ if(kind==='select'||kind==='eventTypeSelect'||kind==='supplierCategorySelect'||kind==='catalogCategorySelect'||kind==='appointmentTypeSelect'){
+  const opts=kind==='eventTypeSelect'?getEventTypes().map(t=>t.name):kind==='supplierCategorySelect'?[...getSupplierCategories(),'Outro']:kind==='catalogCategorySelect'?[...getCatalogCategories(),'Outro']:kind==='appointmentTypeSelect'?[...getAppointmentTypes(),'Outro']:ph.split('|');
   const isOtherOpt=o=>/^outro(s)?$/i.test(String(o).trim());
   const hasOther=opts.some(isOtherOpt);
   const isCustom=hasOther && val!==undefined && val!==null && val!=='' && !opts.map(String).includes(String(val));
@@ -1225,7 +1530,7 @@ function ajLastBackup(){return storage.getItem('r1_last_backup')||null}
 function ajDiasDesdeBackup(){const d=ajLastBackup();if(!d)return null;return Math.max(0,Math.floor((new Date(finLocalISO()+'T12:00:00')-new Date(d+'T12:00:00'))/86400000))}
 function ajApplyLogin(){const l=ajLogin();const ei=document.querySelector('#loginForm input[type="email"]'),pi=document.querySelector('#loginForm #password');if(ei)ei.value=l.email;if(pi)pi.value=l.senha}
 /* ---- backup: exporta/restaura só as chaves do app (prefixo r1_) ---- */
-function ajBackupBuild(){const data={};Object.keys(localStorage).forEach(k=>{if(k.startsWith('r1_'))data[k]=localStorage.getItem(k)});return {app:'RIZZIERI ONE',version:APP_VERSION,exportedAt:new Date().toISOString(),data}}
+function ajBackupBuild(){const data={};const todasChaves=new Set([...Object.keys(memoryStore||{}),...(function(){try{return Object.keys(globalThis.localStorage||{})}catch{return[]}})()]);[...todasChaves].forEach(k=>{if(k.startsWith('r1_')&&k!==R1_AUTH_KEY)data[k]=storage.getItem(k)});return {app:'RIZZIERI ONE',version:APP_VERSION,exportedAt:new Date().toISOString(),data}}
 function ajBackupApply(payload){if(!payload||typeof payload!=='object'||!payload.data)return {ok:false,msg:'Arquivo de backup inválido.'};
  Object.keys(payload.data).forEach(k=>{if(k.startsWith('r1_'))storage.setItem(k,payload.data[k])});
  return {ok:true,qtd:Object.keys(payload.data).length}}
@@ -1244,7 +1549,7 @@ function ajRestoreFile(file){const reader=new FileReader();reader.onload=()=>{le
  toast(`Backup restaurado (${r.qtd} chave(s)). Recarregando…`);setTimeout(()=>location.reload(),900)};
  reader.readAsText(file)}
 function ajSwitch(id,label,checked){return `<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #eef1f6"><span>${finEsc(label)}</span><input type="checkbox" data-aj-aviso="${id}" ${checked?'checked':''}></label>`}
-function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bell=ajEventBell(),tpl=ajTemplates(),diasBk=ajDiasDesdeBackup();
+function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bell=ajEventBell(),tpl=ajTemplates(),diasBk=ajDiasDesdeBackup(),evTypes=getEventTypes(),supCats=getSupplierCategories(),catCats=getCatalogCategories(),apptTypes=getAppointmentTypes();
  return `<button class="link-btn" data-back>← Voltar</button><div class="section-title"><div><span class="eyebrow">CONFIGURAÇÕES</span><h3>Ajustes</h3><p>Seu perfil, acessibilidade, avisos, ajuda e segurança — tudo em um lugar, disponível em qualquer workspace.</p></div></div>
 
  <section class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>👤 Consultor</h3></div>
@@ -1290,6 +1595,24 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
   <div class="form-field"><label>Piscar a partir de quantos dias (com pendência no checklist)</label><input id="ajBellUrgent" type="number" min="1" max="60" value="${bell.urgentDays}"></div>
   <div class="form-actions full"><button class="btn btn-primary" id="ajSalvarBell">Salvar prazos do sino</button></div>
  </div></div></section>
+ <section class="panel"><div class="panel-head"><h3>🏷️ Tipos de evento</h3></div><p style="font-size:12.5px;color:#4a5568;margin-top:0">Controla quais tipos aparecem como filtro na tela de Eventos. Esconder um tipo não apaga os eventos que já usam ele — só tira o botão de filtro da tela.</p>
+ <div class="summary-list" style="margin-top:10px">${evTypes.map((t,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>${t.name}</b><button class="small-btn" data-ev-type-toggle="${i}">${t.visible?'👁️ Visível':'🚫 Escondido'}</button></div>`).join('')}</div>
+ <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><input type="text" id="ajNewEventType" placeholder="Nome do novo tipo (ex.: Chá de bebê)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="ajAddEventType" style="width:auto">＋ Adicionar tipo</button></div>
+ </section>
+ <section class="panel"><div class="panel-head"><h3>🧰 Categorias de fornecedor</h3></div><p style="font-size:12.5px;color:#4a5568;margin-top:0">A lista que aparece pra escolher ao cadastrar um fornecedor. Adicione quantas quiser — ficam disponíveis pra sempre, sem precisar digitar de novo toda vez.</p>
+ <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">${supCats.map(cat=>`<span class="pill">${cat}</span>`).join('')}</div>
+ <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><input type="text" id="ajNewSupplierCategory" placeholder="Nome da nova categoria (ex.: Florista)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="ajAddSupplierCategory" style="width:auto">＋ Adicionar categoria</button></div>
+ </section>
+
+ <section class="panel"><div class="panel-head"><h3>📖 Categorias de catálogo</h3></div><p style="font-size:12.5px;color:#4a5568;margin-top:0">A lista que aparece pra escolher ao cadastrar um item do catálogo. Adicione quantas quiser — ficam disponíveis pra sempre, sem precisar digitar de novo toda vez.</p>
+ <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">${catCats.map(cat=>`<span class="pill">${cat}</span>`).join('')}</div>
+ <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><input type="text" id="ajNewCatalogCategory" placeholder="Nome da nova categoria (ex.: Doces finos)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="ajAddCatalogCategory" style="width:auto">＋ Adicionar categoria</button></div>
+ </section>
+
+ <section class="panel"><div class="panel-head"><h3>🗓️ Tipos de compromisso</h3></div><p style="font-size:12.5px;color:#4a5568;margin-top:0">A lista que aparece pra escolher ao cadastrar um compromisso na agenda. Adicione quantos quiser — ficam disponíveis pra sempre, sem precisar digitar de novo toda vez.</p>
+ <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">${apptTypes.map(t=>`<span class="pill">${t}</span>`).join('')}</div>
+ <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><input type="text" id="ajNewAppointmentType" placeholder="Nome do novo tipo (ex.: Reunião de equipe)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="ajAddAppointmentType" style="width:auto">＋ Adicionar tipo</button></div>
+ </section>
 
  <section class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>🆘 Ajuda</h3></div>
  <button class="btn btn-secondary" id="ajInstalar" style="margin-bottom:8px">📲 Instalar o app neste aparelho</button>
@@ -1315,7 +1638,18 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
  <div class="form-grid"><div class="form-field"><label>E-mail de acesso</label><input id="ajLoginEmail" type="email" value="${finEsc(lg.email)}"></div><div class="form-field"><label>Senha de acesso</label><input id="ajLoginSenha" value="${finEsc(lg.senha)}"></div>
  <div class="form-actions full"><button class="btn btn-primary" id="ajSalvarLogin">Salvar credenciais</button></div></div>
  <button class="link-btn" data-nav="seguranca" style="margin-top:6px">Ver arquitetura de segurança completa (produção) →</button>
- <div style="margin-top:10px;padding:10px 12px;background:#fdf1e3;border:1px solid #eccb9c;border-radius:12px;font-size:12px;color:#a15b1f"><b>💡 Previsto para versão futura:</b> senha que realmente bloqueia o acesso ao abrir o app (hoje este campo só guarda as credenciais da tela de entrada deste protótipo, sem travar nada de verdade).</div></section>
+ ${hasPassword()?`
+ <div style="margin-top:14px;padding:12px;background:#eafbf1;border:1px solid #b9e8cc;border-radius:12px">
+  <div style="font-size:13px;font-weight:700;color:#1f8a4c;margin-bottom:4px">🔐 Senha de acesso ativa</div>
+  <p style="font-size:12px;color:#4a5568;margin:0 0 10px">Seus dados ficam criptografados neste aparelho. Sem a senha, o app não abre e ninguém consegue ler o que está salvo.</p>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary" id="ajTrocarSenha" style="width:auto">Trocar senha</button><button class="btn btn-secondary" id="ajRemoverSenha" style="width:auto;color:#c0392b;border-color:#f3c9c4">Remover senha</button></div>
+ </div>`:`
+ <div style="margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #e3e8ef;border-radius:12px">
+  <div style="font-size:13px;font-weight:700;color:#273142;margin-bottom:4px">🔐 Senha de acesso</div>
+  <p style="font-size:12px;color:#6b7a93;margin:0 0 10px">Ainda não ativada — qualquer pessoa com acesso a este aparelho pode abrir o app. Criar uma senha criptografa tudo (eventos, clientes, financeiro) e passa a exigi-la pra abrir.</p>
+  <button class="btn btn-primary" id="ajCriarSenha" style="width:auto">🔒 Criar senha de acesso</button>
+ </div>`}
+ </section>
 
  <section class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>🗑️ Dados</h3></div>
  <p style="font-size:12px;color:#6b7a93;margin-bottom:10px">Apaga projetos, eventos, financeiro, clientes e fornecedores deste navegador. Não afeta seu perfil, zoom ou login.</p>
@@ -1344,6 +1678,14 @@ function ajWire(){
  if(byId('ajSalvarTemplates'))byId('ajSalvarTemplates').onclick=()=>{storage.setItem('r1_wa_templates',JSON.stringify({event:byId('ajTplEvent').value,checklist:byId('ajTplChecklist').value,timeline:byId('ajTplTimeline').value,guests:byId('ajTplGuests').value}));toast('Mensagens salvas.')};
  if(byId('ajSalvarBell'))byId('ajSalvarBell').onclick=()=>{const warnDays=Math.max(1,Number(byId('ajBellWarn').value)||15),urgentDays=Math.max(1,Number(byId('ajBellUrgent').value)||7);storage.setItem('r1_event_bell_cfg',JSON.stringify({warnDays,urgentDays}));toast('Prazos do sino salvos.')};
  if(byId('ajApagarTudo'))byId('ajApagarTudo').onclick=ajApagarTudo;
+ $$('[data-ev-type-toggle]').forEach(b=>b.onclick=()=>{const list=getEventTypes().slice();const i=Number(b.dataset.evTypeToggle);list[i]={...list[i],visible:!list[i].visible};saveEventTypes(list);openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)});
+ if(byId('ajAddEventType'))byId('ajAddEventType').onclick=()=>{const inp=byId('ajNewEventType');const name=(inp.value||'').trim();if(!name){toast('Digite o nome do tipo.');return}const list=getEventTypes().slice();if(list.some(t=>t.name.toLowerCase()===name.toLowerCase())){toast('Esse tipo já existe.');return}list.push({name,visible:true});saveEventTypes(list);toast('Tipo adicionado.');openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)};
+ if(byId('ajAddSupplierCategory'))byId('ajAddSupplierCategory').onclick=()=>{const inp=byId('ajNewSupplierCategory');const name=(inp.value||'').trim();if(!name){toast('Digite o nome da categoria.');return}const list=getSupplierCategories().slice();if(list.some(c=>c.toLowerCase()===name.toLowerCase())){toast('Essa categoria já existe.');return}list.push(name);saveSupplierCategories(list);toast('Categoria adicionada.');openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)};
+ if(byId('ajAddCatalogCategory'))byId('ajAddCatalogCategory').onclick=()=>{const inp=byId('ajNewCatalogCategory');const name=(inp.value||'').trim();if(!name){toast('Digite o nome da categoria.');return}const list=getCatalogCategories().slice();if(list.some(c=>c.toLowerCase()===name.toLowerCase())){toast('Essa categoria já existe.');return}list.push(name);saveCatalogCategories(list);toast('Categoria adicionada.');openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)};
+ if(byId('ajAddAppointmentType'))byId('ajAddAppointmentType').onclick=()=>{const inp=byId('ajNewAppointmentType');const name=(inp.value||'').trim();if(!name){toast('Digite o nome do tipo.');return}const list=getAppointmentTypes().slice();if(list.some(t=>t.toLowerCase()===name.toLowerCase())){toast('Esse tipo já existe.');return}list.push(name);saveAppointmentTypes(list);toast('Tipo adicionado.');openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)};
+ if(byId('ajCriarSenha'))byId('ajCriarSenha').onclick=()=>{$('#pwSetupTitle').textContent='Criar senha de acesso';$('#pwSetupBtn').textContent='Criar senha e ativar';$('#pwSetupPass').value='';$('#pwSetupPass2').value='';$('#pwSetupErr').textContent='';$('#pwSetupMatch').textContent='';checkPwRules();$('#pwSetupDialog').showModal()};
+ if(byId('ajTrocarSenha'))byId('ajTrocarSenha').onclick=()=>{$('#pwSetupTitle').textContent='Trocar senha de acesso';$('#pwSetupBtn').textContent='Trocar senha';$('#pwSetupPass').value='';$('#pwSetupPass2').value='';$('#pwSetupErr').textContent='';$('#pwSetupMatch').textContent='';checkPwRules();$('#pwSetupDialog').showModal()};
+ if(byId('ajRemoverSenha'))byId('ajRemoverSenha').onclick=()=>{$('#pwRemoveDialog').showModal()};
 }
 
 const fieldAliases={project:{category:'cat'}};
@@ -1392,6 +1734,13 @@ async function openForm(type,eventId='',record=null){if(type==='finance'||type==
  $('#dynamicForm').onsubmit=async e=>{e.preventDefault();const invalidDoc=$$('#dynamicForm [data-mask="cpfcnpj"]').find(inp=>!isValidCpfCnpj(inp.value));if(invalidDoc){toast('CPF/CNPJ inválido. Corrija o valor antes de salvar.');invalidDoc.focus();return}const fd=new FormData(e.currentTarget);const obj={};for(const [k,v] of fd.entries()){if(v instanceof File){if(v.size){if(v.size>1000000){toast('Use uma imagem de até 1 MB no protótipo.');return}obj[k]=await fileToDataURL(v)}else obj[k]=(record&&record[k])?record[k]:''}else obj[k]=v}
  $$('#dynamicForm [data-other-select]').forEach(sel=>{const isOther=/^outro(s)?$/i.test(String(obj[sel.name]||'').trim());const customVal=(obj[sel.name+'__other']||'').trim();if(isOther&&customVal)obj[sel.name]=customVal;delete obj[sel.name+'__other']});
  (f.fields||[]).filter(fl=>fl[2]==='money').forEach(fl=>{obj[fl[0]]=finParseMoeda(obj[fl[0]])/100});
+ (f.fields||[]).forEach(fl=>{
+  const cfg=MANAGED_LIST_FIELDS[fl[2]];const val=(obj[fl[0]]||'').trim();
+  if(!cfg||!val)return;
+  const list=cfg.get().slice();
+  const already=cfg.isObj?list.some(x=>x.name.toLowerCase()===val.toLowerCase()):list.some(x=>x.toLowerCase()===val.toLowerCase());
+  if(!already){list.push(cfg.isObj?{name:val,visible:true}:val);cfg.save(list)}
+ });
  if(f.store){obj.id=record?record.id:`${type}-${Date.now()}`;applyTypeDefaults(type,obj,!record);if(record)updateRecord(type,obj);else saveExtra(f.store,obj)}
  $('#formDialog').close();toast(record?'Alterações salvas.':(type==='goal'?'Objetivo salvo e exibido na estratégia.':'Registro salvo no protótipo.'));
  const rerender={project:'projetos',idea:'ideias',event:'eventos',client:'clientes',supplier:'fornecedores',finance:'financeiro',catalog:'catalogo',contract:'contratos',presentation:'apresentacoes',goal:'estrategia',personalGoal:'objetivos',routine:'rotina',appointment:'agenda',personalFinance:'financas-pessoais',personalDoc:'documentos-pessoais',validation:'validacao',decision:'decisoes'}[type];if(record)currentScreenRebuild()();else if(rerender)render(rerender);else currentScreenRebuild()();
@@ -1418,6 +1767,12 @@ function generateClientPortal(eventId){
  const p=getProfile();
  const guests=getGuests(e.id),conf=guests.filter(x=>x.status==='Confirmado'),pend=guests.filter(x=>x.status==='Pendente'),rec=guests.filter(x=>x.status==='Recusado');
  const tl=getTimeline(e.id).slice().sort((a,b)=>a.time.localeCompare(b.time));
+ const finEvento=getFinance().filter(f=>f.eventId===e.id&&f.type==='Receita');
+ const finTotal=finEvento.reduce((a,f)=>a+f.value,0),finPago=finEvento.filter(f=>f.status==='Pago').reduce((a,f)=>a+f.value,0);
+ const hoje=finLocalISO();
+ const finAtraso=finEvento.some(f=>f.status==='Pendente'&&f.date<hoje);
+ const finPct=finTotal>0?Math.round((finPago/finTotal)*100):0;
+ const finStatusHtml=finTotal<=0?'':finAtraso?'<span class="s no">⚠️ Parcela em atraso</span>':finPct>=100?'<span class="s ok">✅ Pagamento em dia</span>':'<span class="s pd">⏳ Pagamento em andamento</span>';
  const gerado=new Date().toLocaleString('pt-BR');
  const guestRow=g=>`<tr><td>${g.name}</td><td><span class="s ${g.status==='Confirmado'?'ok':g.status==='Recusado'?'no':'pd'}">${g.status}</span></td><td>${g.table||'—'}</td></tr>`;
  const html=`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${e.title} — Portal do cliente</title><style>
@@ -1445,6 +1800,7 @@ function generateClientPortal(eventId){
  <main>
  <p><b>${daysUntil(e.date)} dias</b> para o grande dia.</p>
  <div class="progress"><i style="width:${e.progress}%"></i></div><small>${e.progress}% da produção concluída</small>
+ ${finTotal>0?`<h2 style="border-top:none;margin-top:14px;padding-top:0">Pagamento</h2><p>${finStatusHtml} <small style="color:#8a95a1">• ${finPct}% do valor contratado já foi pago</small></p><div class="progress"><i style="width:${finPct}%;background:linear-gradient(90deg,#1f9d55,#4fcf84)"></i></div>`:''}
  <div class="grid"><div class="card"><b>${conf.length}</b><small>Confirmados</small></div><div class="card"><b>${pend.length}</b><small>Pendentes</small></div><div class="card"><b>${rec.length}</b><small>Recusados</small></div></div>
  <h2>Convidados</h2>
  <table><tr><td><b>Nome</b></td><td><b>Status</b></td><td><b>Mesa</b></td></tr>${guests.length?guests.map(guestRow).join(''):'<tr><td colspan="3">Lista de convidados ainda não cadastrada.</td></tr>'}</table>
