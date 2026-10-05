@@ -194,7 +194,7 @@ const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'B
 /* ===== FINANCEIRO UNIFICADO — V:1.05.0 =====
    Modelo único para Negócios, Eventos e Pessoal. Valores em CENTAVOS (inteiros),
    datas sempre em horário LOCAL (nunca toISOString), visões inspiradas no corsyncimoveis. */
-const APP_VERSION='V:1.18.1';
+const APP_VERSION='V:1.19.0';
 const FIN_STORE='r1_fin_v2',FIN_OV='r1_fin_v2_ov',FIN_DEL='r1_fin_v2_del',FIN_CFG='r1_fin_cfg',FIN_MIG='r1_fin_v2_mig';
 const FIN_WS=['Negócios','Eventos','Pessoal'];
 const FIN_CATS={'Negócios':['Assinaturas de clientes','Licenças e ferramentas','Infraestrutura','Marketing','Impostos','Outros'],'Eventos':['Contrato','Parcela','Fornecedor','Decoração','Buffet','DJ & Música','Som & Luz','Transporte','Outros'],'Pessoal':['Renda','Moradia','Alimentação','Transporte','Assinaturas','Saúde','Lazer','Outros']};
@@ -248,7 +248,7 @@ function finMigrate(){
 function finAll(){finMigrate();const ov=readJSON(FIN_OV,{}),del=new Set(readJSON(FIN_DEL,[]));
  return [...finSeeds().filter(x=>!del.has(x.id)).map(x=>ov[x.id]?{...x,...ov[x.id]}:x),...readJSON(FIN_STORE,[]).filter(x=>!del.has(x.id))]}
 const finIsSeed=id=>finSeeds().some(s=>s.id===id);
-function finSave(entry){if(finIsSeed(entry.id)){const ov=readJSON(FIN_OV,{});ov[entry.id]={...entry};storage.setItem(FIN_OV,JSON.stringify(ov));return}
+function finSave(entry){histTrackFin(entry);if(finIsSeed(entry.id)){const ov=readJSON(FIN_OV,{});ov[entry.id]={...entry};storage.setItem(FIN_OV,JSON.stringify(ov));return}
  const ex=readJSON(FIN_STORE,[]),i=ex.findIndex(x=>x.id===entry.id);if(i>=0)ex[i]=entry;else ex.push(entry);storage.setItem(FIN_STORE,JSON.stringify(ex))}
 function finAdd(list){const ex=readJSON(FIN_STORE,[]);list.forEach(e=>ex.push(e));storage.setItem(FIN_STORE,JSON.stringify(ex))}
 function finRemove(id){if(finIsSeed(id)){const del=readJSON(FIN_DEL,[]);if(!del.includes(id))del.push(id);storage.setItem(FIN_DEL,JSON.stringify(del))}else storage.setItem(FIN_STORE,JSON.stringify(readJSON(FIN_STORE,[]).filter(x=>x.id!==id)))}
@@ -471,22 +471,22 @@ const agendaTypeClass=type=>({'Evento':'event','Compromisso':'appointment','Pess
 function dashboardView(workspace='Negócios'){
  const allProjects=getProjects(),ideaBoard=getIdeasBoard(),events=getEvents().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date))),finance=getFinance(),suppliers=getSuppliers(),clients=getClients(),pending=finance.filter(x=>x.status==='Pendente');
  if(workspace==='Eventos') return `
- <section class="workspace-banner"><div><span class="eyebrow">WORKSPACE EVENTOS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span><h3>Produção rigorosa do briefing ao último convidado.</h3><p>Eventos, clientes, fornecedores, contratos, catálogo, financeiro, checklist e cronograma trabalhando no mesmo fluxo.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="eventos"><span data-icon="calendar-heart"></span> Abrir central de eventos</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
+ <section class="workspace-banner"><div><span class="eyebrow">WORKSPACE EVENTOS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.19.0</span><h3>Produção rigorosa do briefing ao último convidado.</h3><p>Eventos, clientes, fornecedores, contratos, catálogo, financeiro, checklist e cronograma trabalhando no mesmo fluxo.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="eventos"><span data-icon="calendar-heart"></span> Abrir central de eventos</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
  <section class="metrics"><article class="metric-card"><small>Eventos ativos</small><strong>${events.length}</strong><span class="metric-meta">Em produção</span>${spark([22,34,48,58,68,80],true)}</article><article class="metric-card"><small>Itens de checklist</small><strong>${getChecklist().filter(x=>!x.done).length}</strong><span class="metric-meta">Ainda em aberto</span>${spark([70,58,50,42,34,26])}</article><article class="metric-card"><small>Fornecedores</small><strong>${suppliers.length}</strong><span class="metric-meta">Rede operacional</span>${spark([28,38,48,58,68,78],true)}</article><article class="metric-card"><small>Pendências financeiras</small><strong>${pending.length}</strong><span class="metric-meta">Cobrar ou pagar</span>${spark([60,54,46,38,32,24])}</article></section>
  <section class="main-grid"><div class="panel"><div class="panel-head"><h3>Eventos em andamento</h3><button class="link-btn" data-nav="eventos">Ver todos</button></div><div class="event-mini-grid">${events.map(e=>`<article class="event-mini"><div><span class="event-type">${e.type}</span><span class="event-mini-date">${new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR')}</span><h4>${e.title}</h4><p>${e.venue} • ${e.guests} convidados</p></div><div class="event-mini-foot"><div><small>Produção</small><b>${e.progress}%</b></div><div class="progress"><i style="width:${e.progress}%"></i></div><button class="small-btn" data-open-event="${e.id}">Abrir detalhes</button></div></article>`).join('')}</div></div><div class="stack"><div class="panel"><div class="panel-head"><h3>Atalhos de produção</h3></div><div class="quick-grid"><button data-nav="catalogo"><span data-icon="book-open"></span><span>Catálogo</span></button><button data-nav="fornecedores"><span data-icon="briefcase"></span><span>Fornecedores</span></button><button data-nav="contratos"><span data-icon="file-signature"></span><span>Contratos</span></button><button data-nav="apresentacoes"><span data-icon="presentation"></span><span>Apresentações</span></button><button data-create="event"><span data-icon="plus-circle"></span><span>Novo evento</span></button><button data-nav="financeiro"><span data-icon="wallet"></span><span>Financeiro</span></button></div></div><div class="panel"><div class="panel-head"><h3>Atenção agora</h3></div><div class="attention-list"><button data-open-event="ev-ana-lucas"><span class="status-dot danger"></span><div><b>Casamento • Ana & Lucas</b><small>5 pontos críticos ainda em produção</small></div><em>Hoje</em></button><button data-nav="financeiro"><span class="status-dot warn"></span><div><b>Financeiro</b><small>${pending.length} lançamentos pendentes</small></div><em>Agora</em></button></div></div></div></section>`;
  if(workspace==='Pessoal'){
    const goals=getPersonalGoals(),routine=getRoutine(),appointments=getAppointments(),pf=getPersonalFinance();
-   return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE PESSOAL</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span><h3>Sua vida organizada sem misturar com a operação profissional.</h3><p>Objetivos, rotina, agenda, documentos e finanças pessoais em um ambiente separado e visualmente identificável.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="objetivos"><span data-icon="target"></span> Ver objetivos</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
+   return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE PESSOAL</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.19.0</span><h3>Sua vida organizada sem misturar com a operação profissional.</h3><p>Objetivos, rotina, agenda, documentos e finanças pessoais em um ambiente separado e visualmente identificável.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="objetivos"><span data-icon="target"></span> Ver objetivos</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
    <section class="metrics"><article class="metric-card"><small>Objetivos ativos</small><strong>${goals.length}</strong><span class="metric-meta">Metas pessoais</span>${spark([30,38,48,58,66,74])}</article><article class="metric-card"><small>Rotinas pendentes</small><strong>${routine.filter(x=>!x.done).length}</strong><span class="metric-meta">Nesta semana</span>${spark([62,54,46,38,30,24])}</article><article class="metric-card"><small>Próximos compromissos</small><strong>${appointments.length}</strong><span class="metric-meta">Agenda pessoal</span>${spark([24,34,46,56,64,72],true)}</article><article class="metric-card"><small>Saldo demonstrativo</small><strong>${money(pf.filter(x=>x.type==='Entrada').reduce((a,x)=>a+x.value,0)-pf.filter(x=>x.type==='Saída').reduce((a,x)=>a+x.value,0))}</strong><span class="metric-meta">Prévia pessoal</span>${spark([34,44,54,62,72,80])}</article></section>
    <section class="main-grid"><div class="panel"><div class="panel-head"><h3>Objetivos em andamento</h3><button class="link-btn" data-nav="objetivos">Abrir objetivos</button></div>${goals.map(g=>`<div class="goal-row"><div><b>${g.title}</b><small>${g.area} • até ${new Date(g.due+'T12:00:00').toLocaleDateString('pt-BR')}</small></div><span>${g.progress}%</span><div class="progress"><i style="width:${g.progress}%"></i></div></div>`).join('')}</div><div class="panel"><div class="panel-head"><h3>Rotina da semana</h3><button class="link-btn" data-nav="rotina">Abrir rotina</button></div><div class="routine-list">${routine.map(r=>`<label class="routine-row ${r.done?'done':''}"><input type="checkbox" data-routine-toggle="${r.id}" ${r.done?'checked':''}><span class="custom-check"></span><div><b>${r.title}</b><small>${r.period}</small></div></label>`).join('')}</div></div></section>`;
  }
  if(workspace==='Ideias'){
    const validations=getValidations(),decisions=getDecisions();
-   return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE IDEIAS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span><h3>Capture, valide e transforme ideias em projetos executáveis.</h3><p>Canvas, hipóteses, evidências, decisões e roadmap antes de gastar energia no desenvolvimento.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="ideias"><span data-icon="lightbulb"></span> Abrir incubadora</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
+   return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE IDEIAS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.19.0</span><h3>Capture, valide e transforme ideias em projetos executáveis.</h3><p>Canvas, hipóteses, evidências, decisões e roadmap antes de gastar energia no desenvolvimento.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="ideias"><span data-icon="lightbulb"></span> Abrir incubadora</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
    <section class="metrics"><article class="metric-card"><small>Ideias no funil</small><strong>${Object.values(ideaBoard).flat().length}</strong><span class="metric-meta">Da ideia à produção</span>${spark([26,36,48,58,68,82],true)}</article><article class="metric-card"><small>Validações</small><strong>${validations.length}</strong><span class="metric-meta">Hipóteses em teste</span>${spark([18,28,38,48,58,70])}</article><article class="metric-card"><small>Decisões registradas</small><strong>${decisions.length}</strong><span class="metric-meta">Histórico rastreável</span>${spark([28,34,42,52,64,76],true)}</article><article class="metric-card"><small>Em produção</small><strong>${ideaBoard['PRODUÇÃO'].length}</strong><span class="metric-meta">Ideias que viraram produto</span>${spark([22,30,42,54,68,84])}</article></section>
    <section class="main-grid"><div class="panel"><div class="panel-head"><h3>Funil de ideias</h3><button class="link-btn" data-nav="ideias">Abrir incubadora</button></div><div class="idea-pipeline">${Object.entries(ideaBoard).map(([stage,arr])=>`<div><span>${stage}</span><b>${arr.length}</b></div>`).join('')}</div></div><div class="panel"><div class="panel-head"><h3>Últimas decisões</h3><button class="link-btn" data-nav="decisoes">Ver decisões</button></div>${decisions.map(d=>`<div class="decision-row"><b>${d.title}</b><small>${d.context}</small><span>${d.status}</span></div>`).join('')}</div></section>`;
  }
- return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE NEGÓCIOS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span><h3>Comande projetos, produtos, clientes e resultados em um único painel.</h3><p>Visão executiva para administrar aplicativos, estratégia, finanças e operação sem misturar com os demais contextos.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="projetos"><span data-icon="grid"></span> Abrir portfólio</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
+ return `<section class="workspace-banner"><div><span class="eyebrow">WORKSPACE NEGÓCIOS</span><span class="ws-version-badge" style="display:inline-block;vertical-align:middle;margin-left:8px;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.19.0</span><h3>Comande projetos, produtos, clientes e resultados em um único painel.</h3><p>Visão executiva para administrar aplicativos, estratégia, finanças e operação sem misturar com os demais contextos.</p></div><div class="workspace-banner-actions" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:flex-end"><button class="btn btn-primary" data-nav="projetos"><span data-icon="grid"></span> Abrir portfólio</button><button class="btn btn-secondary" data-open-consolidado style="width:auto;margin-top:0"><span data-icon="bar-chart-3"></span> Consolidado</button></div></section>
  <section class="metrics"><article class="metric-card"><small>Projetos ativos</small><strong>${allProjects.length}</strong><span class="metric-meta">Produtos em produção</span>${spark([30,35,42,48,58,66])}</article><article class="metric-card"><small>Clientes cadastrados</small><strong>${clients.length}</strong><span class="metric-meta">CRM centralizado</span>${spark([24,32,44,56,68,78],true)}</article><article class="metric-card"><small>Saúde média dos apps</small><strong>${Math.round(allProjects.reduce((a,p)=>a+p.health,0)/Math.max(1,allProjects.length))}</strong><span class="metric-meta">Score operacional</span>${spark([62,68,74,80,86,90])}</article><article class="metric-card"><small>Pendências críticas</small><strong>${allProjects.reduce((a,p)=>a+p.issues,0)}</strong><span class="metric-meta">Roadmap e bugs</span>${spark([68,60,52,44,36,28],true)}</article></section>
  <section class="main-grid"><div class="panel"><div class="panel-head"><h3>Portfólio de produtos</h3><button class="link-btn" data-nav="projetos">Ver todos</button></div><div class="project-mini-list">${allProjects.map(p=>`<article><div class="project-logo">${p.name.slice(0,2).toUpperCase()}</div><div><b>${p.name}</b><small>${p.cat} • ${p.version}</small></div><span>${p.health}/100</span><button class="small-btn" data-open-project="${p.id}">Hub</button></article>`).join('')}</div></div><div class="stack"><div class="panel"><div class="panel-head"><h3>Atalhos executivos</h3></div><div class="quick-grid"><button data-nav="projetos"><span data-icon="grid"></span><span>Projetos</span></button><button data-nav="clientes"><span data-icon="users"></span><span>Clientes</span></button><button data-nav="financeiro"><span data-icon="wallet"></span><span>Financeiro</span></button><button data-nav="estrategia"><span data-icon="target"></span><span>Estratégia</span></button><button data-nav="administracao"><span data-icon="settings"></span><span>Administração</span></button><button data-nav="seguranca"><span data-icon="shield"></span><span>Segurança</span></button></div></div></div></section>`;
 }
@@ -510,12 +510,12 @@ function projectHubView(id){const rows=getProjects(),p=rows.find(x=>x.id===id)||
 function eventsView(){const events=getEvents().slice().sort((a,b)=>String(a.date).localeCompare(String(b.date)));return `<div class="section-title"><div><span class="eyebrow">EVENTOS & EXPERIÊNCIAS</span><h3>Central de produção</h3><p>Do briefing ao último pagamento: cronograma, checklist, fornecedores, contratos, apresentação e execução.</p></div><button class="btn btn-primary" data-create="event">＋ Novo evento</button></div><section class="metrics"><article class="metric-card"><small>Eventos ativos</small><strong>${events.length}</strong><span class="metric-meta">Todos com responsável definido</span>${spark([22,30,42,54,62,74])}</article><article class="metric-card"><small>Checklists</small><strong>${getChecklist().filter(x=>!x.done).length}</strong><span class="metric-meta">Itens ainda em aberto</span>${spark([62,58,50,42,34,28],true)}</article><article class="metric-card"><small>Valor contratado</small><strong>${money(events.reduce((a,e)=>a+e.budget,0))}</strong><span class="metric-meta">Carteira demonstrativa</span>${spark([30,38,48,58,68,80])}</article><article class="metric-card"><small>Fornecedores</small><strong>${getSuppliers().length}</strong><span class="metric-meta">Base reutilizável entre eventos</span>${spark([26,34,46,54,62,76],true)}</article></section><div class="toolbar"><input id="eventsSearch" class="search-input" placeholder="Buscar evento, cliente, local..."><button class="filter-chip active" data-event-filter="Todos">Todos</button>${getEventTypes().filter(t=>t.visible).map(t=>`<button class="filter-chip" data-event-filter="${t.name}">${t.name}</button>`).join('')}<span id="eventsCounter" class="toolbar-counter">${events.length} eventos</span></div><div class="event-grid" id="eventsGrid">${events.map(e=>{const pend=getChecklist(e.id).filter(x=>!x.done).length,crit=getChecklist(e.id).filter(x=>x.critical&&!x.done).length,d=daysUntil(e.date);
  const bellCfg=ajEventBell();const urgent=d<=bellCfg.urgentDays&&pend>0,warn=!urgent&&d<=bellCfg.warnDays&&d>=0;
  const bell=urgent?`<span class="event-alert-bell blinking" title="Faltam ${d} dia(s) e há ${pend} item(ns) pendente(s) no checklist${crit?`, ${crit} crítico(s)`:''}">🔔</span>`:warn?`<span class="event-alert-bell" title="Faltam ${d} dia(s) para o evento">🔔</span>`:'';
- return `<article class="event-card" data-event-card data-event-type="${e.type}" data-event-search="${`${e.title} ${e.client} ${e.venue}`.toLowerCase()}"><div class="event-card-head"><div><span class="event-type">${e.type}</span><h4>${e.title}</h4><p>${e.client}</p></div>${eventStatus(e.status)}</div><div class="event-stats"><div><small>Data</small><b>${new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR')} ${bell}</b><em>${d} dias</em></div><div><small>Local</small><b>${e.venue}</b></div><div><small>Convidados</small><b>${e.guests}</b></div><div><small>Orçamento</small><b>${money(e.budget)}</b></div></div><div class="progress"><i style="width:${e.progress}%"></i></div><div class="event-card-foot"><span>${e.progress}% produzido • ${e.critical} críticos</span><button class="small-btn" data-open-event="${e.id}">Abrir detalhes</button><button class="small-btn" data-edit="event::${e.id}">✏️ Editar</button></div></article>`}).join('')}</div><div id="eventsEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum evento encontrado.</b><small>Altere os filtros ou cadastre um novo evento.</small></div>`}
-function eventHubView(id){const e=getEvents().find(x=>x.id===id)||getEvents()[0],ck=getChecklist(e.id),tl=getTimeline(e.id),fin=getFinance().filter(x=>x.eventId===e.id),selected=getEventCatalog(e.id);const done=ck.filter(x=>x.done).length, paid=fin.filter(x=>x.status==='Pago').reduce((a,x)=>a+Number(x.value),0);return `<button class="link-btn" data-back>← Voltar</button><div class="section-title"><div><span class="eyebrow">HUB DO EVENTO</span><h3>${e.title}</h3><p>${e.client} • ${e.venue} • ${new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR')}</p></div><div class="event-head-actions"><button class="small-btn" data-edit="event::${e.id}">✏️ Editar evento</button><button class="small-btn" data-duplicate-event="${e.id}">⧉ Duplicar evento</button><button class="small-btn" data-share-event="${e.id}">📲 WhatsApp</button><button class="copper-btn" data-print="event" data-id="${e.id}">Gerar resumo PDF</button><button class="btn btn-primary" data-nav="apresentacoes">Abrir apresentação</button></div></div><section class="hero-grid"><div class="hero-card"><span class="eyebrow">CONTAGEM REGRESSIVA</span><h3>${daysUntil(e.date)} dias <span style="font-size:18px;color:var(--silver)">para a execução</span></h3><div class="progress"><i style="width:${e.progress}%"></i></div><p>${e.progress}% da produção concluída. Responsável: <b>${e.manager}</b>.</p><div class="hero-actions"><button class="copper-btn" data-open-checklist="${e.id}">✓ Checklist</button><button class="copper-btn" data-open-timeline="${e.id}">⏱ Cronograma</button><button class="copper-btn" data-open-guests="${e.id}">🎟 Convidados</button><button class="copper-btn" data-open-seating="${e.id}">🪑 Mapa de mesas</button><button class="copper-btn" data-open-portal="${e.id}">🔗 Portal do cliente</button><button class="copper-btn" data-nav="fornecedores">👥 Fornecedores</button><button class="copper-btn" data-nav="financeiro">◈ Financeiro</button></div></div><div class="panel"><div class="panel-head"><h3>Resumo operacional</h3><span class="pill warn">${e.critical} críticos</span></div><div class="summary-list"><div><small>Checklist</small><b>${done}/${ck.length} concluídos</b></div><div><small>Cronograma do dia</small><b>${tl.length} marcos</b></div><div><small>Convidados</small><b>${getGuests(e.id).filter(x=>x.status==='Confirmado').length} confirmados de ${e.guests||0} previstos</b></div><div><small>Catálogo escolhido</small><b>${selected.length} itens</b></div><div><small>Movimento financeiro</small><b>${money(paid)} baixado</b></div></div></div></section><section class="metrics"><article class="metric-card"><small>Checklist</small><strong>${ck.length?Math.round(done/ck.length*100):0}%</strong><span class="metric-meta">${done} de ${ck.length} itens concluídos</span>${spark([18,26,38,50,64,74])}</article><article class="metric-card"><small>Fornecedores</small><strong>${getSuppliers().length}</strong><span class="metric-meta">Catálogo reutilizável</span>${spark([28,34,42,52,64,76],true)}</article><article class="metric-card"><small>Financeiro</small><strong>${fin.filter(x=>x.status==='Pendente').length}</strong><span class="metric-meta">Lançamentos pendentes</span>${spark([18,32,40,52,58,61])}</article><article class="metric-card"><small>Catálogo</small><strong>${selected.length}</strong><span class="metric-meta">Itens adicionados ao projeto</span>${spark([22,30,42,54,64,72],true)}</article></section><section class="two-col"><div class="panel"><div class="panel-head"><h3>Linha do tempo do dia</h3><button class="link-btn" data-open-timeline="${e.id}">Abrir cronograma</button></div><div class="timeline-list">${tl.slice(0,5).map(x=>`<div><b>${x.time}</b><span>${x.title}</span><em>${x.owner}</em></div>`).join('')}</div></div><div class="panel"><div class="panel-head"><h3>Próximas ações</h3><button class="link-btn" data-open-checklist="${e.id}">Abrir checklist</button></div><div class="attention-list">${ck.filter(x=>!x.done).slice(0,4).map(x=>`<div class="list-row"><span class="status-dot ${x.critical?'danger':'warn'}"></span><div><b>${x.title}</b><small>${x.group} • ${x.owner}</small></div><strong>${new Date(x.due+'T12:00:00').toLocaleDateString('pt-BR')}</strong></div>`).join('')}</div></div></section>`}
+ return `<article class="event-card" data-event-card data-event-type="${e.type}" data-event-search="${finEsc(`${e.title} ${e.client} ${e.venue}`.toLowerCase())}"><div class="event-card-head"><div><span class="event-type">${e.type}</span><h4>${e.title}</h4><p>${e.client}</p></div>${eventStatus(e.status)}</div><div class="event-stats"><div><small>Data</small><b>${new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR')} ${bell}</b><em>${d} dias</em></div><div><small>Local</small><b>${e.venue}</b></div><div><small>Convidados</small><b>${e.guests}</b></div><div><small>Orçamento</small><b>${money(e.budget)}</b></div></div><div class="progress"><i style="width:${e.progress}%"></i></div><div class="event-card-foot"><span>${e.progress}% produzido • ${e.critical} críticos</span><button class="small-btn" data-open-event="${e.id}">Abrir detalhes</button><button class="small-btn" data-edit="event::${e.id}">✏️ Editar</button></div></article>`}).join('')}</div><div id="eventsEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum evento encontrado.</b><small>Altere os filtros ou cadastre um novo evento.</small></div>`}
+function eventHubView(id){const e=getEvents().find(x=>x.id===id)||getEvents()[0],ck=getChecklist(e.id),tl=getTimeline(e.id),fin=getFinance().filter(x=>x.eventId===e.id),selected=getEventCatalog(e.id);const done=ck.filter(x=>x.done).length, paid=fin.filter(x=>x.status==='Pago').reduce((a,x)=>a+Number(x.value),0);return `<button class="link-btn" data-back>← Voltar</button><div class="section-title"><div><span class="eyebrow">HUB DO EVENTO</span><h3>${e.title}</h3><p>${e.client} • ${e.venue} • ${new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR')}</p></div><div class="event-head-actions"><button class="small-btn" data-edit="event::${e.id}">✏️ Editar evento</button><button class="small-btn" data-duplicate-event="${e.id}">⧉ Duplicar evento</button><button class="small-btn" data-share-event="${e.id}">📲 WhatsApp</button><button class="copper-btn" data-print="event" data-id="${e.id}">Gerar resumo PDF</button><button class="copper-btn" data-open-budget="${e.id}">💰 Orçamento PDF</button><button class="copper-btn" data-open-payplan="${e.id}">🗓️ Plano de pagamento</button><button class="small-btn" data-open-history="event::${e.id}">📈 Histórico</button><button class="btn btn-primary" data-nav="apresentacoes">Abrir apresentação</button></div></div><section class="hero-grid"><div class="hero-card"><span class="eyebrow">CONTAGEM REGRESSIVA</span><h3>${daysUntil(e.date)} dias <span style="font-size:18px;color:var(--silver)">para a execução</span></h3><div class="progress"><i style="width:${e.progress}%"></i></div><p>${e.progress}% da produção concluída. Responsável: <b>${e.manager}</b>.</p><div class="hero-actions"><button class="copper-btn" data-open-checklist="${e.id}">✓ Checklist</button><button class="copper-btn" data-open-timeline="${e.id}">⏱ Cronograma</button><button class="copper-btn" data-open-guests="${e.id}">🎟 Convidados</button><button class="copper-btn" data-open-seating="${e.id}">🪑 Mapa de mesas</button><button class="copper-btn" data-open-portal="${e.id}">🔗 Portal do cliente</button><button class="copper-btn" data-nav="fornecedores">👥 Fornecedores</button><button class="copper-btn" data-nav="financeiro">◈ Financeiro</button></div></div><div class="panel"><div class="panel-head"><h3>Resumo operacional</h3><span class="pill warn">${e.critical} críticos</span></div><div class="summary-list"><div><small>Checklist</small><b>${done}/${ck.length} concluídos</b></div><div><small>Cronograma do dia</small><b>${tl.length} marcos</b></div><div><small>Convidados</small><b>${getGuests(e.id).filter(x=>x.status==='Confirmado').length} confirmados de ${e.guests||0} previstos</b></div><div><small>Catálogo escolhido</small><b>${selected.length} itens</b></div><div><small>Movimento financeiro</small><b>${money(paid)} baixado</b></div></div></div></section><section class="metrics"><article class="metric-card"><small>Checklist</small><strong>${ck.length?Math.round(done/ck.length*100):0}%</strong><span class="metric-meta">${done} de ${ck.length} itens concluídos</span>${spark([18,26,38,50,64,74])}</article><article class="metric-card"><small>Fornecedores</small><strong>${getSuppliers().length}</strong><span class="metric-meta">Catálogo reutilizável</span>${spark([28,34,42,52,64,76],true)}</article><article class="metric-card"><small>Financeiro</small><strong>${fin.filter(x=>x.status==='Pendente').length}</strong><span class="metric-meta">Lançamentos pendentes</span>${spark([18,32,40,52,58,61])}</article><article class="metric-card"><small>Catálogo</small><strong>${selected.length}</strong><span class="metric-meta">Itens adicionados ao projeto</span>${spark([22,30,42,54,64,72],true)}</article></section><section class="two-col"><div class="panel"><div class="panel-head"><h3>Linha do tempo do dia</h3><button class="link-btn" data-open-timeline="${e.id}">Abrir cronograma</button></div><div class="timeline-list">${tl.slice(0,5).map(x=>`<div><b>${x.time}</b><span>${x.title}</span><em>${x.owner}</em></div>`).join('')}</div></div><div class="panel"><div class="panel-head"><h3>Próximas ações</h3><button class="link-btn" data-open-checklist="${e.id}">Abrir checklist</button></div><div class="attention-list">${ck.filter(x=>!x.done).slice(0,4).map(x=>`<div class="list-row"><span class="status-dot ${x.critical?'danger':'warn'}"></span><div><b>${x.title}</b><small>${x.group} • ${x.owner}</small></div><strong>${new Date(x.due+'T12:00:00').toLocaleDateString('pt-BR')}</strong></div>`).join('')}</div></div></section>`}
 
-function clientsView(){const list=getClients();return `<div class="section-title"><div><span class="eyebrow">CRM DE CLIENTES</span><h3>Clientes & contratantes</h3><p>Cadastre pessoas, casais e empresas com histórico, eventos, documentos e contatos centralizados.</p></div><button class="btn btn-primary" data-create="client">＋ Novo cliente</button></div><section class="metrics"><article class="metric-card"><small>Clientes ativos</small><strong>${list.length}</strong><span class="metric-meta">Base única para contratos e eventos</span>${spark([24,32,44,58,68,78])}</article><article class="metric-card"><small>Eventos vinculados</small><strong>${list.reduce((a,x)=>a+Number(x.events||0),0)}</strong><span class="metric-meta">Relacionamento por projeto</span>${spark([18,26,38,50,62,72],true)}</article><article class="metric-card"><small>Perfis PF</small><strong>${list.filter(x=>x.type!=='Empresa').length}</strong><span class="metric-meta">Casais, famílias e pessoas</span>${spark()}</article><article class="metric-card"><small>Perfis PJ</small><strong>${list.filter(x=>x.type==='Empresa').length}</strong><span class="metric-meta">Corporativos e parceiros</span>${spark([30,36,42,52,58,66],true)}</article></section><div class="toolbar"><input id="clientsSearch" class="search-input" placeholder="Buscar cliente, telefone, e-mail..."><button class="filter-chip active" data-client-filter="Todos">Todos</button><button class="filter-chip" data-client-filter="Pessoa física">Pessoa física</button><button class="filter-chip" data-client-filter="Empresa">Empresa</button><span id="clientsCounter" class="toolbar-counter">${list.length} clientes</span></div><div class="client-crm-grid" id="clientsGrid">${list.map(c=>`<article class="crm-card" data-client-card data-client-type="${c.type}" data-client-search="${`${c.name} ${c.secondary||''} ${c.phone||''} ${c.email||''} ${c.city||''} ${c.state||''}`.toLowerCase()}"><div class="crm-avatar">${c.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div><div class="crm-main"><span class="eyebrow">${c.type}</span><h4>${c.name}${c.secondary?` & ${c.secondary}`:''}</h4><p>${c.phone} • ${c.email}</p><div class="crm-meta"><span>${c.city}${c.state?` • ${c.state}`:''}</span><span>${c.events} evento(s)</span>${c.createdAt?`<span>Desde: ${finBR(c.createdAt)}</span>`:''}<span class="pill info">${c.status}</span></div><small>${c.notes||''}</small></div><div class="crm-actions"><button class="small-btn" data-open-client-history="${c.id}">Abrir histórico</button><button class="small-btn" data-edit="client::${c.id}">✏️ Editar</button><button class="small-btn" data-create="event">Novo evento</button></div></article>`).join('')}</div><div id="clientsEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum cliente encontrado.</b><small>Tente outro termo ou cadastre um novo cliente.</small></div>`}
+function clientsView(){const list=getClients();return `<div class="section-title"><div><span class="eyebrow">CRM DE CLIENTES</span><h3>Clientes & contratantes</h3><p>Cadastre pessoas, casais e empresas com histórico, eventos, documentos e contatos centralizados.</p></div><button class="btn btn-primary" data-create="client">＋ Novo cliente</button></div><section class="metrics"><article class="metric-card"><small>Clientes ativos</small><strong>${list.length}</strong><span class="metric-meta">Base única para contratos e eventos</span>${spark([24,32,44,58,68,78])}</article><article class="metric-card"><small>Eventos vinculados</small><strong>${list.reduce((a,x)=>a+Number(x.events||0),0)}</strong><span class="metric-meta">Relacionamento por projeto</span>${spark([18,26,38,50,62,72],true)}</article><article class="metric-card"><small>Perfis PF</small><strong>${list.filter(x=>x.type!=='Empresa').length}</strong><span class="metric-meta">Casais, famílias e pessoas</span>${spark()}</article><article class="metric-card"><small>Perfis PJ</small><strong>${list.filter(x=>x.type==='Empresa').length}</strong><span class="metric-meta">Corporativos e parceiros</span>${spark([30,36,42,52,58,66],true)}</article></section><div class="toolbar"><input id="clientsSearch" class="search-input" placeholder="Buscar cliente, telefone, e-mail..."><button class="filter-chip active" data-client-filter="Todos">Todos</button><button class="filter-chip" data-client-filter="Pessoa física">Pessoa física</button><button class="filter-chip" data-client-filter="Empresa">Empresa</button><span id="clientsCounter" class="toolbar-counter">${list.length} clientes</span></div><div class="client-crm-grid" id="clientsGrid">${list.map(c=>`<article class="crm-card" data-client-card data-client-type="${c.type}" data-client-search="${finEsc(`${c.name} ${c.secondary||''} ${c.phone||''} ${c.email||''} ${c.city||''} ${c.state||''}`.toLowerCase())}"><div class="crm-avatar">${c.name.split(' ').map(x=>x[0]).slice(0,2).join('')}</div><div class="crm-main"><span class="eyebrow">${c.type}</span><h4>${c.name}${c.secondary?` & ${c.secondary}`:''}</h4><p>${c.phone} • ${c.email}</p><div class="crm-meta"><span>${c.city}${c.state?` • ${c.state}`:''}</span><span>${c.events} evento(s)</span>${c.createdAt?`<span>Desde: ${finBR(c.createdAt)}</span>`:''}<span class="pill info">${c.status}</span></div><small>${c.notes||''}</small></div><div class="crm-actions"><button class="small-btn" data-open-client-history="${c.id}">Abrir histórico</button><button class="small-btn" data-edit="client::${c.id}">✏️ Editar</button><button class="small-btn" data-create="event">Novo evento</button></div></article>`).join('')}</div><div id="clientsEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum cliente encontrado.</b><small>Tente outro termo ou cadastre um novo cliente.</small></div>`}
 
-function suppliersView(){const list=getSuppliers();const cats=[...new Set(list.map(x=>x.category))];return `<div class="section-title"><div><span class="eyebrow">REDE DE FORNECEDORES</span><h3>Parceiros que executam o projeto</h3><p>Contato, categoria, preço, avaliação, contratos e histórico de uso em eventos.</p></div><div class="event-head-actions"><button class="copper-btn" data-print="suppliers">Gerar lista PDF</button><button class="btn btn-primary" data-create="supplier">＋ Novo fornecedor</button></div></div><section class="metrics"><article class="metric-card"><small>Fornecedores</small><strong>${list.length}</strong><span class="metric-meta">Base reutilizável</span>${spark()}</article><article class="metric-card"><small>Homologados</small><strong>${list.filter(x=>x.status==='Homologado'||x.status==='Preferencial').length}</strong><span class="metric-meta">Prontos para contratação</span>${spark([28,38,48,58,68,80],true)}</article><article class="metric-card"><small>Categorias</small><strong>${cats.length}</strong><span class="metric-meta">Cobertura operacional</span>${spark([22,32,40,52,62,74])}</article><article class="metric-card"><small>Avaliação média</small><strong>${(list.reduce((a,x)=>a+Number(x.rating||0),0)/Math.max(1,list.length)).toFixed(1)}</strong><span class="metric-meta">Histórico demonstrativo</span>${spark([60,68,72,80,86,92],true)}</article></section><div class="toolbar"><input id="suppliersSearch" class="search-input" placeholder="Buscar fornecedor, serviço ou contato..."><button class="filter-chip active" data-supplier-filter="Todos">Todos</button>${cats.map(x=>`<button class="filter-chip" data-supplier-filter="${x}">${x}</button>`).join('')}<span id="suppliersCounter" class="toolbar-counter">${list.length} fornecedores</span></div><div class="supplier-grid" id="suppliersGrid">${list.map(s=>`<article class="supplier-card" data-supplier-card data-supplier-category="${s.category}" data-supplier-search="${`${s.name} ${s.category} ${s.contact||''} ${s.phone||''} ${s.email||''}`.toLowerCase()}"><div class="supplier-head"><div class="supplier-icon">${s.category==='Buffet'?'🍽️':s.category.includes('DJ')?'🎧':s.category==='Decoração'?'🌿':s.category.includes('Foto')?'📷':s.category.includes('Bar')?'🍸':'⚙️'}</div><div><span class="eyebrow">${s.category}</span><h4>${s.name}</h4></div><span class="pill ${s.status==='Em avaliação'?'warn':'info'}">${s.status}</span></div><p>${s.notes}</p><div class="supplier-facts"><div><small>Contato</small><b>${s.contact}</b><span>${s.phone}</span></div>${s.createdAt?`<div><small>Desde</small><b>${finBR(s.createdAt)}</b></div>`:''}<div><small>Referência</small><b>${s.price}</b><span>${s.events} eventos</span></div><div><small>Avaliação</small><b>★ ${s.rating}</b><span>${s.email}</span></div></div><div class="project-actions"><button class="small-btn" data-whatsapp="${s.phone}" data-name="${s.name}">WhatsApp</button><button class="small-btn" data-edit="supplier::${s.id}">✏️ Editar</button><button class="small-btn" data-create="contract">Contrato</button></div></article>`).join('')}</div><div id="suppliersEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum fornecedor encontrado.</b><small>Ajuste a busca ou o filtro selecionado.</small></div>`}
+function suppliersView(){const list=getSuppliers();const cats=[...new Set(list.map(x=>x.category))].filter(c=>!ajHidden('supplierCategories').has(c));return `<div class="section-title"><div><span class="eyebrow">REDE DE FORNECEDORES</span><h3>Parceiros que executam o projeto</h3><p>Contato, categoria, preço, avaliação, contratos e histórico de uso em eventos.</p></div><div class="event-head-actions"><button class="btn btn-secondary" id="supCompareBtn" disabled style="width:auto">⚖️ Comparar (0)</button><button class="copper-btn" data-print="suppliers">Gerar lista PDF</button><button class="btn btn-primary" data-create="supplier">＋ Novo fornecedor</button></div></div><section class="metrics"><article class="metric-card"><small>Fornecedores</small><strong>${list.length}</strong><span class="metric-meta">Base reutilizável</span>${spark()}</article><article class="metric-card"><small>Homologados</small><strong>${list.filter(x=>x.status==='Homologado'||x.status==='Preferencial').length}</strong><span class="metric-meta">Prontos para contratação</span>${spark([28,38,48,58,68,80],true)}</article><article class="metric-card"><small>Categorias</small><strong>${cats.length}</strong><span class="metric-meta">Cobertura operacional</span>${spark([22,32,40,52,62,74])}</article><article class="metric-card"><small>Avaliação média</small><strong>${(list.reduce((a,x)=>a+Number(x.rating||0),0)/Math.max(1,list.length)).toFixed(1)}</strong><span class="metric-meta">Histórico demonstrativo</span>${spark([60,68,72,80,86,92],true)}</article></section><div class="toolbar"><input id="suppliersSearch" class="search-input" placeholder="Buscar fornecedor, serviço ou contato..."><button class="filter-chip active" data-supplier-filter="Todos">Todos</button>${cats.map(x=>`<button class="filter-chip" data-supplier-filter="${x}">${x}</button>`).join('')}<span id="suppliersCounter" class="toolbar-counter">${list.length} fornecedores</span></div><div class="supplier-grid" id="suppliersGrid">${list.map(s=>`<article class="supplier-card" data-supplier-card data-supplier-category="${s.category}" data-supplier-search="${finEsc(`${s.name} ${s.category} ${s.contact||''} ${s.phone||''} ${s.email||''}`.toLowerCase())}"><div class="supplier-head"><div class="supplier-icon">${s.category==='Buffet'?'🍽️':s.category.includes('DJ')?'🎧':s.category==='Decoração'?'🌿':s.category.includes('Foto')?'📷':s.category.includes('Bar')?'🍸':'⚙️'}</div><div><span class="eyebrow">${s.category}</span><h4>${s.name}</h4></div><span class="pill ${s.status==='Em avaliação'?'warn':'info'}">${s.status}</span></div><p>${s.notes}</p><label class="cmp-check"><input type="checkbox" data-cmp-sup="${s.id}"> Comparar</label><button class="small-btn" data-open-history="supplier::${s.id}" style="margin-top:6px">📈 Histórico de preço</button><div class="supplier-facts"><div><small>Contato</small><b>${s.contact}</b><span>${s.phone}</span></div>${s.createdAt?`<div><small>Desde</small><b>${finBR(s.createdAt)}</b></div>`:''}<div><small>Referência</small><b>${s.price}</b><span>${s.events} eventos</span></div><div><small>Avaliação</small><b>★ ${s.rating}</b><span>${s.email}</span></div></div><div class="project-actions"><button class="small-btn" data-whatsapp="${s.phone}" data-name="${s.name}">WhatsApp</button><button class="small-btn" data-edit="supplier::${s.id}">✏️ Editar</button><button class="small-btn" data-create="contract">Contrato</button></div></article>`).join('')}</div><div id="suppliersEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum fornecedor encontrado.</b><small>Ajuste a busca ou o filtro selecionado.</small></div>`}
 
 
 function checklistView(eventId){const e=getEvents().find(x=>x.id===eventId)||getEvents()[0],rows=getChecklist(e.id),done=rows.filter(x=>x.done).length,pct=rows.length?Math.round(done/rows.length*100):0;const groups=[...new Set(rows.map(x=>x.group))];
@@ -525,7 +525,7 @@ function checklistView(eventId){const e=getEvents().find(x=>x.id===eventId)||get
 
 function timelineView(eventId){const e=getEvents().find(x=>x.id===eventId)||getEvents()[0],rows=getTimeline(e.id).sort((a,b)=>a.time.localeCompare(b.time));return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">CRONOGRAMA DO DIA</span><h3>${e.title}</h3><p>Horários, responsáveis, locais e confirmação de cada marco operacional.</p></div><div class="event-head-actions"><button class="small-btn" data-share-timeline="${e.id}">📲 WhatsApp</button><button class="copper-btn" data-print="timeline" data-id="${e.id}">Cronograma PDF</button><button class="btn btn-primary" data-create="timeline" data-event-id="${e.id}">＋ Novo marco</button></div></div><section class="timeline-command"><div class="timeline-summary"><div><small>Primeiro acesso</small><b>${rows[0]?.time||'—'}</b></div><div><small>Abertura</small><b>${rows.find(x=>x.title.toLowerCase().includes('recep'))?.time||'—'}</b></div><div><small>Marcos</small><b>${rows.length}</b></div><div><small>Confirmados</small><b>${rows.filter(x=>x.status==='Confirmado').length}</b></div></div><div class="day-timeline">${rows.map(x=>`<article class="day-item ${x.status==='Confirmado'?'confirmed':''}"><div class="time-badge">${x.time}</div><div class="day-line"></div><div class="day-content"><div><span class="eyebrow">${x.location}</span><h4>${x.title}</h4><p>Responsável: ${x.owner}</p></div><button class="timeline-status" data-timeline-toggle="${x.id}">${x.status==='Confirmado'?'✓ Confirmado':'Confirmar'}</button><button class="small-btn" data-edit="timeline::${x.id}">✏️</button></div></article>`).join('')}</div></section>`}
 
-function catalogView(){const list=getCatalog(),events=getEvents();const cats=[...new Set(list.map(x=>x.category))];return `<div class="section-title"><div><span class="eyebrow">CATÁLOGO COMERCIAL</span><h3>Opções que viram proposta e operação</h3><p>Agora os filtros são executáveis: escolha uma categoria, abra o detalhe e vincule a opção ao evento.</p></div><button class="btn btn-primary" data-create="catalog"><span data-icon="plus-circle"></span> Novo item</button></div><section class="hero-grid compact"><div class="hero-card"><span class="eyebrow">VENDA + EXECUÇÃO</span><h3>Um catálogo que alimenta <span class="accent-text">apresentação, orçamento e produção.</span></h3><p>Clique em uma categoria para filtrar. Abra o item para ver detalhes, selecionar o evento e registrar a escolha.</p></div><div class="panel"><div class="summary-list"><div><small>Itens</small><b>${list.length}</b></div><div><small>Categorias</small><b>${cats.length}</b></div><div><small>Fornecedores vinculados</small><b>${new Set(list.map(x=>x.supplier)).size}</b></div></div></div></section><div class="toolbar catalog-toolbar"><button class="filter-chip active" data-catalog-filter="Todos">Todos</button>${cats.map(c=>`<button class="filter-chip" data-catalog-filter="${c}">${c}</button>`).join('')}<span id="catalogFilterCount" class="toolbar-counter">${list.length} itens</span></div><div class="catalog-grid" id="catalogGrid">${list.map(item=>`<article class="catalog-card" data-catalog-category="${item.category}" data-catalog-id="${item.id}"><button class="catalog-visual ${item.image?'has-image':''}" data-catalog-open="${item.id}" ${item.image?`style="background-image:url('${item.image}')"`:''}><span>${item.category}</span><i data-icon="arrow-up-right"></i></button><div class="catalog-body"><span class="eyebrow">${item.supplier}</span><h4>${item.name}</h4><p>${item.description}</p><div class="catalog-tags">${(item.tags||[]).map(t=>`<span>${t}</span>`).join('')}</div><div class="catalog-price"><strong>${money(item.price)}</strong><small>${item.unit}</small></div><div class="catalog-actions"><button class="small-btn" data-catalog-open="${item.id}"><span data-icon="eye"></span> Detalhes</button><button class="small-btn" data-edit="catalog::${item.id}">✏️ Editar</button><select class="catalog-event-select" data-catalog-event="${item.id}">${events.map(e=>`<option value="${e.id}">${e.title}</option>`).join('')}</select><button class="btn btn-primary" data-add-catalog="${item.id}"><span data-icon="plus-circle"></span> Adicionar ao projeto</button></div></div></article>`).join('')}</div><div id="catalogEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum item nesta categoria.</b><small>Cadastre uma nova opção ou escolha outro filtro.</small></div>`}
+function catalogView(){const list=getCatalog(),events=getEvents();const cats=[...new Set(list.map(x=>x.category))].filter(c=>!ajHidden('catalogCategories').has(c));return `<div class="section-title"><div><span class="eyebrow">CATÁLOGO COMERCIAL</span><h3>Opções que viram proposta e operação</h3><p>Agora os filtros são executáveis: escolha uma categoria, abra o detalhe e vincule a opção ao evento.</p></div><button class="btn btn-primary" data-create="catalog"><span data-icon="plus-circle"></span> Novo item</button></div><section class="hero-grid compact"><div class="hero-card"><span class="eyebrow">VENDA + EXECUÇÃO</span><h3>Um catálogo que alimenta <span class="accent-text">apresentação, orçamento e produção.</span></h3><p>Clique em uma categoria para filtrar. Abra o item para ver detalhes, selecionar o evento e registrar a escolha.</p></div><div class="panel"><div class="summary-list"><div><small>Itens</small><b>${list.length}</b></div><div><small>Categorias</small><b>${cats.length}</b></div><div><small>Fornecedores vinculados</small><b>${new Set(list.map(x=>x.supplier)).size}</b></div></div></div></section><div class="toolbar catalog-toolbar"><button class="filter-chip active" data-catalog-filter="Todos">Todos</button>${cats.map(c=>`<button class="filter-chip" data-catalog-filter="${c}">${c}</button>`).join('')}<span id="catalogFilterCount" class="toolbar-counter">${list.length} itens</span></div><div class="catalog-grid" id="catalogGrid">${list.map(item=>`<article class="catalog-card" data-catalog-category="${item.category}" data-catalog-id="${item.id}"><button class="catalog-visual ${item.image?'has-image':''}" data-catalog-open="${item.id}" ${item.image?`style="background-image:url('${item.image}')"`:''}><span>${item.category}</span><i data-icon="arrow-up-right"></i></button><div class="catalog-body"><span class="eyebrow">${item.supplier}</span><h4>${item.name}</h4><p>${item.description}</p><div class="catalog-tags">${(item.tags||[]).map(t=>`<span>${t}</span>`).join('')}</div><div class="catalog-price"><strong>${money(item.price)}</strong><small>${item.unit}</small></div><div class="catalog-actions"><button class="small-btn" data-catalog-open="${item.id}"><span data-icon="eye"></span> Detalhes</button><button class="small-btn" data-edit="catalog::${item.id}">✏️ Editar</button><select class="catalog-event-select" data-catalog-event="${item.id}">${events.map(e=>`<option value="${e.id}">${e.title}</option>`).join('')}</select><button class="btn btn-primary" data-add-catalog="${item.id}"><span data-icon="plus-circle"></span> Adicionar ao projeto</button></div></div></article>`).join('')}</div><div id="catalogEmpty" class="empty-state hidden"><span data-icon="search"></span><b>Nenhum item nesta categoria.</b><small>Cadastre uma nova opção ou escolha outro filtro.</small></div>`}
 
 function presentationsView(){const list=getPresentations();return `<div class="section-title"><div><span class="eyebrow">APRESENTAÇÕES & PROPOSTAS VISUAIS</span><h3>Apresente o projeto antes de executar</h3><p>Conceito, cardápio, decoração, DJ, imagens, PDFs, investimento e próximos passos.</p></div><button class="btn btn-primary" data-create="presentation">＋ Nova apresentação</button></div><section class="hero-grid"><div class="hero-card"><span class="eyebrow">PROJETO VISUAL</span><h3>Transforme briefing em uma <span style="color:var(--copper2)">apresentação que vende.</span></h3><p>Use o catálogo comercial, fotos, referências e PDFs para montar cenários completos.</p><div class="hero-actions"><button class="copper-btn" data-nav="catalogo">Abrir catálogo</button><button class="copper-btn" data-profile>Personalizar marca</button></div></div><div class="panel summary-card"><div class="summary-list"><div><small>1</small><b>Capa & conceito</b></div><div><small>2–6</small><b>Decoração • Menu • Música • Foto • Experiência</b></div><div><small>7–8</small><b>Investimento & próximos passos</b></div></div></div></section><div class="presentation-grid">${list.map(p=>`<article class="presentation-card"><div class="presentation-cover"><span>${p.theme}</span><strong>${p.title}</strong><small>${p.client}</small></div><div class="presentation-info"><div><small>Evento</small><b>${p.event}</b></div><div class="presentation-meta"><span>${p.sections} seções</span><span>${p.assets} arquivos</span><span class="pill">${p.status}</span></div><div class="project-actions"><button class="small-btn" data-open-presentation="${p.id}">Editar / apresentar</button><button class="small-btn" data-edit="presentation::${p.id}">✏️ Dados básicos</button><button class="small-btn" data-print="presentation" data-id="${p.id}">PDF</button></div></div></article>`).join('')}</div>`}
 function presentationBuilderView(id){const p=getPresentations().find(x=>x.id===id)||getPresentations()[0];return `<button class="link-btn" data-back>← Voltar</button><div class="section-title"><div><span class="eyebrow">EDITOR DE APRESENTAÇÃO</span><h3>${p.title}</h3><p>${p.event} • ${p.client}</p></div><div class="event-head-actions"><button class="copper-btn" data-nav="catalogo">Catálogo comercial</button><button class="copper-btn" data-print="presentation" data-id="${p.id}">Gerar PDF</button><button class="btn btn-primary" id="presentModeBtn">Modo apresentação</button></div></div><section class="presentation-editor"><aside class="presentation-sections"><h4>Seções</h4>${['Capa','Conceito & moodboard','Cardápio','Decoração','DJ & experiência sonora','Foto & vídeo','Investimento','Próximos passos'].map((x,i)=>`<button class="${i===0?'active':''}"><span>${String(i+1).padStart(2,'0')}</span>${x}</button>`).join('')}</aside><div class="presentation-canvas"><div class="deck-slide"><span class="eyebrow">PROJETO DE EXPERIÊNCIA</span><h2>${p.title}</h2><p>${p.theme}</p><div class="mood-grid" id="assetGallery"><div class="mood-placeholder">Adicionar imagem</div><div class="mood-placeholder">Adicionar referência</div><div class="mood-placeholder">Adicionar PDF</div></div><div class="deck-footer"><span>${p.client}</span><b>Projeto personalizado</b></div></div></div><aside class="presentation-tools"><h4>Conteúdo</h4><label class="upload-zone" for="assetUpload"><input id="assetUpload" type="file" accept="image/*,application/pdf" multiple><b>＋ Adicionar arquivos</b><span>Imagens e PDFs</span></label><button class="tool-row" data-nav="catalogo">▣ <span>Catálogo comercial</span></button><button class="tool-row">🎨 <span>Estilo visual</span></button><button class="tool-row">🍽️ <span>Cardápio</span></button><button class="tool-row">🎧 <span>DJ / música</span></button><button class="tool-row">🌿 <span>Decoração</span></button><button class="tool-row">💰 <span>Investimento</span></button><small class="tool-note">No protótipo, os arquivos ficam na sessão atual. Na versão com backend, irão para storage privado.</small></aside></section>`}
@@ -534,7 +534,7 @@ function guestsView(eventId){const e=getEvents().find(x=>x.id===eventId)||getEve
  const conf=rows.filter(x=>x.status==='Confirmado').length,pend=rows.filter(x=>x.status==='Pendente').length,rec=rows.filter(x=>x.status==='Recusado').length;
  return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">LISTA DE CONVIDADOS</span><h3>${e.title}</h3><p>Confirmação de presença, telefone e mesa de cada convidado.</p></div><div class="event-head-actions"><button class="small-btn" data-share-guests="${e.id}">📲 WhatsApp</button><button class="btn btn-primary" data-create="guest" data-event-id="${e.id}">＋ Novo convidado</button></div></div><section class="metrics"><article class="metric-card"><small>Confirmados</small><strong>${conf}</strong><span class="metric-meta">de ${rows.length} na lista • ${e.guests||0} previstos</span>${spark([20,30,42,54,66,78])}</article><article class="metric-card"><small>Pendentes</small><strong>${pend}</strong><span class="metric-meta">aguardando resposta</span>${spark([44,38,34,30,26,22],true)}</article><article class="metric-card"><small>Recusados</small><strong>${rec}</strong><span class="metric-meta">não comparecerão</span>${spark([12,12,12,12,12,12])}</article></section><div class="panel"><div class="panel-head"><h3>Adicionar vários de uma vez</h3></div><p style="color:#6c7887;margin:0 0 10px">Cole uma lista de nomes, um por linha — todos entram como "Pendente".</p><textarea id="guestBulkInput" rows="3" placeholder="Ex.:
 Maria Silva
-João Pereira" style="width:100%;resize:vertical"></textarea><button class="btn btn-secondary" id="guestBulkAdd" data-event-id="${e.id}" style="margin-top:8px">＋ Adicionar à lista</button></div><input type="text" id="guestSearch" placeholder="Buscar convidado por nome ou telefone..." style="margin:16px 0 10px;width:100%"/><div class="guest-list">${rows.length?rows.map(g=>`<article class="guest-row" data-guest-row data-guest-search="${`${g.name} ${g.phone||''}`.toLowerCase()}"><div class="guest-main"><b>${g.name}</b><small>${g.phone||'sem telefone'}${g.table?' • '+g.table:''}</small></div><div class="guest-status-group"><button class="guest-status-btn ${g.status==='Confirmado'?'active confirmado':''}" data-guest-set="${g.id}" data-status="Confirmado" title="Confirmado">✓</button><button class="guest-status-btn ${g.status==='Pendente'?'active pendente':''}" data-guest-set="${g.id}" data-status="Pendente" title="Pendente">?</button><button class="guest-status-btn ${g.status==='Recusado'?'active recusado':''}" data-guest-set="${g.id}" data-status="Recusado" title="Recusado">✕</button></div><button class="small-btn" data-edit="guest::${g.id}">✏️</button></article>`).join(''):'<p style="color:#6c7887">Nenhum convidado cadastrado ainda. Cole uma lista acima ou use "Novo convidado".</p>'}</div>`}
+João Pereira" style="width:100%;resize:vertical"></textarea><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button class="btn btn-secondary" id="guestBulkAdd" data-event-id="${e.id}">＋ Adicionar à lista</button><button class="btn btn-secondary" data-guest-import="${e.id}">📥 Importar de planilha</button></div></div><input type="text" id="guestSearch" placeholder="Buscar convidado por nome ou telefone..." style="margin:16px 0 10px;width:100%"/><div class="guest-list">${rows.length?rows.map(g=>`<article class="guest-row" data-guest-row data-guest-search="${finEsc(`${g.name} ${g.phone||''}`.toLowerCase())}"><div class="guest-main"><b>${g.name}</b><small>${g.phone||'sem telefone'}${g.table?' • '+g.table:''}</small></div><div class="guest-status-group"><button class="guest-status-btn ${g.status==='Confirmado'?'active confirmado':''}" data-guest-set="${g.id}" data-status="Confirmado" title="Confirmado">✓</button><button class="guest-status-btn ${g.status==='Pendente'?'active pendente':''}" data-guest-set="${g.id}" data-status="Pendente" title="Pendente">?</button><button class="guest-status-btn ${g.status==='Recusado'?'active recusado':''}" data-guest-set="${g.id}" data-status="Recusado" title="Recusado">✕</button></div><button class="small-btn" data-edit="guest::${g.id}">✏️</button></article>`).join(''):'<p style="color:#6c7887">Nenhum convidado cadastrado ainda. Cole uma lista acima ou use "Novo convidado".</p>'}</div>`}
 const getEventTables=eventId=>readJSON(`r1_event_tables_${eventId}`,[]);
 const defaultEventTypes=[{name:'Casamento',visible:true},{name:'Debutante',visible:true},{name:'Corporativo',visible:true},{name:'Aniversário',visible:false},{name:'Formatura',visible:false},{name:'Outro',visible:false}];
 const getEventTypes=()=>{const saved=readJSON('r1_event_types',null);return (saved&&saved.length)?saved:defaultEventTypes};
@@ -550,15 +550,15 @@ const getAppointmentTypes=()=>{const saved=readJSON('r1_appointment_types',null)
 const saveAppointmentTypes=list=>storage.setItem('r1_appointment_types',JSON.stringify(list));
 const MANAGED_LIST_FIELDS={
  eventTypeSelect:{get:getEventTypes,save:saveEventTypes,isObj:true},
- supplierCategorySelect:{get:getSupplierCategories,save:saveSupplierCategories,isObj:false},
- catalogCategorySelect:{get:getCatalogCategories,save:saveCatalogCategories,isObj:false},
- appointmentTypeSelect:{get:getAppointmentTypes,save:saveAppointmentTypes,isObj:false}
+ supplierCategorySelect:{get:()=>getSupplierCategories(),save:v=>saveSupplierCategories(v),isObj:false},
+ catalogCategorySelect:{get:()=>getCatalogCategories(),save:v=>saveCatalogCategories(v),isObj:false},
+ appointmentTypeSelect:{get:()=>getAppointmentTypes(),save:v=>saveAppointmentTypes(v),isObj:false}
 };
 function seatingView(eventId){const e=getEvents().find(x=>x.id===eventId)||getEvents()[0],guests=getGuests(e.id);
  const tables=[...new Set([...getEventTables(e.id),...guests.map(g=>g.table).filter(Boolean)])].sort();
  const semMesa=guests.filter(g=>!g.table);
- const chip=g=>`<div class="seat-chip" draggable="true" data-guest-id="${g.id}"><span>${g.name}</span><select data-seat-select="${g.id}"><option value="">Sem mesa</option>${tables.map(t=>`<option value="${t}" ${g.table===t?'selected':''}>${t}</option>`).join('')}</select></div>`;
- return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">MAPA DE MESAS</span><h3>${e.title}</h3><p>Arraste um convidado para uma mesa, ou use o menu de cada card.</p></div></div><div class="panel" style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input type="text" id="seatNewTableName" placeholder="Nome da nova mesa (ex.: Mesa 7)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="seatAddTable" data-seating-event="${e.id}" style="width:auto">＋ Adicionar mesa</button></div><div class="seating-board" data-seating-event="${e.id}"><div class="seating-table seating-pool" data-table-zone=""><h4>Sem mesa <span>${semMesa.length}</span></h4><div class="seating-chips">${semMesa.map(chip).join('')||'<p class="seating-empty">Nenhum convidado sem mesa.</p>'}</div></div>${tables.map(t=>`<div class="seating-table" data-table-zone="${t}"><h4>${t} <span>${guests.filter(g=>g.table===t).length}</span></h4><div class="seating-chips">${guests.filter(g=>g.table===t).map(chip).join('')||'<p class="seating-empty">Arraste alguém aqui.</p>'}</div></div>`).join('')}</div>`}
+ const chip=g=>`<div class="seat-chip" draggable="true" data-guest-id="${g.id}"><span class="seat-grip" data-grip title="Segure e arraste">⠿</span><span class="seat-name">${g.name}</span><select data-seat-select="${g.id}"><option value="">Sem mesa</option>${tables.map(t=>`<option value="${t}" ${g.table===t?'selected':''}>${t}</option>`).join('')}</select></div>`;
+ return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">MAPA DE MESAS</span><h3>${e.title}</h3><p>No celular, segure o ⠿ ao lado do nome e arraste até a mesa. No computador, arraste o card inteiro. Ou use o menu de cada convidado.</p></div></div><div class="panel" style="margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center"><input type="text" id="seatNewTableName" placeholder="Nome da nova mesa (ex.: Mesa 7)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="seatAddTable" data-seating-event="${e.id}" style="width:auto">＋ Adicionar mesa</button></div><div class="seating-board" data-seating-event="${e.id}"><div class="seating-table seating-pool" data-table-zone=""><h4>Sem mesa <span>${semMesa.length}</span></h4><div class="seating-chips">${semMesa.map(chip).join('')||'<p class="seating-empty">Nenhum convidado sem mesa.</p>'}</div></div>${tables.map(t=>`<div class="seating-table" data-table-zone="${t}"><h4>${t} <span>${guests.filter(g=>g.table===t).length}</span></h4><div class="seating-chips">${guests.filter(g=>g.table===t).map(chip).join('')||'<p class="seating-empty">Arraste alguém aqui.</p>'}</div></div>`).join('')}</div>`}
 function clientFinanceSummaryView(clientId){const client=getClients().find(x=>x.id===clientId);if(!client)return'<p>Cliente não encontrado.</p>';
  const events=getEvents().filter(e=>String(e.client).toLowerCase().includes(client.name.toLowerCase())||(client.secondary&&String(e.client).toLowerCase().includes(String(client.secondary).toLowerCase())));
  const rows=getFinance().filter(f=>events.some(e=>e.id===f.eventId)).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date)));
@@ -706,7 +706,9 @@ const tutorialFlows={
   {workspace:'Eventos',nav:'fornecedores',target:'[data-create="supplier"]',title:'Abra a rede de fornecedores',text:'Fornecedores ficam cadastrados uma vez e podem ser reutilizados em vários eventos.',tip:'Mantenha contatos e referências de preço atualizados.'},
   {action:'form:supplier',target:'#formDialog',title:'Cadastre o fornecedor',text:'Informe categoria, contato, WhatsApp, e-mail, referência de preço e status.',tip:'Use “Homologado” para parceiros já avaliados.'},
   {keepDialog:true,target:'#dynamicForm [name="category"]',title:'Escolha a categoria',text:'A categoria facilita filtros e vinculação com catálogo comercial e produção.',tip:'Exemplos: Buffet, DJ & Música, Decoração, Foto & Vídeo.'},
-  {keepDialog:true,target:'#dynamicForm [name="notes"]',title:'Guarde o histórico',text:'Registre condições comerciais, pontos fortes, restrições e observações de operação.',tip:'Isso evita depender apenas da memória da equipe.'}
+  {keepDialog:true,target:'#dynamicForm [name="notes"]',title:'Guarde o histórico',text:'Registre condições comerciais, pontos fortes, restrições e observações de operação.',tip:'Isso evita depender apenas da memória da equipe.'},
+  {workspace:'Eventos',nav:'fornecedores',target:'#supCompareBtn, [data-cmp-sup]',title:'Compare fornecedores lado a lado',text:'Marque a caixinha “Comparar” em 2 ou 3 fornecedores e toque em Comparar: categoria, avaliação, preço de referência, itens do catálogo e contato ficam lado a lado, com o melhor de cada linha destacado.',tip:'Se dois empatarem na melhor nota, os dois ficam destacados.'},
+  {workspace:'Eventos',nav:'fornecedores',target:'[data-open-history]',title:'Veja o histórico de preços',text:'O botão 📈 Histórico mostra cada mudança de preço de referência do fornecedor e dos itens ligados a ele, com o antes, o depois e a variação em %.',tip:'O mesmo botão existe no hub de cada evento (orçamento previsto e preços dos itens escolhidos).'}
  ]},
  event:{title:'Criar um evento',group:'Eventos',workspace:'Eventos',icon:'calendar-heart',minutes:5,description:'Abra um evento e organize cliente, data, local, convidados, orçamento e responsável.',steps:[
   {workspace:'Eventos',nav:'eventos',target:'[data-create="event"]',title:'Crie um novo evento',text:'Todo projeto de casamento, debutante, aniversário ou corporativo começa aqui.',tip:'O evento vira o dossiê central da produção.'},
@@ -715,7 +717,10 @@ const tutorialFlows={
   {keepDialog:true,target:'#dynamicForm [name="budget"]',title:'Registre o orçamento previsto',text:'O orçamento ajuda a comparar contratação, despesas e evolução financeira.',tip:'Use o valor total previsto do projeto.'},
   {action:'eventHub',target:'[data-duplicate-event]',title:'Duplique um evento parecido',text:'Copia checklist e cronograma inteiros pro evento novo (tudo volta como pendente), com o formulário já aberto pra ajustar título e data.',tip:'Ótimo pra um segundo casamento com a mesma estrutura do primeiro.'},
   {action:'eventHub',target:'[data-share-event]',title:'Compartilhe pelo WhatsApp',text:'Gera um resumo do evento (data, progresso, checklist, financeiro pendente) e já abre o WhatsApp pronto pra enviar.',tip:'O mesmo botão existe no checklist, no cronograma e na lista de convidados.'},
-  {action:'eventHub',target:'[data-open-portal]',title:'Gere o portal do cliente',text:'Baixa um arquivo .html independente com o resumo do evento, convidados e cronograma — pronto pra enviar ou hospedar onde preferir.',tip:'É um retrato daquele momento, não uma página que atualiza sozinha; gere de novo quando quiser compartilhar algo mais recente.'}
+  {action:'eventHub',target:'[data-open-portal]',title:'Gere o portal do cliente',text:'Baixa um arquivo .html independente com o resumo do evento, convidados e cronograma — pronto pra enviar ou hospedar onde preferir.',tip:'É um retrato daquele momento, não uma página que atualiza sozinha; gere de novo quando quiser compartilhar algo mais recente.'},
+  {action:'eventHub',target:'[data-open-budget]',title:'Gere a proposta em PDF',text:'Monta o orçamento para o cliente com os itens escolhidos, total, sinal de reserva, parcelas e campo de aceite. O que você paga aos fornecedores não entra.',tip:'Defina validade e o % do sinal antes de gerar; na janela de impressão use “Salvar como PDF”.'},
+  {action:'eventHub',target:'[data-open-payplan]',title:'Feche a reserva: plano de pagamento',text:'Depois do aceite, gere o sinal e as parcelas de uma vez: você escolhe o %, o número de parcelas e quantos dias antes do evento vence a última. Elas entram como receitas pendentes no Financeiro do evento.',tip:'O portal do cliente passa a mostrar “Pagamento em andamento” e avisa atraso sozinho.'},
+  {action:'eventHub',target:'[data-open-history]',title:'Acompanhe as mudanças de orçamento',text:'O botão 📈 Histórico mostra quando o orçamento previsto e os preços dos itens escolhidos mudaram, com o antes, o depois e a variação em %.',tip:'Editar outra coisa do evento não cria histórico — só mudança de valor.'}
  ]},
  checklist:{title:'Checklist operacional',group:'Eventos',workspace:'Eventos',icon:'check-square',minutes:5,description:'Organize tudo que precisa ser concluído antes do evento e acompanhe responsáveis e prazos.',steps:[
   {workspace:'Eventos',nav:'eventos',action:'eventHub',target:'[data-open-checklist]',title:'Entre no hub do evento',text:'O hub reúne produção, financeiro, catálogo e execução. Abra Checklist para controlar pendências.',tip:'O tutorial usa o primeiro evento cadastrado como exemplo.'},
@@ -732,23 +737,28 @@ const tutorialFlows={
  guests:{title:'Lista de convidados',group:'Eventos',workspace:'Eventos',icon:'users',minutes:5,description:'Controle confirmação de presença, telefone e mesa de cada convidado.',steps:[
   {workspace:'Eventos',nav:'eventos',action:'eventHub',target:'[data-open-guests]',title:'Abra a lista pelo hub do evento',text:'A lista de convidados fica junto com checklist e cronograma, no hub de cada evento.',tip:'O número de "convidados" do evento é só a previsão — esta lista é o controle de verdade.'},
   {action:'guests',target:'#guestBulkInput, #guestBulkAdd',title:'Adicione vários de uma vez',text:'Cole uma lista de nomes, um por linha, e todos entram como "Pendente" — sem precisar cadastrar um por um.',tip:'Bom pra começar a lista a partir de uma planilha ou de uma lista que o cliente já tinha.'},
+  {action:'guests',target:'[data-guest-import]',title:'Importe de uma planilha',text:'Copie as células do Excel ou Google Planilhas (ou escolha um arquivo .csv) e cole. O app reconhece Nome, Telefone, Mesa e Status, mostra uma prévia e ignora quem já está na lista.',tip:'A primeira linha pode ser o cabeçalho. Quem já existe (mesmo nome e telefone) não entra duas vezes.'},
   {action:'guests',target:'.guest-status-group',title:'Confirme presença com um toque',text:'Os três botões (✓ ? ✕) trocam o status na hora, sem precisar abrir formulário.',tip:'Use a busca acima da lista quando o evento tiver muitos convidados.'},
   {action:'guests',target:'[data-share-guests]',title:'Compartilhe o resumo pelo WhatsApp',text:'Envia a contagem de confirmados, pendentes e recusados pro cliente ou pra equipe.',tip:'O mesmo contador aparece no resumo do hub do evento.'}
  ]},
- settings:{title:'Ajustes do app',group:'Administração',workspace:'Negócios',icon:'sliders',minutes:4,description:'Personalize mensagens de WhatsApp, prazos do sino de eventos e proteja seus dados com backup.',steps:[
+ settings:{title:'Ajustes do app',group:'Administração',workspace:'Negócios',icon:'sliders',minutes:4,description:'Personalize mensagens de WhatsApp, avisos, listas, plano, senha de acesso e backup.',steps:[
   {target:'[data-open-ajustes]',title:'Abra os Ajustes',text:'Fica em qualquer workspace, ao lado do seu nome, no topo.',tip:'Reúne perfil, mensagens, acessibilidade, avisos, backup e segurança num só lugar.'},
-  {target:'#ajTplEvent, #ajTplChecklist',title:'Personalize as mensagens de WhatsApp',text:'O texto que você escrever aqui entra na frente de todo resumo compartilhado — do evento, checklist, cronograma ou convidados.',tip:'Deixe em branco pra enviar só o resumo automático, sem introdução.'},
-  {target:'#ajBellWarn, #ajBellUrgent',title:'Ajuste os prazos do sino de eventos',text:'Controla quando o sino aparece do lado da data (aviso simples) e quando ele pisca (evento próximo com pendência no checklist).',tip:'O padrão é avisar com 15 dias e piscar com 7 — mude se sua operação precisar de mais ou menos antecedência.'},
-  {target:'#ajBackupBaixar',title:'Baixe um backup regularmente',text:'Os dados ficam só neste navegador. A tela avisa há quantos dias foi o último backup, pra você não esquecer.',tip:'Baixe antes de trocar de celular ou de navegador.'},
-  {target:'#ajPermissoes',title:'Veja o que o app realmente acessa',text:'Câmera/galeria só quando você escolhe uma foto, e os avisos são só dentro do app — nada de permissão de notificação do celular.',tip:'Bom pra responder rápido quando alguém perguntar "esse app acessa o quê?".'},
-  {target:'[data-ev-type-toggle]',title:'Escolha quais tipos de evento aparecem no filtro',text:'Esconder um tipo não apaga os eventos que já usam ele — só tira aquele botão de filtro da tela de Eventos.',tip:'Dá pra adicionar tipos novos (ex.: Chá de bebê) logo abaixo da lista.'},
-  {target:'#ajNewSupplierCategory, #ajAddSupplierCategory',title:'Adicione categorias de fornecedor permanentes',text:'Uma vez cadastrada (ex.: Florista), a categoria fica disponível pra sempre ao cadastrar fornecedores — sem precisar usar "Outro" de novo a cada vez.',tip:'A tela de Fornecedores mostra o filtro automaticamente assim que existir pelo menos um fornecedor com aquela categoria.'},
-  {target:'#ajNewCatalogCategory, #ajAddCatalogCategory',title:'Categorias de catálogo permanentes',text:'Mesma lógica: cadastre uma categoria nova (ex.: Doces finos) e ela fica disponível pra sempre ao cadastrar itens do catálogo.',tip:'Também funciona digitando em "Outro" na hora de cadastrar o item — o app registra sozinho pra próxima vez.'},
-  {target:'#ajNewAppointmentType, #ajAddAppointmentType',title:'Tipos de compromisso permanentes',text:'E o mesmo vale pros tipos de compromisso da agenda — cadastre um tipo novo (ex.: Reunião de equipe) e ele fica disponível pra sempre.',tip:'Em qualquer um dos três (tipo de evento, categoria de fornecedor, categoria de catálogo ou tipo de compromisso), digitar em "Outro" já cadastra automaticamente — essa tela é só pra quem prefere cadastrar antes, com calma.'}
+  {action:'ajustes',target:'#ajTplEvent, #ajTplChecklist',title:'Personalize as mensagens de WhatsApp',text:'O texto que você escrever aqui entra na frente de todo resumo compartilhado — do evento, checklist, cronograma ou convidados.',tip:'Deixe em branco pra enviar só o resumo automático, sem introdução.'},
+  {action:'ajustes',target:'#ajBellWarn, #ajBellUrgent',title:'Ajuste os prazos do sino de eventos',text:'Controla quando o sino aparece do lado da data (aviso simples) e quando ele pisca (evento próximo com pendência no checklist).',tip:'O padrão é avisar com 15 dias e piscar com 7 — mude se sua operação precisar de mais ou menos antecedência.'},
+  {action:'ajustes',target:'#ajBackupBaixar',title:'Baixe um backup regularmente',text:'Os dados ficam só neste navegador. A tela avisa há quantos dias foi o último backup, pra você não esquecer.',tip:'Baixe antes de trocar de celular ou de navegador.'},
+  {action:'ajustes',target:'#ajPermissoes',title:'Veja o que o app realmente acessa',text:'Câmera/galeria só quando você escolhe uma foto, e os avisos são só dentro do app — nada de permissão de notificação do celular.',tip:'Bom pra responder rápido quando alguém perguntar "esse app acessa o quê?".'},
+  {action:'ajustes',target:'[data-ev-type-toggle]',title:'Escolha quais tipos de evento aparecem no filtro',text:'Esconder um tipo não apaga os eventos que já usam ele — só tira aquele botão de filtro da tela de Eventos.',tip:'Dá pra adicionar tipos novos (ex.: Chá de bebê) logo abaixo da lista.'},
+  {action:'ajustes',target:'#ajNewSupplierCategory, #ajAddSupplierCategory',title:'Adicione categorias de fornecedor permanentes',text:'Uma vez cadastrada (ex.: Florista), a categoria fica disponível pra sempre ao cadastrar fornecedores — sem precisar usar "Outro" de novo a cada vez.',tip:'A tela de Fornecedores mostra o filtro automaticamente assim que existir pelo menos um fornecedor com aquela categoria.'},
+  {action:'ajustes',target:'#ajNewCatalogCategory, #ajAddCatalogCategory',title:'Categorias de catálogo permanentes',text:'Mesma lógica: cadastre uma categoria nova (ex.: Doces finos) e ela fica disponível pra sempre ao cadastrar itens do catálogo.',tip:'Também funciona digitando em "Outro" na hora de cadastrar o item — o app registra sozinho pra próxima vez.'},
+  {action:'ajustes',target:'#ajNewAppointmentType, #ajAddAppointmentType',title:'Tipos de compromisso permanentes',text:'E o mesmo vale pros tipos de compromisso da agenda — cadastre um tipo novo (ex.: Reunião de equipe) e ele fica disponível pra sempre.',tip:'Em qualquer um dos três (tipo de evento, categoria de fornecedor, categoria de catálogo ou tipo de compromisso), digitar em "Outro" já cadastra automaticamente — essa tela é só pra quem prefere cadastrar antes, com calma.'},
+  {action:'ajustes',target:'#ajPlanoCard',title:'Seu plano: teste grátis e Pro',text:'Mostra quantos dias faltam do teste grátis de 30 dias, o ID deste aparelho e como assinar pelo WhatsApp (Pro de 1 mês: R$ 90,00, depois do teste). Depois do teste, sem o Pro o app fica só pra consulta — nada é apagado.',tip:'Baixe um backup antes do fim do teste: ele continua disponível mesmo com o app só pra consulta.'},
+  {action:'ajustes',target:'#ajCriarSenha, #ajTrocarSenha',title:'Proteja tudo com uma senha',text:'A senha tem de 4 a 50 caracteres, com 1 maiúscula, 1 minúscula, 1 número e 1 símbolo (igual ao corsyncimoveis). Os dados ficam criptografados neste aparelho e o app pede a senha ao abrir.',tip:'Ao criar, o app oferece mandar uma cópia pro seu próprio WhatsApp. Sem a senha não há como recuperar os dados.'},
+  {action:'ajustes',target:'[data-aj-list-rename], [data-aj-list-hide], [data-aj-list-del]',title:'Edite, oculte ou exclua itens das listas',text:'Em cada lista (tipos de evento, categorias, tipos de compromisso) use ✏️ pra corrigir um nome (os registros já cadastrados acompanham), 🚫 pra esconder do formulário e 🗑️ pra excluir.',tip:'Renomear pra um nome que já existe junta os dois. Excluir um item em uso pede o destino dos registros.'},
+  {action:'ajustes',target:'#ajSalvarTemplates',title:'Gravar ou descartar',text:'Em cada bloco de Ajustes, “Gravar” guarda as mudanças e “Descartar” volta sem salvar. No fim da página também há um “← Voltar”.',tip:'Se entrou num bloco sem querer, é só Descartar.'}
  ]},
- seating:{title:'Mapa de mesas',group:'Eventos',workspace:'Eventos',icon:'layout-grid',minutes:4,description:'Organize qual convidado senta em qual mesa, arrastando ou pelo menu de cada card.',steps:[
+ seating:{title:'Mapa de mesas',group:'Eventos',workspace:'Eventos',icon:'layout-grid',minutes:4,description:'Organize qual convidado senta em qual mesa: arrastando (mouse ou toque) ou pelo menu de cada card.',steps:[
   {workspace:'Eventos',nav:'eventos',action:'eventHub',target:'[data-open-seating]',title:'Abra o mapa pelo hub do evento',text:'O mapa de mesas usa a mesma lista de convidados — cadastre os convidados primeiro.',tip:'Convidados sem mesa aparecem na coluna "Sem mesa".'},
-  {action:'seating',target:'.seat-chip',title:'Arraste ou use o menu',text:'Em computador, arraste o card do convidado até a mesa. No celular, use o menu suspenso dentro do próprio card.',tip:'As duas formas fazem exatamente a mesma coisa — use a que for mais prática na hora.'},
+  {action:'seating',target:'.seat-grip, .seat-chip',title:'Arraste, toque e arraste, ou use o menu',text:'No computador, arraste o card do convidado até a mesa. No celular ou tablet, segure o ⠿ (a alça à esquerda do nome) e arraste até a mesa. Também dá pra escolher a mesa no menu suspenso do card.',tip:'As três formas fazem exatamente a mesma coisa — use a que for mais prática na hora.'},
   {action:'seating',target:'#seatAddTable',title:'Crie mesas vazias antecipadamente',text:'Dá pra criar "Mesa 7", por exemplo, antes mesmo de decidir quem senta nela.',tip:'Assim você já deixa a numeração pronta pra organizar depois com calma.'}
  ]},
  catalog:{title:'Catálogo comercial',group:'Eventos',workspace:'Eventos',icon:'book-open',minutes:6,description:'Filtre opções, veja detalhes e adicione cardápio, decoração, DJ e serviços ao projeto.',steps:[
@@ -765,9 +775,10 @@ const tutorialFlows={
  ]},
  finance:{title:'Financeiro do evento',group:'Eventos',workspace:'Eventos',icon:'wallet',minutes:5,description:'Controle receitas, despesas, cliente/fornecedor, datas e situação de pagamento.',steps:[
   {workspace:'Eventos',nav:'financeiro',target:'[data-create="finance"]',title:'Abra o financeiro',text:'Aqui você acompanha o fluxo financeiro dos eventos.',tip:'Registre tanto receitas quanto despesas.'},
-  {action:'form:finance',target:'#formDialog',title:'Crie um lançamento',text:'Escolha evento, data, tipo, categoria, descrição, parte envolvida, valor e status.',tip:'Vincule corretamente o evento para ter relatórios úteis.'},
-  {keepDialog:true,target:'#dynamicForm [name="type"]',title:'Receita ou despesa',text:'Receita representa valor recebido/previsto do cliente. Despesa representa custos e fornecedores.',tip:'Use categorias consistentes para facilitar análise.'},
-  {keepDialog:true,target:'#dynamicForm [name="status"]',title:'Controle o status',text:'Pendente e Pago ajudam a separar previsão de caixa e valores já baixados.',tip:'A tela permite marcar pagamentos posteriormente.'}
+  {action:'form:finance',target:'#formDialog',title:'Crie um lançamento',text:'Escolha o tipo, a categoria, quem paga ou recebe, o valor, a data de vencimento e o evento. Se já foi pago ou recebido, preencha a data realizada.',tip:'Vincule o evento para o resumo financeiro dele (e o portal do cliente) ficarem certos.'},
+  {keepDialog:true,target:'#dynamicForm [name="tipo"]',title:'Receita ou despesa',text:'Receita é o que você vai receber do cliente. Despesa é o que você vai pagar (fornecedores e custos).',tip:'Use categorias consistentes para facilitar a análise.'},
+  {keepDialog:true,target:'#dynamicForm [name="dataReal"]',title:'Em aberto ou realizado',text:'Deixe a “Data realizada” em branco enquanto o valor não foi recebido ou pago — ele fica pendente. Preencha quando der baixa (não pode ser no futuro).',tip:'Você também pode dar baixa depois, direto na lista de lançamentos.'},
+  {workspace:'Eventos',action:'eventHub',target:'[data-open-payplan]',title:'Receitas do cliente em um clique',text:'No hub do evento, “Plano de pagamento” gera o sinal e as parcelas como receitas pendentes — sem lançar uma por uma.',tip:'Você escolhe o %, o número de parcelas e quantos dias antes do evento vence a última.'}
  ]},
  contract:{title:'Contratos e PDF',group:'Eventos',workspace:'Eventos',icon:'file-signature',minutes:6,description:'Crie contrato, revise dados e gere PDF personalizado com sua identidade.',steps:[
   {workspace:'Eventos',nav:'contratos',target:'[data-create="contract"]',title:'Crie o contrato',text:'Cadastre título, contratante, projeto/evento, valor, condições e objeto.',tip:'O contrato deve refletir a proposta aprovada.'},
@@ -792,8 +803,8 @@ const tutorialFlows={
   {nav:'validacao',target:'[data-create="validation"]',title:'Crie hipóteses',text:'Hipóteses deixam claro o que precisa ser verdade para a ideia funcionar.',tip:'Registre evidências em vez de confiar apenas em opinião.'},
   {nav:'decisoes',target:'[data-create="decision"]',title:'Registre decisões',text:'Documente o que foi decidido e por quê.',tip:'Isso cria memória do projeto e evita decisões perdidas em conversas.'}
  ]},
- security:{title:'Segurança e privacidade',group:'Administração',workspace:'Negócios',icon:'shield',minutes:4,description:'Entenda o que é protótipo local e o que será protegido na versão comercial.',steps:[
-  {workspace:'Negócios',nav:'seguranca',target:'.security-grid',title:'Arquitetura de segurança',text:'A tela resume MFA, isolamento multi-tenant, criptografia e arquivos privados.',tip:'O preview local não deve receber dados pessoais reais ou confidenciais.'},
+ security:{title:'Segurança e privacidade',group:'Administração',workspace:'Negócios',icon:'shield',minutes:4,description:'Veja como a senha de acesso protege os dados deste aparelho e o que está planejado para a versão comercial.',steps:[
+  {workspace:'Negócios',nav:'seguranca',target:'.security-grid',title:'Arquitetura de segurança',text:'A tela resume MFA, isolamento multi-tenant, criptografia e arquivos privados.',tip:'Neste aparelho, a senha de acesso criptografa tudo o que você salva (Ajustes → Segurança). A arquitetura abaixo é o plano para a versão comercial na nuvem.'},
   {target:'.security-card:nth-child(2)',title:'Isolamento de organizações',text:'Na versão comercial, cada organização terá acesso apenas aos próprios dados via políticas de banco.',tip:'RLS é parte central da arquitetura multi-tenant.'},
   {target:'.security-card:nth-child(4)',title:'Arquivos privados',text:'Uploads reais deverão ficar em storage privado, com acesso autenticado e URLs temporárias.',tip:'Isso é especialmente importante para contratos, documentos e materiais de clientes.'}
  ]}
@@ -815,6 +826,329 @@ let current='dashboard',deferredPrompt=null,presentationAssets=[];
 
 const defaultProfile={businessName:'RIZZIERI ONE • Codename',legalName:'Empresa / Profissional',document:'',phone:'(11) 99999-9999',email:'contato@empresa.com.br',address:'São Paulo • SP',website:'www.seusite.com.br',footer:'Documento emitido eletronicamente pelo ecossistema de gestão.',logo:''};
 const memoryStore=globalThis.__r1StorageMemory||(globalThis.__r1StorageMemory={});
+// ═══ Plano / licença (mesmo modelo do corsyncimoveis: teste 30 dias → leitura → bloqueio → código Pro por aparelho) ═══
+const PLAN_TRIAL_DIAS=30,PLAN_LEITURA_DIAS=1,PLAN_AVISO_DIAS=5;
+const PRO_WHATS='5515998293087';
+const PRO_PLANS={1:'1 mês',6:'6 meses',12:'12 meses'};
+const PLAN_BY_IDX={1:1,2:6,3:12};
+const PRECOS_PRO={1:'R$ 90,00',6:'R$ 99,90',12:'R$ 179,90'};
+// Chaves ligadas AO APARELHO: nunca cifradas, nunca vão pro backup, nunca voltam de um backup restaurado.
+const R1_DEVICE_KEYS=['r1_auth','r1_lock_bad','r1_lock_until','r1_trial','r1_license','r1_devid','r1_used_codes'];
+const R1_PLAN_KEEP=['r1_trial','r1_license','r1_devid','r1_used_codes'];// sobrevivem até ao "esqueci a senha / apagar tudo"
+const R1_TRIAL_MARKS=['rizzieri_trial_used','rizzieri_tu2','rzTrial'];
+const isPlainKey=k=>R1_DEVICE_KEYS.includes(k);
+// Em somente-leitura, só estas chaves (dados do negócio) ficam travadas; configurações e o próprio plano seguem livres.
+const PLAN_DATA_PREFIXES=['r1_extra_','r1_fin_v2','r1_finance_overrides','r1_event_catalog_','r1_event_tables_','r1_overrides_','r1_checklist_overrides','r1_timeline_overrides','r1_routine_overrides','r1_presentation_catalog_','r1_history','r1_agenda_reminders'];
+const _encSeq={};
+
+// ═══ Gerenciador das listas (renomear / ocultar / excluir) ═══
+const _hid=k=>new Set(readJSON(k,[]));
+const AJ_LISTS={
+ eventTypes:{label:'tipo de evento',obj:true,special:['Outro'],
+  names:()=>getEventTypes().map(t=>t.name),items:()=>getEventTypes().map(t=>({name:t.name,visible:t.visible})),
+  usage:n=>getEvents().filter(e=>e.type===n).length,
+  rewrite:(o,n)=>getEvents().filter(e=>e.type===o).forEach(e=>updateRecord('event',{id:e.id,type:n}))},
+ supplierCategories:{label:'categoria de fornecedor',hiddenKey:'r1_hidden_supplier_categories',get:getSupplierCategories,save:saveSupplierCategories,
+  usage:n=>getSuppliers().filter(x=>x.category===n).length,
+  rewrite:(o,n)=>getSuppliers().filter(x=>x.category===o).forEach(x=>updateRecord('supplier',{id:x.id,category:n}))},
+ catalogCategories:{label:'categoria de catálogo',hiddenKey:'r1_hidden_catalog_categories',get:getCatalogCategories,save:saveCatalogCategories,
+  usage:n=>getCatalog().filter(x=>x.category===n).length,
+  rewrite:(o,n)=>getCatalog().filter(x=>x.category===o).forEach(x=>updateRecord('catalog',{id:x.id,category:n}))},
+ appointmentTypes:{label:'tipo de compromisso',hiddenKey:'r1_hidden_appointment_types',get:getAppointmentTypes,save:saveAppointmentTypes,
+  usage:n=>getAppointments().filter(x=>x.type===n).length,
+  rewrite:(o,n)=>getAppointments().filter(x=>x.type===o).forEach(x=>updateRecord('appointment',{id:x.id,type:n}))}
+};
+AJ_LISTS.supplierCategories.names=()=>getSupplierCategories();AJ_LISTS.catalogCategories.names=()=>getCatalogCategories();AJ_LISTS.appointmentTypes.names=()=>getAppointmentTypes();
+['supplierCategories','catalogCategories','appointmentTypes'].forEach(k=>{const L=AJ_LISTS[k];L.items=()=>{const h=_hid(L.hiddenKey);return L.get().map(n=>({name:n,visible:!h.has(n)}))}});
+const ajHidden=key=>{const L=AJ_LISTS[key];return L.hiddenKey?_hid(L.hiddenKey):new Set()};
+function ajListRename(key,oldName,newName){
+ const L=AJ_LISTS[key];newName=(newName||'').trim();
+ const dup=L.names().find(n=>n.toLowerCase()===newName.toLowerCase()&&n!==oldName);
+ const alvo=dup||newName;
+ L.rewrite(oldName,alvo);
+ if(L.obj){let arr=getEventTypes().slice();const iDup=arr.findIndex(t=>t.name===dup);const i=arr.findIndex(t=>t.name===oldName);if(dup&&i>=0){arr.splice(i,1)}else if(i>=0){arr[i]={...arr[i],name:newName}}saveEventTypes(arr)}
+ else{let arr=L.get().slice();const i=arr.indexOf(oldName);if(dup){arr.splice(i,1)}else{arr[i]=newName}L.save(arr);
+  const h=_hid(L.hiddenKey);if(h.has(oldName)){h.delete(oldName);if(!dup)h.add(newName);storage.setItem(L.hiddenKey,JSON.stringify([...h]))}}
+ return alvo;
+}
+function ajListDelete(key,name,reatribuirPara){
+ const L=AJ_LISTS[key];
+ if(L.usage(name)>0&&reatribuirPara)L.rewrite(name,reatribuirPara);
+ if(L.obj){saveEventTypes(getEventTypes().filter(t=>t.name!==name))}
+ else{L.save(L.get().filter(n=>n!==name));const h=_hid(L.hiddenKey);if(h.delete(name))storage.setItem(L.hiddenKey,JSON.stringify([...h]))}
+}
+function ajListToggleHide(key,name){
+ const L=AJ_LISTS[key];
+ if(L.obj){const arr=getEventTypes().slice(),i=arr.findIndex(t=>t.name===name);if(i>=0){arr[i]={...arr[i],visible:!arr[i].visible};saveEventTypes(arr)}return}
+ const h=_hid(L.hiddenKey);if(h.has(name))h.delete(name);else h.add(name);storage.setItem(L.hiddenKey,JSON.stringify([...h]));
+}
+
+function ajListDialog(mode,key,name){
+ const L=AJ_LISTS[key],n=L.usage(name);
+ $('#ajListErr').textContent='';
+ const inp=$('#ajListInput'),selW=$('#ajListSelWrap'),inW=$('#ajListInputWrap'),ok=$('#ajListOk');
+ if(mode==='rename'){
+  $('#ajListTitle').textContent='Renomear '+L.label;inW.style.display='';selW.style.display='none';inp.value=name;
+  $('#ajListText').textContent=n?`${n} registro(s) usam "${name}" e passam a usar o novo nome. Se já existir um item com o nome novo, os dois são mesclados.`:`Nenhum registro usa "${name}" ainda.`;
+  ok.textContent='Salvar nome';
+  ok.onclick=()=>{const nn=inp.value.trim();if(!nn){$('#ajListErr').textContent='Digite o nome.';return}if(nn===name){$('#ajListDialog').close();return}ajListRename(key,name,nn);$('#ajListDialog').close();toast('Renomeado.');ajRefresh()};
+ }else{
+  const outros=L.names().filter(x=>x!==name);
+  $('#ajListTitle').textContent='Excluir '+L.label;inW.style.display='none';
+  if(n>0){
+   selW.style.display='';$('#ajListSelect').innerHTML=outros.map(x=>`<option>${finEsc(x)}</option>`).join('');
+   $('#ajListText').textContent=outros.length?`${n} registro(s) usam "${name}". Escolha para qual item eles passam antes de excluir.`:`${n} registro(s) usam "${name}" e não há outro item pra onde passá-los. Cadastre outro item primeiro (ou use 🚫 pra esconder).`;
+   ok.disabled=!outros.length;
+  }else{selW.style.display='none';$('#ajListText').textContent=`Excluir "${name}"? Nenhum registro usa esse item.`;ok.disabled=false}
+  ok.textContent='Excluir';
+  ok.onclick=()=>{const alvo=n>0?$('#ajListSelect').value:null;if(n>0&&!alvo)return;ajListDelete(key,name,alvo);$('#ajListDialog').close();toast('Excluído.');ajRefresh()};
+ }
+ $('#ajListDialog').showModal();
+ if(mode==='rename')setTimeout(()=>{inp.focus();inp.select()},50);
+}
+
+// ═══ Importar convidados de planilha ═══
+const gsNorm=x=>String(x==null?'':x).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+function gsParseDelimited(t,d){
+ const rows=[];let row=[],cell='',q=false;
+ for(let i=0;i<t.length;i++){
+  const c=t[i];
+  if(q){if(c==='"'){if(t[i+1]==='"'){cell+='"';i++}else q=false}else cell+=c}
+  else if(c==='"'&&cell==='')q=true;
+  else if(d&&c===d){row.push(cell);cell=''}
+  else if(c==='\n'){row.push(cell);rows.push(row);row=[];cell=''}
+  else cell+=c;
+ }
+ row.push(cell);rows.push(row);
+ return rows.map(r=>r.map(x=>x.trim())).filter(r=>r.some(x=>x!==''));
+}
+function gsStatus(v){const n=gsNorm(v);if(!n)return 'Pendente';if(/pend|aguard|talvez|nao confirm|sem resposta|\?/.test(n))return 'Pendente';if(/^(nao|n)\b|recus|declin|nao vai|cancel/.test(n))return 'Recusado';if(/conf|^sim$|^s$|vai|presente|ok|yes/.test(n))return 'Confirmado';return 'Pendente'}
+// Lê o texto colado/arquivo e devolve {rows:[{name,phone,table,status}],temCabecalho,delim,ignoradas}
+function parseGuestSheet(text){
+ const t=String(text||'').replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n').trim();
+ if(!t)return{rows:[],temCabecalho:false,delim:'',ignoradas:0};
+ const first=t.split('\n')[0],n=ch=>first.split(ch).length-1;
+ const delim=n('\t')>0?'\t':(n(';')>0&&n(';')>=n(','))?';':n(',')>0?',':'';
+ const grid=gsParseDelimited(t,delim);
+ const hdr=grid[0].map(gsNorm);
+ const idx=rx=>hdr.findIndex(h=>rx.test(h));
+ let cN=idx(/^(nome|name|convidado|convidados|pessoa)/),cT=idx(/(tel|fone|whats|celular|contato)/),cM=idx(/(mesa|table)/),cS=idx(/(status|situacao|confirm|presenca|rsvp)/);
+ const temCabecalho=cN>=0;
+ if(!temCabecalho&&(cT>=0||cM>=0||cS>=0))return{rows:[],temCabecalho:true,delim,ignoradas:0,semNome:true};// tem cabeçalho (Telefone/Mesa/Status) mas nenhuma coluna de nome
+ if(!temCabecalho){cN=0;cT=grid[0].length>1?1:-1;cM=grid[0].length>2?2:-1;cS=grid[0].length>3?3:-1}
+ const body=temCabecalho?grid.slice(1):grid;
+ let ignoradas=0;const rows=[];
+ body.forEach(r=>{
+  const name=(r[cN]||'').trim();
+  if(!name){ignoradas++;return}
+  rows.push({name,phone:cT>=0?(r[cT]||'').trim():'',table:cM>=0?(r[cM]||'').trim():'',status:cS>=0?gsStatus(r[cS]):'Pendente'});
+ });
+ return{rows,temCabecalho,delim,ignoradas};
+}
+// Separa o que é novo do que já existe (mesmo nome, ignorando acento/maiúscula) ou se repete na própria planilha
+function guestImportPlan(eventId,parsed){
+ const jaTem=new Set(getGuests(eventId).map(g=>gsNorm(g.name)));
+ const vistos=new Set();const novos=[],repetidos=[];
+ parsed.rows.forEach(r=>{const k=gsNorm(r.name);if(jaTem.has(k)||vistos.has(k))repetidos.push(r);else{vistos.add(k);novos.push(r)}});
+ return{novos,repetidos};
+}
+let _giEvent='';
+function guestImportRefresh(){
+ const parsed=parseGuestSheet($('#giText').value);const pv=$('#giPreview'),ok=$('#giOk');
+ if(!parsed.rows.length){pv.innerHTML=$('#giText').value.trim()?'<span style="color:#c0392b;font-weight:700">Não encontrei nenhum nome. Confira se a coluna "Nome" está na planilha.</span>':'';ok.disabled=true;ok.textContent='Importar';return null}
+ const pl=guestImportPlan(_giEvent,parsed);
+ const amostra=pl.novos.slice(0,6).map(r=>`<tr><td>${finEsc(r.name)}</td><td>${finEsc(r.phone||'—')}</td><td>${finEsc(r.table||'—')}</td><td>${r.status}</td></tr>`).join('');
+ pv.innerHTML=`<div><b>${pl.novos.length}</b> novo(s) para importar${pl.repetidos.length?` • <b>${pl.repetidos.length}</b> já existe(m) ou repete(m) — serão ignorados`:''}${parsed.ignoradas?` • ${parsed.ignoradas} linha(s) sem nome ignorada(s)`:''}</div><div style="font-size:11px;color:#6b7a93;margin:2px 0 6px">${parsed.temCabecalho?'Cabeçalho reconhecido.':'Sem cabeçalho: usei as colunas na ordem Nome, Telefone, Mesa, Status.'}</div>${pl.novos.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="text-align:left;color:#6b7a93"><th>Nome</th><th>Telefone</th><th>Mesa</th><th>Status</th></tr>${amostra}</table>${pl.novos.length>6?`<small style="color:#6b7a93">…e mais ${pl.novos.length-6}</small>`:''}</div>`:''}`;
+ ok.disabled=!pl.novos.length;ok.textContent=pl.novos.length?`Importar ${pl.novos.length} convidado(s)`:'Nada novo para importar';
+ return pl;
+}
+function openGuestImport(eventId){
+ _giEvent=eventId;$('#giText').value='';$('#giPreview').innerHTML='';$('#giFileName').textContent='';$('#giFile').value='';
+ $('#giOk').disabled=true;$('#giOk').textContent='Importar';$('#guestImportDialog').showModal();
+}
+function doGuestImport(){
+ const pl=guestImportRefresh();if(!pl||!pl.novos.length)return;
+ pl.novos.forEach((r,i)=>saveExtra('r1_extra_guests',{id:`guest-${Date.now()}-${i}`,eventId:_giEvent,name:r.name,status:r.status,phone:r.phone,table:r.table}));
+ $('#guestImportDialog').close();
+ toast(`${pl.novos.length} convidado(s) importado(s)${pl.repetidos.length?` • ${pl.repetidos.length} repetido(s) ignorado(s)`:''}.`);
+ openSubView('Lista de convidados','EVENTOS & EXPERIÊNCIAS',()=>guestsView(_giEvent),'eventos');
+}
+function guestImportFile(file){
+ if(!file)return Promise.resolve();
+ $('#giFileName').textContent=file.name;
+ if(/\.xlsx?$/i.test(file.name)){$('#giPreview').innerHTML='<span style="color:#c0392b;font-weight:700">Arquivos Excel (.xlsx) não abrem aqui. Na planilha, use Arquivo → Baixar → CSV — ou copie as células e cole na caixa acima.</span>';$('#giOk').disabled=true;return Promise.resolve()}
+ return file.text().then(t=>{$('#giText').value=t;guestImportRefresh()});
+}
+
+// ═══ Histórico de alterações de preço e orçamento ═══
+const HIST_KEY='r1_history';
+const getHistory=()=>readJSON(HIST_KEY,[]);
+function histLog(e){const arr=getHistory();arr.unshift({id:'h-'+Date.now()+'-'+Math.floor(Math.random()*1e4),ts:new Date().toISOString(),...e});storage.setItem(HIST_KEY,JSON.stringify(arr.slice(0,500)))}
+function histTrack(type,obj){
+ try{
+  const cfg={event:{get:getEvents,field:'budget',label:'Orçamento previsto',kind:'orcamento',money:true,name:r=>r.title},
+   catalog:{get:getCatalog,field:'price',label:'Preço de referência',kind:'preco',money:true,name:r=>r.name},
+   supplier:{get:getSuppliers,field:'price',label:'Referência de preço',kind:'preco',money:false,name:r=>r.name}}[type];
+  if(!cfg||!obj||!(cfg.field in obj))return;
+  const old=cfg.get().find(x=>x.id===obj.id);if(!old)return;
+  const a=cfg.money?Number(old[cfg.field]||0):String(old[cfg.field]==null?'':old[cfg.field]).trim();
+  const b=cfg.money?Number(obj[cfg.field]||0):String(obj[cfg.field]==null?'':obj[cfg.field]).trim();
+  if(a===b)return;
+  histLog({kind:cfg.kind,refType:type,refId:obj.id,refName:cfg.name(old),field:cfg.label,from:a,to:b,money:cfg.money,eventId:type==='event'?obj.id:''});
+ }catch(e){}
+}
+function histTrackFin(entry){
+ try{
+  if(!entry||!entry.id)return;const old=finAll().find(x=>x.id===entry.id);
+  if(!old||Number(old.valorCent)===Number(entry.valorCent))return;
+  histLog({kind:'financeiro',refType:'finance',refId:entry.id,refName:entry.descricao||entry.categoria||'Lançamento',field:'Valor do lançamento',from:Number(old.valorCent)/100,to:Number(entry.valorCent)/100,money:true,eventId:entry.eventId||''});
+ }catch(e){}
+}
+function histPred(spec){
+ const[kind,id]=String(spec||'all').split('::');
+ if(kind==='event'){const sel=getEventCatalog(id);return{title:'Histórico do evento',pred:h=>h.eventId===id||(h.refType==='catalog'&&sel.includes(h.refId)),sub:'Orçamento previsto, preços dos itens escolhidos e valores de lançamentos deste evento.'}}
+ if(kind==='supplier'){const nm=(getSuppliers().find(x=>x.id===id)||{}).name;const ids=getCatalog().filter(c=>c.supplier===nm).map(c=>c.id);return{title:'Histórico do fornecedor',pred:h=>(h.refType==='supplier'&&h.refId===id)||(h.refType==='catalog'&&ids.includes(h.refId)),sub:`${nm||''}: referência de preço e preços dos itens do catálogo ligados a ele.`}}
+ if(kind==='kind')return{title:id==='orcamento'?'Histórico de orçamentos':'Histórico de preços',pred:h=>h.kind===id,sub:''};
+ return{title:'Histórico de alterações',pred:()=>true,sub:'Tudo que mudou em orçamentos, preços e valores lançados.'};
+}
+function historyView(spec){
+ const f=histPred(spec),rows=getHistory().filter(f.pred);
+ const val=(h,v)=>h.money?moneyApp(v):(finEsc(v)||'—');
+ const delta=h=>{if(!h.money||!Number(h.from))return '';const d=Number(h.to)-Number(h.from),pc=Math.round(d/Number(h.from)*100);return `<span class="${d>0?'hist-up':'hist-down'}">${d>0?'▲':'▼'} ${moneyApp(Math.abs(d))} (${pc>0?'+':''}${pc}%)</span>`};
+ const ico={orcamento:'💰',preco:'🏷️',financeiro:'◈'};
+ return `<button class="link-btn" data-back>← Voltar</button><div class="section-title"><div><span class="eyebrow">HISTÓRICO</span><h3>${f.title}</h3><p>${f.sub}</p></div></div><div class="panel">${rows.length?rows.map(h=>`<div class="hist-row"><div><b>${ico[h.kind]||'•'} ${finEsc(h.refName)}</b> <small>• ${finEsc(h.field)}</small></div><div style="margin-top:3px">${val(h,h.from)} <b>→</b> <b>${val(h,h.to)}</b> ${delta(h)}</div><small>${new Date(h.ts).toLocaleString('pt-BR')}</small></div>`).join(''):'<p style="color:#6b7a93;margin:0">Nenhuma alteração registrada ainda. Quando você mudar um orçamento ou um preço, o antes e o depois aparecem aqui.</p>'}</div>`;
+}
+function openHistory(spec){const f=histPred(spec);openSubView(f.title,'HISTÓRICO',()=>historyView(spec),'dashboard')}
+
+// ═══ Comparar fornecedores lado a lado ═══
+const _cmpSel=new Set();
+function supplierCompareView(ids){
+ const sups=ids.map(id=>getSuppliers().find(x=>x.id===id)).filter(Boolean);
+ const cat=getCatalog(),hist=getHistory();
+ const info=sups.map(s=>{const its=cat.filter(c=>c.supplier===s.name),pr=its.map(c=>Number(c.price||0)).filter(v=>v>0);const uh=hist.find(h=>(h.refType==='supplier'&&h.refId===s.id)||(h.refType==='catalog'&&its.some(c=>c.id===h.refId)));return{s,its,min:pr.length?Math.min(...pr):null,max:pr.length?Math.max(...pr):null,uh}});
+ const best=(fn,dir)=>{const v=info.map(fn);const ok=v.filter(x=>x!=null&&!isNaN(x));if(ok.length<2)return [];const t=dir==='max'?Math.max(...ok):Math.min(...ok);if(ok.filter(x=>x===t).length===ok.length)return [];return v.map((x,i)=>x===t?i:-1).filter(i=>i>=0)};
+ const bR=best(i=>Number(i.s.rating||0),'max'),bE=best(i=>Number(i.s.events||0),'max'),bP=best(i=>i.min,'min');
+ const row=(label,fn,bi=[])=>`<tr><th class="cmp-row">${label}</th>${info.map((i,k)=>`<td class="${bi.includes(k)?'cmp-best':''}">${fn(i)}</td>`).join('')}</tr>`;
+ const wa=p=>{const d=onlyDigits(p||'');return d.length>=10?`<a href="https://wa.me/${d.length<=11?'55'+d:d}" target="_blank" rel="noopener">${finEsc(p)}</a>`:finEsc(p||'—')};
+ return `<button class="link-btn" data-back>← Voltar aos fornecedores</button><div class="section-title"><div><span class="eyebrow">COMPARAR FORNECEDORES</span><h3>${sups.map(x=>finEsc(x.name)).join(' × ')}</h3><p>Lado a lado, com o melhor de cada linha destacado.</p></div></div><div class="panel"><div class="cmp-wrap"><table class="cmp-table"><tr><th class="cmp-row"></th>${info.map(i=>`<th><b>${finEsc(i.s.name)}</b></th>`).join('')}</tr>
+ ${row('Categoria',i=>finEsc(i.s.category))}${row('Status',i=>finEsc(i.s.status||'—'))}${row('Avaliação',i=>`<b>★ ${i.s.rating||0}</b>`,bR)}${row('Eventos realizados',i=>`<b>${i.s.events||0}</b>`,bE)}${row('Referência de preço',i=>finEsc(i.s.price||'—'))}${row('Itens no catálogo',i=>i.its.length?`${i.its.length} item(ns)<br><small>${i.min===i.max?moneyApp(i.min):moneyApp(i.min)+' a '+moneyApp(i.max)}</small>`:'—')}${row('Menor preço do catálogo',i=>i.min!=null?`<b>${moneyApp(i.min)}</b>`:'—',bP)}${row('Contato',i=>finEsc(i.s.contact||'—'))}${row('WhatsApp',i=>wa(i.s.phone))}${row('E-mail',i=>finEsc(i.s.email||'—'))}${row('Fornecedor desde',i=>i.s.createdAt?finBR(i.s.createdAt):'—')}${row('Última mudança de preço',i=>i.uh?`${finEsc(i.uh.refName)}: ${i.uh.money?moneyApp(i.uh.from)+' → '+moneyApp(i.uh.to):finEsc(i.uh.from)+' → '+finEsc(i.uh.to)}<br><small>${new Date(i.uh.ts).toLocaleDateString('pt-BR')}</small>`:'<small>sem alterações</small>')}${row('Observações',i=>finEsc(i.s.notes||'—'))}
+ </table></div></div>`;
+}
+function cmpUpdateBar(){
+ const b=$('#supCompareBtn');if(!b)return;const n=_cmpSel.size;
+ b.textContent=`⚖️ Comparar (${n})`;b.disabled=n<2;
+}
+
+// ═══ Orçamento / proposta de reserva em PDF ═══
+// ═══ Plano de pagamento (fechar a reserva): sinal + parcelas → receitas pendentes do evento ═══
+function payPlanBase(e){ // mesma regra da proposta: total dos itens escolhidos; sem itens, o orçamento previsto
+ const cat=getCatalog(),ids=getEventCatalog(e.id);
+ const porPessoa=u=>/pessoa|convidado|cabe[cç]a/i.test(String(u||''));
+ const total=ids.map(id=>cat.find(c=>c.id===id)).filter(Boolean).reduce((a,c)=>a+Number(c.price||0)*(porPessoa(c.unit)?Math.max(1,Number(e.guests||0)):1),0);
+ return total>0?total:Number(e.budget||0);
+}
+function payPlanCompute(e,o){
+ const totalC=Math.round(Number(o.totalCent)||0),pct=Number(o.sinalPct),n=Math.floor(Number(o.parcelas)),dias=Math.floor(Number(o.diasAntes));
+ if(!(totalC>0))return {erro:'Informe o valor total do contrato.'};
+ if(!(pct>=0&&pct<=100))return {erro:'O sinal deve estar entre 0% e 100%.'};
+ if(!o.sinalData)return {erro:'Informe o vencimento do sinal.'};
+ if(pct<100&&!(n>=1&&n<=12))return {erro:'Use de 1 a 12 parcelas.'};
+ if(pct<100&&!(dias>=0))return {erro:'Informe quantos dias antes do evento vence a última parcela.'};
+ const sinalC=Math.round(totalC*pct/100),saldo=totalC-sinalC,linhas=[],avisos=[];
+ if(sinalC>0)linhas.push({cat:'Sinal',desc:`Sinal (${pct}%)`,data:o.sinalData,cent:sinalC});
+ if(saldo>0){
+  let ultima=finAddDays(e.date,-dias);
+  if(ultima<o.sinalData){ultima=o.sinalData;avisos.push('O evento está perto: as parcelas vencem na mesma data do sinal.')}
+  const base=Math.floor(saldo/n);
+  for(let k=1;k<=n;k++){
+   let d=finAddMonths(ultima,-(n-k));
+   if(d<o.sinalData){d=o.sinalData;if(!avisos.some(a=>/não cabem/.test(a)))avisos.push('Algumas parcelas não cabem em intervalos de 1 mês e vencem junto do sinal.')}
+   linhas.push({cat:'Parcela',desc:`Parcela ${k}/${n}`,data:d,cent:k===n?saldo-base*(n-1):base});
+  }
+ }
+ return {linhas,totalC,avisos};
+}
+function payPlanOpts(){return {totalCent:finParseMoeda($('#ppTotal').value),sinalPct:$('#ppSinal').value,sinalData:$('#ppSinalData').value,parcelas:$('#ppParcelas').value,diasAntes:$('#ppDiasAntes').value}}
+function payPlanRefresh(){
+ const id=$('#payPlanDialog').dataset.eventId,e=getEvents().find(x=>x.id===id);if(!e)return;
+ const r=payPlanCompute(e,payPlanOpts());
+ const exist=getFinance().filter(f=>f.eventId===e.id&&f.type==='Receita');
+ const precisaOk=exist.length>0&&!$('#ppExistOk').checked;
+ if(r.erro){$('#ppPreview').innerHTML='';$('#ppErr').textContent=r.erro;$('#ppGerar').disabled=true;return}
+ $('#ppErr').textContent='';
+ $('#ppPreview').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12.5px">${r.linhas.map(l=>`<tr><td style="padding:4px 6px;border-bottom:1px solid #eef1f5">${finBR(l.data)}</td><td style="padding:4px 6px;border-bottom:1px solid #eef1f5">${finEsc(l.desc)}</td><td style="padding:4px 6px;border-bottom:1px solid #eef1f5;text-align:right"><b>${moneyApp(l.cent/100)}</b></td></tr>`).join('')}<tr><td colspan="2" style="padding:6px"><b>Total</b></td><td style="padding:6px;text-align:right"><b>${moneyApp(r.linhas.reduce((a,l)=>a+l.cent,0)/100)}</b></td></tr></table>${r.avisos.map(a=>`<div style="color:#a15b1f;margin-top:4px">⚠️ ${finEsc(a)}</div>`).join('')}`;
+ $('#ppGerar').disabled=precisaOk;
+}
+function openPayPlanDialog(eventId){
+ const e=getEvents().find(x=>x.id===eventId);if(!e)return;
+ const d=$('#payPlanDialog');d.dataset.eventId=eventId;
+ $('#ppTitle').textContent='Plano de pagamento — '+e.title;
+ const base=payPlanBase(e),hoje=finLocalISO();let sd=finAddDays(hoje,3);if(sd>e.date)sd=hoje;
+ $('#ppTotal').value=base>0?finFmtNum(Math.round(base*100)):'';
+ $('#ppSinal').value=30;$('#ppParcelas').value=3;$('#ppDiasAntes').value=10;$('#ppSinalData').value=sd;$('#ppExistOk').checked=false;
+ const exist=getFinance().filter(f=>f.eventId===e.id&&f.type==='Receita');
+ $('#ppExistWrap').style.display=exist.length?'block':'none';
+ $('#ppExistText').textContent=exist.length?`Este evento já tem ${exist.length} receita(s) lançada(s) (${moneyApp(exist.reduce((a,f)=>a+Number(f.value),0))}). Gerar o plano ADICIONA novas linhas — não substitui as que já existem.`:'';
+ d.showModal();payPlanRefresh();
+}
+function doPayPlanGenerate(){
+ const id=$('#payPlanDialog').dataset.eventId,e=getEvents().find(x=>x.id===id);if(!e)return;
+ const r=payPlanCompute(e,payPlanOpts());
+ if(r.erro){$('#ppErr').textContent=r.erro;return}
+ try{if(typeof planWriteBlocked==='function'&&planWriteBlocked(FIN_STORE)){planNotifyReadOnly();return}}catch(err){}
+ finAdd(r.linhas.map(l=>({id:finUid(),eventId:e.id,ws:'Eventos',tipo:'rec',forma:'vista',projectId:'',clientId:'',origem:'plano',categoria:l.cat,parte:e.client||'',descricao:l.desc,valorCent:l.cent,data:l.data,dataReal:''})));
+ $('#payPlanDialog').close();
+ toast(`Plano gerado: ${r.linhas.length} lançamento(s) pendente(s) no Financeiro do evento.`);
+ currentScreenRebuild()();
+}
+function openBudgetDialog(eventId){
+ const e=getEvents().find(x=>x.id===eventId);if(!e)return;
+ $('#budgetTitle').textContent='Orçamento — '+e.title;$('#budGerar').dataset.eventId=eventId;$('#budgetDialog').showModal();
+}
+function budgetHTML(eventId,opt){
+ const e=getEvents().find(x=>x.id===eventId),p=getProfile();
+ const cat=getCatalog(),ids=getEventCatalog(e.id);
+ const itens=ids.map(id=>cat.find(c=>c.id===id)).filter(Boolean);
+ const porPessoa=u=>/pessoa|convidado|cabe[cç]a/i.test(String(u||''));
+ const linhas=itens.map(c=>{const q=porPessoa(c.unit)?Math.max(1,Number(e.guests||0)):1,preco=Number(c.price||0);return{c,q,preco,sub:preco*q}});
+ const total=linhas.reduce((a,l)=>a+l.sub,0);
+ const grupos={};linhas.forEach(l=>{(grupos[l.c.category||'Outros']=grupos[l.c.category||'Outros']||[]).push(l)});
+ const validade=finAddDays(finLocalISO(),Math.max(1,Number(opt.validade)||7));
+ const base=total>0?total:Number(e.budget||0);
+ const sinalPct=Math.min(100,Math.max(0,Number(opt.sinal)||0)),sinal=Math.round(base*sinalPct)/100;
+ const rec=opt.parcelas?getFinance().filter(f=>f.eventId===e.id&&f.type==='Receita').sort((a,b)=>String(a.date).localeCompare(String(b.date))):[];
+ const recTot=rec.reduce((a,f)=>a+Number(f.value),0);
+ const tab=Object.keys(grupos).map(g=>`<tr><td colspan="4" style="background:#f4f1ec;font-weight:800;padding:6px 8px">${finEsc(g)}</td></tr>`+grupos[g].map(l=>`<tr><td style="padding:6px 8px">${finEsc(l.c.name)}${l.c.description?`<br><small style="color:#6b7a93">${finEsc(l.c.description)}</small>`:''}</td><td style="padding:6px 8px">${finEsc(l.c.unit||'—')}</td><td style="padding:6px 8px;text-align:center">${l.q}</td><td style="padding:6px 8px;text-align:right">${moneyApp(l.sub)}</td></tr>`).join('')).join('');
+ return `${profileHeader(p)}<main class="print-doc"><div class="print-kicker">ORÇAMENTO / PROPOSTA DE RESERVA</div><h2>${finEsc(e.title)}</h2>
+ <p><b>Cliente:</b> ${finEsc(e.client)} • <b>Data:</b> ${new Date(e.date+'T12:00:00').toLocaleDateString('pt-BR')} • <b>Local:</b> ${finEsc(e.venue)} • <b>Convidados previstos:</b> ${e.guests||0}</p>
+ <p style="color:#a15b1f"><b>Proposta válida até ${finBR(validade)}.</b></p>
+ <h3>Itens do orçamento</h3>
+ ${itens.length?`<table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;border-bottom:2px solid #273142"><th style="padding:6px 8px">Item</th><th style="padding:6px 8px">Unidade</th><th style="padding:6px 8px;text-align:center">Qtd.</th><th style="padding:6px 8px;text-align:right">Valor</th></tr>${tab}<tr style="border-top:2px solid #273142"><td colspan="3" style="padding:8px;text-align:right"><b>Total dos itens</b></td><td style="padding:8px;text-align:right"><b>${moneyApp(total)}</b></td></tr></table>`:'<p>Nenhum item do catálogo foi escolhido para este evento ainda.</p>'}
+ <h3>Resumo</h3>
+ <p><b>Orçamento previsto pelo cliente:</b> ${moneyApp(e.budget||0)}${total>0&&Number(e.budget)>0?` • <b>${total<=Number(e.budget)?'Dentro do orçamento (sobram '+moneyApp(Number(e.budget)-total)+')':'Acima do orçamento em '+moneyApp(total-Number(e.budget))}</b>`:''}</p>
+ <h3>Reserva e pagamento</h3>
+ <p>Para reservar a data, é necessário o pagamento de um <b>sinal de ${sinalPct}% (${moneyApp(sinal)})</b> até <b>${finBR(validade)}</b>. O saldo de <b>${moneyApp(Math.max(0,base-sinal))}</b> ${rec.length?'segue o cronograma de parcelas abaixo.':'será combinado entre as partes.'}</p>
+ ${rec.length?`<table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="text-align:left;border-bottom:1px solid #273142"><th style="padding:5px 8px">Parcela</th><th style="padding:5px 8px">Vencimento</th><th style="padding:5px 8px">Situação</th><th style="padding:5px 8px;text-align:right">Valor</th></tr>${rec.map(f=>`<tr><td style="padding:5px 8px">${finEsc(f.description||f.category)}</td><td style="padding:5px 8px">${finBR(f.date)}</td><td style="padding:5px 8px">${f.status==='Pago'?'Pago':'A pagar'}</td><td style="padding:5px 8px;text-align:right">${moneyApp(f.value)}</td></tr>`).join('')}<tr style="border-top:1px solid #273142"><td colspan="3" style="padding:6px 8px;text-align:right"><b>Total das parcelas</b></td><td style="padding:6px 8px;text-align:right"><b>${moneyApp(recTot)}</b></td></tr></table>`:''}
+ ${opt.obs?`<h3>Observações</h3><p style="white-space:pre-wrap">${finEsc(opt.obs)}</p>`:''}
+ <h3>Aceite</h3><p>Ao assinar, o contratante concorda com os itens e condições acima.</p>
+ <div style="display:flex;gap:40px;margin-top:46px"><div style="flex:1;border-top:1px solid #273142;padding-top:6px;font-size:12px">Contratante — ${finEsc(e.client)}</div><div style="flex:1;border-top:1px solid #273142;padding-top:6px;font-size:12px">${finEsc(p.businessName||'Contratada')}</div></div>
+ <p style="margin-top:22px;font-size:12px">Local e data: ______________________, ____/____/________</p></main><footer class="print-footer">${finEsc(p.address||'')} • ${finEsc(p.footer||'')}</footer>`;
+}
+function generateBudgetPdf(eventId,opt){
+ $('#printRoot').innerHTML=budgetHTML(eventId,opt);
+ document.body.classList.add('printing');setTimeout(()=>{window.print();setTimeout(()=>document.body.classList.remove('printing'),500)},100);
+}
+
+function ajRefresh(){const y=window.scrollY;drawSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav);window.scrollTo({top:y,behavior:'instant'})}
+function ajListRowsHTML(key){
+ const L=AJ_LISTS[key];
+ return L.items().map((it,i)=>{
+  const n=L.usage(it.name),esp=(L.special||[]).includes(it.name),nm=finEsc(it.name);
+  const tog=L.obj?`<button class="small-btn" data-ev-type-toggle="${i}">${it.visible?'👁️ Visível':'🚫 Escondido'}</button>`:`<button class="small-btn" data-aj-list-hide data-list="${key}" data-name="${nm}">${it.visible?'👁️ Visível':'🚫 Oculto'}</button>`;
+  const ed=esp?'':`<button class="small-btn" data-aj-list-rename data-list="${key}" data-name="${nm}" title="Renomear">✏️</button><button class="small-btn" data-aj-list-del data-list="${key}" data-name="${nm}" title="Excluir">🗑️</button>`;
+  return `<div class="aj-list-row"><div class="aj-list-name"><b>${nm}</b><small>${n} ${n===1?'uso':'usos'}</small></div><div class="aj-list-btns">${tog}${ed}</div></div>`;
+ }).join('');
+}
 let _cryptoKey=null;// chave AES-GCM derivada da senha nesta sessão (null = sem senha ativa ou ainda bloqueado)
 const R1_AUTH_KEY='r1_auth';// nunca passa pelo wrapper de criptografia (precisa ser legível antes de desbloquear)
 const b64e=bytes=>{let s='';bytes.forEach(b=>s+=String.fromCharCode(b));return btoa(s)};
@@ -849,9 +1183,11 @@ const storage={
  },
  setItem(key,value){
   const normalized=String(value);
+  try{if(typeof planWriteBlocked==='function'&&planWriteBlocked(key)){planNotifyReadOnly();return normalized}}catch(e){}
   memoryStore[key]=normalized;
-  if(_cryptoKey&&key!==R1_AUTH_KEY&&key.indexOf('r1_')===0){
-   encryptForStorage(_cryptoKey,normalized).then(enc=>{try{globalThis.localStorage?.setItem(key,enc)}catch{}}).catch(()=>{});
+  if(_cryptoKey&&!isPlainKey(key)&&key.indexOf('r1_')===0){
+   const seq=_encSeq[key]=(_encSeq[key]||0)+1;
+   encryptForStorage(_cryptoKey,normalized).then(enc=>{if(_encSeq[key]!==seq)return;try{globalThis.localStorage?.setItem(key,enc)}catch{}}).catch(()=>{});
   }else{
    try{globalThis.localStorage?.setItem(key,normalized)}catch{}
   }
@@ -863,7 +1199,7 @@ const storage={
 // Dados ainda em texto puro (de antes da senha existir) continuam legíveis normalmente.
 async function unlockAllData(key){
  let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
- const alvo=names.filter(k=>k.indexOf('r1_')===0&&k!==R1_AUTH_KEY);
+ const alvo=names.filter(k=>k.indexOf('r1_')===0&&!isPlainKey(k));
  await Promise.all(alvo.map(async k=>{
   const raw=globalThis.localStorage.getItem(k);
   if(raw==null)return;
@@ -877,7 +1213,7 @@ async function unlockAllData(key){
 // Criptografa tudo que ainda estiver em texto puro (chamado 1x ao criar a senha, sem apagar nada).
 async function encryptAllExistingData(key){
  let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
- const alvo=names.filter(k=>k.indexOf('r1_')===0&&k!==R1_AUTH_KEY);
+ const alvo=names.filter(k=>k.indexOf('r1_')===0&&!isPlainKey(k));
  await Promise.all(alvo.map(async k=>{
   const raw=globalThis.localStorage.getItem(k);
   if(raw==null||looksEncrypted(raw))return;
@@ -889,7 +1225,7 @@ async function encryptAllExistingData(key){
 // Reverte tudo pra texto puro (usado ao remover a senha).
 async function decryptAllExistingData(key){
  let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
- const alvo=names.filter(k=>k.indexOf('r1_')===0&&k!==R1_AUTH_KEY);
+ const alvo=names.filter(k=>k.indexOf('r1_')===0&&!isPlainKey(k));
  await Promise.all(alvo.map(async k=>{
   const raw=globalThis.localStorage.getItem(k);
   if(raw==null||!looksEncrypted(raw))return;
@@ -904,7 +1240,7 @@ async function decryptAllExistingData(key){
 async function reencryptAll(oldKeyOrNull,newKey){
  let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
  const alvo=new Set([...Object.keys(memoryStore||{}),...names]);
- const chaves=[...alvo].filter(k=>k.indexOf('r1_')===0&&k!==R1_AUTH_KEY);
+ const chaves=[...alvo].filter(k=>k.indexOf('r1_')===0&&!isPlainKey(k));
  await Promise.all(chaves.map(async k=>{
   let plain;
   if(k in memoryStore){
@@ -970,6 +1306,7 @@ async function doCriarOuTrocarSenha(){
   toast(trocando?'🔐 Senha alterada.':'🔐 Senha criada. Seus dados estão protegidos.');
   openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav);
   enviarSenhaWhats(p1);
+  if(_planPendingCode){const c=_planPendingCode;_planPendingCode='';setTimeout(()=>{const r=planTryActivate(c);if(r.ok)planAfterActivate();else toast(r.msg||'Não foi possível ativar o Pro.')},150)}
  }catch(e){
   if(err)err.textContent='Não foi possível concluir. Nada foi alterado — tente de novo.';
  }
@@ -1043,10 +1380,161 @@ async function doUnlockAttempt(){
 function doWipeTudo(){
  let names=[];try{names=Object.keys(globalThis.localStorage||{})}catch(e){names=[]}
  const alvo=new Set([...Object.keys(memoryStore||{}),...names]);
- [...alvo].filter(k=>k.startsWith('r1_')).forEach(k=>storage.removeItem(k));
+ [...alvo].filter(k=>k.startsWith('r1_')&&!R1_PLAN_KEEP.includes(k)).forEach(k=>storage.removeItem(k));
  try{globalThis.sessionStorage?.removeItem('r1_unlocked')}catch(e){}
  location.reload();
 }
+
+// ═══ Plano: teste → somente leitura → bloqueio → Pro (código por aparelho) ═══
+const planToday=()=>finLocalISO();
+const planTrial=()=>readJSON('r1_trial',null);
+const planLicense=()=>readJSON('r1_license',null);
+const planUsedCodes=()=>readJSON('r1_used_codes',[]);
+function planDevId(){
+ let id=storage.getItem('r1_devid');
+ if(!/^[A-Z0-9]{4}$/.test(id||'')){
+  const A='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';let o='';
+  try{const r=crypto.getRandomValues(new Uint8Array(4));o=[...r].map(b=>A[b%A.length]).join('')}catch(e){}
+  if(!/^[A-Z0-9]{4}$/.test(o)){o='';for(let i=0;i<4;i++)o+=A[Math.floor(Math.random()*A.length)]}
+  id=o;storage.setItem('r1_devid',id);
+ }
+ return id;
+}
+function planChecksum(dev,idx){let h=7;const x=dev+'|'+idx+'|RIZZIERIONEPRO';for(let i=0;i<x.length;i++)h=(h*31+x.charCodeAt(i))%99991;return String(100+(h%900))}
+function planCheck(code){
+ const m=/^RZ-([A-Z0-9]{4})-([123])(\d{3})$/.exec((code||'').toUpperCase().trim());
+ if(!m)return{ok:false,motivo:'formato'};
+ if(m[1]!==planDevId())return{ok:false,motivo:'aparelho'};
+ if(planChecksum(m[1],+m[2])!==m[3])return{ok:false,motivo:'invalido'};
+ return{ok:true,meses:PLAN_BY_IDX[+m[2]]};
+}
+function planTrialMarked(){return R1_TRIAL_MARKS.some(k=>{try{return !!globalThis.localStorage?.getItem(k)}catch(e){return false}})}
+function planMarkTrial(){R1_TRIAL_MARKS.forEach(k=>{try{globalThis.localStorage?.setItem(k,'1')}catch(e){}})}
+function planEnsureTrial(){
+ if(planTrial())return;
+ const hoje=planToday();
+ if(planTrialMarked()){storage.setItem('r1_trial',JSON.stringify({active:false,startedAt:'2000-01-01',expiresAt:'2000-01-01'}));return}
+ storage.setItem('r1_trial',JSON.stringify({active:true,startedAt:hoje,expiresAt:finAddDays(hoje,PLAN_TRIAL_DIAS)}));
+ planMarkTrial();
+}
+function planState(){
+ const lic=planLicense(),hoje=planToday(),T=planTrial();
+ const pro=!!(lic&&lic.pro&&(!lic.expiresAt||lic.expiresAt>=hoje));
+ const trialAtivo=!!(T&&T.active&&T.expiresAt&&hoje<=T.expiresAt);
+ const trialExpirado=!!(T&&T.expiresAt&&hoje>T.expiresAt);
+ const limite=T&&T.expiresAt?finAddDays(T.expiresAt,PLAN_LEITURA_DIAS):'';
+ const diff=iso=>Math.max(0,Math.ceil((new Date(iso+'T00:00:00')-new Date(hoje+'T00:00:00'))/86400000));
+ return{pro,lic,T,trialAtivo,trialExpirado,somenteLeitura:!pro&&trialExpirado,bloqueado:!pro&&trialExpirado&&hoje>limite,
+  diasTrial:T&&T.expiresAt?diff(T.expiresAt):0,diasPro:pro&&lic.expiresAt?diff(lic.expiresAt):0,leituraDias:limite?diff(limite):0};
+}
+function planWriteBlocked(key){
+ if(isPlainKey(key)||key==='r1_fin_v2_mig')return false;
+ if(!PLAN_DATA_PREFIXES.some(p=>key.indexOf(p)===0))return false;
+ const st=planState();return st.somenteLeitura||st.bloqueado;
+}
+let _planNotifyAt=0,_planPendingCode='';
+function planNotifyReadOnly(){
+ const agora=Date.now();if(agora-_planNotifyAt<4000)return;_planNotifyAt=agora;
+ try{toast('Teste grátis encerrado — somente leitura.');showProDialog('Seu teste grátis terminou: dá pra consultar, mas não alterar. Assine o Pro para voltar a cadastrar e editar.')}catch(e){}
+}
+function planCopyDev(){
+ const t='AP-'+planDevId();
+ try{navigator.clipboard.writeText(t).then(()=>toast('ID copiado: '+t)).catch(()=>toast('ID: '+t))}catch(e){toast('ID: '+t)}
+}
+function planOpenWhats(){
+ const msg='Oi! Quero assinar o RIZZIERI ONE Pro.\nMeu ID do aparelho é AP-'+planDevId();
+ globalThis.open?.('https://wa.me/'+PRO_WHATS+'?text='+encodeURIComponent(msg),'_blank');
+}
+function planProfileReady(){const c=ajCfg();return !!(c.nome&&c.nome.trim())&&onlyDigits(c.telefone||'').length>=10}
+function openPlanProfile(depois){
+ const c=ajCfg();$('#planProfNome').value=c.nome||'';$('#planProfTel').value=c.telefone||'';$('#planProfErr').textContent='';
+ $('#planProfSalvar').onclick=()=>{
+  const nome=$('#planProfNome').value.trim(),tel=$('#planProfTel').value.trim();
+  if(!nome){$('#planProfErr').textContent='Informe seu nome.';return}
+  if(onlyDigits(tel).length<10){$('#planProfErr').textContent='Informe um WhatsApp válido com DDD.';return}
+  const cfg=ajCfg();cfg.nome=nome;cfg.telefone=tel;storage.setItem('r1_consultor_profile',JSON.stringify(cfg));
+  $('#planProfileDialog').close();if(depois)depois();
+ };
+ $('#planProfileDialog').showModal();
+}
+function openProDialog(reason){
+ if(!planProfileReady()){openPlanProfile(()=>showProDialog(reason));return}
+ showProDialog(reason);
+}
+function showProDialog(reason){
+ const r=$('#proReason');r.textContent=reason||'';r.style.display=reason?'block':'none';
+ $('#proDevId').textContent='AP-'+planDevId();$('#proPreco1').textContent=PRECOS_PRO[1];
+ $('#proCode').value='';$('#proErr').textContent='';
+ if(!$('#proDialog').open)$('#proDialog').showModal();
+}
+function planMaskCode(el){
+ let v=el.value.toUpperCase().replace(/[^A-Z0-9]/g,'');if(v.indexOf('RZ')===0)v=v.slice(2);v=v.slice(0,8);
+ let out='RZ';if(v.length>0)out+='-'+v.slice(0,4);if(v.length>4)out+='-'+v.slice(4,8);el.value=out;
+}
+// Tenta ativar. Devolve {ok,msg}. O Pro exige senha de acesso (igual ao corsyncimoveis): sem senha, pede agora e ativa em seguida.
+function planTryActivate(codeRaw){
+ const code=(codeRaw||'').toUpperCase().trim();
+ if(!code||code==='RZ')return{ok:false,msg:'Digite o código.'};
+ const r=planCheck(code);
+ if(!r.ok)return{ok:false,msg:r.motivo==='aparelho'?'Este código foi gerado para outro aparelho. Confira o ID AP-'+planDevId()+'.':r.motivo==='formato'?'Formato inválido — use RZ-XXXX-0000.':'Código inválido para este aparelho.'};
+ if(planUsedCodes().includes(code))return{ok:false,msg:'Este código já foi usado neste aparelho. Peça um novo para renovar.'};
+ if(!planProfileReady()){openPlanProfile(()=>{const r2=planTryActivate(code);if(r2.ok)planAfterActivate()});return{ok:false,msg:'',pendente:true}}
+ if(!hasPassword()){
+  _planPendingCode=code;
+  $('#proDialog').close();
+  $('#pwSetupTitle').textContent='Crie sua senha de acesso (exigida pelo Pro)';$('#pwSetupBtn').textContent='Criar senha e ativar o Pro';
+  $('#pwSetupPass').value='';$('#pwSetupPass2').value='';$('#pwSetupErr').textContent='';$('#pwSetupMatch').textContent='';checkPwRules();
+  $('#pwSetupDialog').showModal();
+  return{ok:false,msg:'Crie a senha de acesso primeiro — o Pro exige senha.',pendente:true};
+ }
+ const st=planState(),base=st.pro?st.lic.expiresAt:planToday();
+ storage.setItem('r1_license',JSON.stringify({pro:true,code,plan:r.meses,activatedAt:planToday(),expiresAt:finAddMonths(base,r.meses)}));
+ const u=planUsedCodes();u.push(code);storage.setItem('r1_used_codes',JSON.stringify(u));
+ return{ok:true,meses:r.meses};
+}
+function planAfterActivate(){
+ const st=planState();
+ toast('🎉 Pro ativado! Válido até '+finBR(st.lic.expiresAt));
+ if($('#proDialog').open)$('#proDialog').close();
+ if(!$('#planLockView').classList.contains('hidden')){$('#planLockView').classList.add('hidden');proceedIntoApp();return}
+ openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav);
+}
+function showPlanLock(){
+ $('#appView').classList.add('hidden');$('#planLockView').classList.remove('hidden');
+ $('#planLockDev').textContent='AP-'+planDevId();$('#planLockErr').textContent='';
+}
+function planBannerHTML(){
+ const st=planState();
+ if(st.pro){
+  if(st.diasPro>7)return '';
+  return `<div class="card" id="planBanner" data-reason="Renove o Pro para continuar com tudo liberado." style="border:1.5px solid #f0a500;background:#fff9e8;margin-bottom:14px;cursor:pointer;padding:12px 14px"><b style="font-size:13.5px">⏳ Seu Pro vence em ${st.diasPro} ${st.diasPro===1?'dia':'dias'}</b><div style="font-size:11.5px;color:#6b7a93;margin-top:3px">Toque para renovar.</div></div>`;
+ }
+ if(st.somenteLeitura)return `<div class="card" id="planBanner" data-reason="Seu teste grátis terminou. Assine o Pro para voltar a cadastrar e editar." style="border:1.5px solid #c0392b;background:#fdecea;margin-bottom:14px;cursor:pointer;padding:12px 14px"><b style="font-size:13.5px">🔒 Teste encerrado — somente leitura</b><div style="font-size:11.5px;color:#6b7a93;margin-top:3px">Você pode consultar${st.leituraDias?` por mais ${st.leituraDias} dia(s)`:''}. Toque para assinar o Pro.</div></div>`;
+ if(st.trialAtivo){
+  const acabando=st.diasTrial<=PLAN_AVISO_DIAS;
+  return `<div class="card" id="planBanner" data-reason="${acabando?'Seu teste grátis está acabando! Assine o Pro para continuar com tudo liberado.':'Assine o Plano Pro e continue com tudo liberado depois do teste.'}" style="border:1.5px solid ${acabando?'#f0a500':'#ffd980'};background:#fff9e8;margin-bottom:14px;cursor:pointer;padding:12px 14px"><div style="display:flex;align-items:center;gap:10px"><span style="font-size:24px">${acabando?'⏳':'🎁'}</span><div style="flex:1"><span style="background:${acabando?'#f0a500':'#2563a8'};color:#fff;font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:100px">${acabando?'⏳ ACABANDO':'🎁 TESTE GRÁTIS'}</span> <b style="font-size:13.5px">Faltam ${st.diasTrial} ${st.diasTrial===1?'dia':'dias'}</b><div style="font-size:11.5px;color:#6b7a93;margin-top:3px">Todas as funções liberadas durante o teste. Toque para assinar.</div></div></div></div>`;
+ }
+ return '';
+}
+function planCardHTML(){
+ const st=planState();
+ let badge,texto;
+ if(st.pro){badge=['#16a34a','PRO ATIVO'];texto=`Pro ativo até <b>${finBR(st.lic.expiresAt)}</b> (${st.diasPro} ${st.diasPro===1?'dia':'dias'}).`}
+ else if(st.trialAtivo){badge=['#2563a8','TESTE GRÁTIS'];texto=`Faltam <b>${st.diasTrial} ${st.diasTrial===1?'dia':'dias'}</b> de teste, com todas as funções liberadas.`}
+ else{badge=['#c0392b','TESTE ENCERRADO'];texto='O teste grátis terminou. Seus dados continuam salvos; assine o Pro para voltar a cadastrar e editar.'}
+ return `<div class="card" id="ajPlanoCard" style="background:#f4f8fd;border:1.5px solid #bcd3ee;border-radius:14px;padding:14px">
+  <span style="background:${badge[0]};color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:100px">${badge[1]}</span>
+  <p style="font-size:13px;color:#273142;margin:10px 0 0">${texto}</p>
+  <div style="background:#fff;border:1.5px dashed #2563a8;border-radius:12px;padding:10px 12px;margin-top:12px">
+   <div style="font-size:10px;font-weight:800;color:#2563a8;text-transform:uppercase;letter-spacing:.3px">ID deste aparelho</div>
+   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px"><b style="font-size:17px;letter-spacing:1.5px;font-family:monospace">AP-${planDevId()}</b><button class="small-btn" id="ajPlanoCopiar" type="button">Copiar</button></div>
+  </div>
+  <div style="font-size:12.5px;color:#4a5568;margin-top:12px;line-height:1.8">1 mês — <b>${PRECOS_PRO[1]}</b> <span style="background:#2563a8;color:#fff;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:100px">PROMOÇÃO</span><br>6 meses e 12 meses — <span style="color:#6b7a93">em breve</span></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button class="btn btn-primary" id="ajPlanoWhats" type="button" style="background:#25D366;width:auto">Assinar pelo WhatsApp</button><button class="btn btn-secondary" id="ajPlanoAtivar" type="button" style="width:auto">Tenho um código</button></div>
+  <div style="font-size:11px;color:#6b7a93;margin-top:10px">Versão instalada: <b>${APP_VERSION}</b></div>
+ </div>`;
+}
+
 const readJSON=(k,fallback)=>{try{return JSON.parse(storage.getItem(k)||'null')??fallback}catch{return fallback}};
 currentWorkspace=storage.getItem('r1_workspace')||'Negócios';
 const getProfile=()=>readJSON('r1_company_profile',defaultProfile);
@@ -1108,7 +1596,10 @@ function goBack(){
 }
 function currentScreenRebuild(){return currentDescriptor.kind==='nav'?(()=>render(currentDescriptor.id)):(currentDescriptor.rebuild||(()=>render(currentDescriptor.parent||'dashboard')))}
 
-function bindContent(){
+function syncTopbarH(){const t=document.querySelector('.topbar');if(t)document.documentElement.style.setProperty('--topbar-h',t.offsetHeight+'px');const nv=document.querySelector('.bottom-nav');if(nv)document.documentElement.style.setProperty('--bottomnav-h',nv.offsetHeight+'px')}
+window.addEventListener('resize',()=>syncTopbarH());
+function bindContent(){syncTopbarH();
+ if(current==='dashboard'&&currentDescriptor&&currentDescriptor.kind==='nav'&&!$('#planBanner')&&$('#content')){const bn=planBannerHTML();if(bn){$('#content').insertAdjacentHTML('afterbegin',bn);const el=$('#planBanner');if(el)el.onclick=()=>openProDialog(el.dataset.reason||'')}}
  if(document.getElementById('ajZoomMenos'))ajWire();
  $$('[data-nav]').forEach(b=>b.onclick=()=>render(b.dataset.nav));
  $$('[data-back]').forEach(b=>b.onclick=goBack);
@@ -1158,12 +1649,45 @@ function bindContent(){
    zone.ondrop=ev=>{ev.preventDefault();zone.classList.remove('drag-over');const gid=ev.dataTransfer.getData('text/plain');if(!gid)return;updateRecord('guest',{id:gid,table:zone.dataset.tableZone||''});refreshSeating()};
   });
   $$('[data-seat-select]').forEach(sel=>{sel.onchange=()=>{updateRecord('guest',{id:sel.dataset.seatSelect,table:sel.value});refreshSeating()}});
+  // Arrastar por toque/caneta: segura o ⠿ e arrasta. (O mouse continua usando o arrastar nativo do card.)
+  $$('.seat-grip').forEach(grip=>{
+   grip.onpointerdown=ev=>{
+    if(ev.pointerType==='mouse')return;
+    ev.preventDefault();
+    const chip=grip.closest('.seat-chip'),gid=chip.dataset.guestId;chip.draggable=false;
+    const ghost=chip.cloneNode(true);ghost.classList.add('seat-ghost');ghost.removeAttribute('draggable');ghost.style.width=chip.offsetWidth+'px';
+    document.body.appendChild(ghost);chip.classList.add('seat-dragging');
+    let over=null;
+    const move=(x,y)=>{
+     ghost.style.transform=`translate(${Math.round(x-ghost.offsetWidth/2)}px,${Math.round(y-ghost.offsetHeight/2)}px) scale(1.03)`;
+     ghost.style.display='none';const el=document.elementFromPoint(x,y);ghost.style.display='';
+     const z=el&&el.closest?el.closest('[data-table-zone]'):null;
+     if(z!==over){if(over)over.classList.remove('drag-over');over=z;if(over)over.classList.add('drag-over')}
+     if(y<110)window.scrollBy(0,-16);else if(y>window.innerHeight-150)window.scrollBy(0,16);
+    };
+    const onMove=e=>{e.preventDefault();move(e.clientX,e.clientY)};
+    const done=drop=>{
+     grip.removeEventListener('pointermove',onMove);grip.removeEventListener('pointerup',onUp);grip.removeEventListener('pointercancel',onCancel);
+     ghost.remove();chip.draggable=true;chip.classList.remove('seat-dragging');if(over)over.classList.remove('drag-over');
+     if(drop&&over){updateRecord('guest',{id:gid,table:over.dataset.tableZone||''});refreshSeating()}
+    };
+    const onUp=()=>done(true),onCancel=()=>done(false);
+    try{grip.setPointerCapture(ev.pointerId)}catch(e){}
+    grip.addEventListener('pointermove',onMove);grip.addEventListener('pointerup',onUp);grip.addEventListener('pointercancel',onCancel);
+    move(ev.clientX,ev.clientY);
+   };
+  });
  }
  $$('[data-duplicate-event]').forEach(b=>b.onclick=()=>duplicateEvent(b.dataset.duplicateEvent));
  $$('[data-share-event]').forEach(b=>b.onclick=()=>shareEventWhatsApp(b.dataset.shareEvent));
  $$('[data-share-guests]').forEach(b=>b.onclick=()=>shareGuestsWhatsApp(b.dataset.shareGuests));
  $$('[data-share-checklist]').forEach(b=>b.onclick=()=>shareChecklistWhatsApp(b.dataset.shareChecklist));
  $$('[data-share-timeline]').forEach(b=>b.onclick=()=>shareTimelineWhatsApp(b.dataset.shareTimeline));
+ $$('[data-open-budget]').forEach(b=>b.onclick=()=>openBudgetDialog(b.dataset.openBudget));$$('[data-open-payplan]').forEach(b=>b.onclick=()=>openPayPlanDialog(b.dataset.openPayplan));
+ $$('[data-open-history]').forEach(b=>b.onclick=()=>openHistory(b.dataset.openHistory));
+ $$('[data-cmp-sup]').forEach(cb=>{cb.checked=_cmpSel.has(cb.dataset.cmpSup);cb.onchange=()=>{if(cb.checked){if(_cmpSel.size>=3){cb.checked=false;toast('Dá pra comparar até 3 fornecedores de cada vez.');return}_cmpSel.add(cb.dataset.cmpSup)}else _cmpSel.delete(cb.dataset.cmpSup);cmpUpdateBar()}});
+ if($('#supCompareBtn')){cmpUpdateBar();$('#supCompareBtn').onclick=()=>{const ids=[..._cmpSel];if(ids.length<2)return;openSubView('Comparar fornecedores','REDE DE FORNECEDORES',()=>supplierCompareView(ids),'fornecedores')}}
+ $$('[data-guest-import]').forEach(b=>b.onclick=()=>openGuestImport(b.dataset.guestImport));
  const guestBulkAdd=$('#guestBulkAdd');
  if(guestBulkAdd)guestBulkAdd.onclick=()=>{
   const ta=$('#guestBulkInput'),names=ta.value.split('\n').map(x=>x.trim()).filter(Boolean);
@@ -1242,6 +1766,7 @@ function tutorialAction(action){
  else if(action==='timeline'){const e=getEvents()[0];if(e)openSubView('Cronograma do dia','EXECUÇÃO DO EVENTO',()=>timelineView(e.id),'eventos')}
  else if(action==='guests'){const e=getEvents()[0];if(e)openSubView('Lista de convidados','EVENTOS & EXPERIÊNCIAS',()=>guestsView(e.id),'eventos')}
  else if(action==='seating'){const e=getEvents()[0];if(e)openSubView('Mapa de mesas','EVENTOS & EXPERIÊNCIAS',()=>seatingView(e.id),'eventos')}
+ else if(action==='ajustes'){if($('#pageTitle').textContent!=='Ajustes')openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)}
  else if(action.startsWith('catalogFilter:'))filterCatalog(action.split(':').slice(1).join(':'));
  else if(action==='catalogDetail'){const item=getCatalog().find(x=>x.category==='DJ & Música')||getCatalog()[0];if(item){openCatalogDetail(item.id);tutorialDemodalize('catalogDetailDialog')}}
  else if(action==='presentation'){const p=getPresentations()[0];if(p)openSubView('Editor de apresentação','PROJETOS VISUAIS',()=>presentationBuilderView(p.id),'apresentacoes')}
@@ -1266,12 +1791,15 @@ function finishTutorial(){const id=activeTutorialId;if(id)saveTutorialDone(id);c
 function showApp(){
  storage.setItem('rizzieri_one_demo','1');
  $('#loginView').classList.add('hidden');
- if(hasPassword()&&!sessionUnlocked()){$('#lockView').classList.remove('hidden');setTimeout(()=>$('#lockPass')?.focus(),200);return}
+ if(hasPassword()&&!_cryptoKey){$('#lockView').classList.remove('hidden');setTimeout(()=>$('#lockPass')?.focus(),200);return}
  proceedIntoApp();
 }
 function proceedIntoApp(){
  $('#loginView').classList.add('hidden');$('#lockView').classList.add('hidden');
- $('#appView').classList.remove('hidden');applyWorkspace(currentWorkspace);render('dashboard');updateAlertCenter();
+ planEnsureTrial();
+ if(planState().bloqueado){showPlanLock();return}
+ $('#planLockView').classList.add('hidden');
+ $('#appView').classList.remove('hidden');ajApplyZoom();ajApplyLogin();applyWorkspace(currentWorkspace);render('dashboard');updateAlertCenter();
  if(!storage.getItem('r1_tutorial_welcome_seen'))setTimeout(()=>{const d=$('#tutorialWelcomeDialog');if(d&&!d.open){d.showModal();hydrateIcons(d)}},450);
 }
 $('#loginForm').addEventListener('submit',e=>{e.preventDefault();showApp()});
@@ -1287,6 +1815,21 @@ $('#pwSetupToggle1').onclick=function(){togglePwField('pwSetupPass',this)};
 $('#pwSetupToggle2').onclick=function(){togglePwField('pwSetupPass2',this)};
 $('#pwSetupBtn').onclick=doCriarOuTrocarSenha;
 $('#pwRemoveConfirmBtn').onclick=doRemoverSenha;
+$('#planLockCopy').onclick=planCopyDev;
+$('#planLockWhats').onclick=planOpenWhats;
+$('#planLockCode').oninput=function(){planMaskCode(this)};
+$('#planLockCode').onkeydown=ev=>{if(ev.key==='Enter'){ev.preventDefault();$('#planLockActivate').click()}};
+$('#planLockActivate').onclick=()=>{const r=planTryActivate($('#planLockCode').value);if(r.ok)planAfterActivate();else $('#planLockErr').textContent=r.pendente?'':(r.msg||'')};
+$('#planLockBackup').onclick=()=>ajDownloadBackup();
+$('#proCopyDev').onclick=planCopyDev;
+$('#proWhatsBtn').onclick=planOpenWhats;
+$('#proCode').oninput=function(){planMaskCode(this)};
+$('#proActivateBtn').onclick=()=>{const r=planTryActivate($('#proCode').value);if(r.ok)planAfterActivate();else if(!r.pendente)$('#proErr').textContent=r.msg||''};
+$('#budGerar').onclick=()=>{const id=$('#budGerar').dataset.eventId;$('#budgetDialog').close();generateBudgetPdf(id,{validade:$('#budValidade').value,sinal:$('#budSinal').value,obs:$('#budObs').value.trim(),parcelas:$('#budParcelas').checked})};
+$('#ppTotal').oninput=function(){finMaskMoeda(this);payPlanRefresh()};['ppSinal','ppSinalData','ppParcelas','ppDiasAntes'].forEach(id=>$('#'+id).oninput=payPlanRefresh);$('#ppExistOk').onchange=payPlanRefresh;$('#ppGerar').onclick=doPayPlanGenerate;
+$('#giText').oninput=guestImportRefresh;
+$('#giOk').onclick=doGuestImport;
+$('#giFile').onchange=ev=>guestImportFile(ev.target.files&&ev.target.files[0]);
 $('#pwWhatsEnviar').onclick=()=>doEnviarSenhaWhats();
 $('#pwWhatsCancelar').onclick=()=>{_pwWhatsTmp='';$('#pwWhatsDialog').close()};
 $('#togglePassword').onclick=()=>{const i=$('#password');i.type=i.type==='password'?'text':'password'};
@@ -1470,7 +2013,8 @@ const forms={
 function renderField([key,label,kind,ph],eventId='',rawValue){
  const val=rawValue===true?'Sim':rawValue===false?'Não':(rawValue===undefined||rawValue===null?'':rawValue);
  if(kind==='select'||kind==='eventTypeSelect'||kind==='supplierCategorySelect'||kind==='catalogCategorySelect'||kind==='appointmentTypeSelect'){
-  const opts=kind==='eventTypeSelect'?getEventTypes().map(t=>t.name):kind==='supplierCategorySelect'?[...getSupplierCategories(),'Outro']:kind==='catalogCategorySelect'?[...getCatalogCategories(),'Outro']:kind==='appointmentTypeSelect'?[...getAppointmentTypes(),'Outro']:ph.split('|');
+  const vis=(lk,arr)=>{const h=ajHidden(lk);return arr.filter(n=>!h.has(n)||n===val)};
+  const opts=kind==='eventTypeSelect'?getEventTypes().map(t=>t.name):kind==='supplierCategorySelect'?[...vis('supplierCategories',getSupplierCategories()),'Outro']:kind==='catalogCategorySelect'?[...vis('catalogCategories',getCatalogCategories()),'Outro']:kind==='appointmentTypeSelect'?[...vis('appointmentTypes',getAppointmentTypes()),'Outro']:ph.split('|');
   const isOtherOpt=o=>/^outro(s)?$/i.test(String(o).trim());
   const hasOther=opts.some(isOtherOpt);
   const isCustom=hasOther && val!==undefined && val!==null && val!=='' && !opts.map(String).includes(String(val));
@@ -1492,6 +2036,7 @@ function renderField([key,label,kind,ph],eventId='',rawValue){
 const dedicatedOverrides={finance:'r1_finance_overrides',checklist:'r1_checklist_overrides',timeline:'r1_timeline_overrides',routine:'r1_routine_overrides'};
 function updateRecord(type,obj){
  const f=forms[type];if(!f||!f.store)return;
+ histTrack(type,obj);
  const extras=readJSON(f.store,[]);
  const idx=extras.findIndex(x=>x.id===obj.id);
  if(idx>=0){extras[idx]={...extras[idx],...obj};storage.setItem(f.store,JSON.stringify(extras));return}
@@ -1521,7 +2066,7 @@ function applyTypeDefaults(type,obj,isNew){
    Consultor, Acessibilidade, Plano, Avisos, Ajuda (+ backup), Segurança/Login, Sobre. */
 function ajCfg(){return readJSON('r1_consultor_profile',{nome:'',cargo:'',telefone:'',email:'',foto:''})}
 function ajZoom(){return Number(storage.getItem('r1_zoom')||'1')}
-function ajApplyZoom(){const z=ajZoom();document.documentElement.style.setProperty('--app-zoom',z);document.body.style.zoom=z}
+function ajApplyZoom(){const z=ajZoom();document.documentElement.style.setProperty('--app-zoom',z);document.body.style.zoom=z;syncTopbarH()}
 function ajAvisos(){return readJSON('r1_avisos_cfg',{atrasado:true,hoje:true,d7:false,d3:true,d1:true})}
 function ajLogin(){return readJSON('r1_login_cfg',{email:'demo@rizzieri.one',senha:'123456'})}
 function ajEventBell(){return readJSON('r1_event_bell_cfg',{warnDays:15,urgentDays:7})}
@@ -1530,16 +2075,16 @@ function ajLastBackup(){return storage.getItem('r1_last_backup')||null}
 function ajDiasDesdeBackup(){const d=ajLastBackup();if(!d)return null;return Math.max(0,Math.floor((new Date(finLocalISO()+'T12:00:00')-new Date(d+'T12:00:00'))/86400000))}
 function ajApplyLogin(){const l=ajLogin();const ei=document.querySelector('#loginForm input[type="email"]'),pi=document.querySelector('#loginForm #password');if(ei)ei.value=l.email;if(pi)pi.value=l.senha}
 /* ---- backup: exporta/restaura só as chaves do app (prefixo r1_) ---- */
-function ajBackupBuild(){const data={};const todasChaves=new Set([...Object.keys(memoryStore||{}),...(function(){try{return Object.keys(globalThis.localStorage||{})}catch{return[]}})()]);[...todasChaves].forEach(k=>{if(k.startsWith('r1_')&&k!==R1_AUTH_KEY)data[k]=storage.getItem(k)});return {app:'RIZZIERI ONE',version:APP_VERSION,exportedAt:new Date().toISOString(),data}}
+function ajBackupBuild(){const data={};const todasChaves=new Set([...Object.keys(memoryStore||{}),...(function(){try{return Object.keys(globalThis.localStorage||{})}catch{return[]}})()]);[...todasChaves].forEach(k=>{if(k.startsWith('r1_')&&!isPlainKey(k))data[k]=storage.getItem(k)});return {app:'RIZZIERI ONE',version:APP_VERSION,exportedAt:new Date().toISOString(),data}}
 function ajBackupApply(payload){if(!payload||typeof payload!=='object'||!payload.data)return {ok:false,msg:'Arquivo de backup inválido.'};
- Object.keys(payload.data).forEach(k=>{if(k.startsWith('r1_'))storage.setItem(k,payload.data[k])});
+ Object.keys(payload.data).forEach(k=>{if(k.startsWith('r1_')&&!isPlainKey(k))storage.setItem(k,payload.data[k])});
  return {ok:true,qtd:Object.keys(payload.data).length}}
 function ajDownloadBackup(){const payload=ajBackupBuild();const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`rizzieri-one-backup-${finLocalISO()}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);storage.setItem('r1_last_backup',finLocalISO());toast('Backup baixado.')}
 const AJ_PRESERVE_KEYS=['r1_consultor_profile','r1_zoom','r1_login_cfg','r1_avisos_cfg','r1_event_bell_cfg','r1_wa_templates','r1_last_backup','rizzieri_one_demo'];
 function ajApagarTudo(){
  if(!confirm('Isso apaga projetos, eventos, financeiro, clientes e fornecedores deste navegador (seu perfil, zoom e login continuam) e não pode ser desfeito. Você baixou um backup recente? Tem certeza que quer continuar?'))return;
  const todasChaves=new Set([...Object.keys(memoryStore||{}),...(function(){try{return Object.keys(globalThis.localStorage||{})}catch{return[]}})()]);
- [...todasChaves].filter(k=>k.startsWith('r1_')&&!AJ_PRESERVE_KEYS.includes(k)).forEach(k=>storage.removeItem(k));
+ [...todasChaves].filter(k=>k.startsWith('r1_')&&!AJ_PRESERVE_KEYS.includes(k)&&!isPlainKey(k)).forEach(k=>storage.removeItem(k));
  toast('Dados apagados. Recarregando...');
  setTimeout(()=>location.reload(),900);
 }
@@ -1559,7 +2104,7 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
   <div class="form-field"><label>Como quer ser chamado no app</label><input id="ajCargo" placeholder="Ex.: Consultor, Gestor, Fundador…" value="${finEsc(c.cargo)}"></div>
   <div class="form-field"><label>Telefone</label><input id="ajTelefone" placeholder="(11) 99999-9999" value="${finEsc(c.telefone)}"></div>
   <div class="form-field"><label>E-mail</label><input id="ajEmail" type="email" value="${finEsc(c.email)}"></div>
-  <div class="form-actions full"><button class="btn btn-primary" id="ajSalvarConsultor">Salvar consultor</button></div>
+  <div class="form-actions full"><div class="aj-actions" style="width:100%"><button class="btn btn-secondary" data-aj-discard style="width:auto">Descartar</button><button class="btn btn-primary" id="ajSalvarConsultor" style="width:auto">Gravar</button></div></div>
  </div></section>
 
  <section class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>💬 Mensagens</h3></div>
@@ -1569,7 +2114,7 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
   <div class="form-field full"><label>Ao compartilhar o checklist</label><textarea id="ajTplChecklist" rows="2" placeholder="Ex.: Pessoal, segue o que falta pra fechar:">${finEsc(tpl.checklist)}</textarea></div>
   <div class="form-field full"><label>Ao compartilhar o cronograma</label><textarea id="ajTplTimeline" rows="2" placeholder="Ex.: Equipe, aqui está a ordem do dia:">${finEsc(tpl.timeline)}</textarea></div>
   <div class="form-field full"><label>Ao compartilhar a lista de convidados</label><textarea id="ajTplGuests" rows="2" placeholder="Ex.: Atualização de confirmações:">${finEsc(tpl.guests)}</textarea></div>
-  <div class="form-actions full"><button class="btn btn-primary" id="ajSalvarTemplates">Salvar mensagens</button></div>
+  <div class="form-actions full"><div class="aj-actions" style="width:100%"><button class="btn btn-secondary" data-aj-discard style="width:auto">Descartar</button><button class="btn btn-primary" id="ajSalvarTemplates" style="width:auto">Gravar</button></div></div>
  </div></section>
 
  <section class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>♿ Acessibilidade</h3></div>
@@ -1578,11 +2123,7 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
  <button class="btn btn-secondary" id="ajZoomReset" style="margin-top:10px">Voltar ao padrão (100%)</button></section>
 
  <section class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>💠 Plano</h3></div>
- <div class="card" style="background:#EAF9EF;border:1.5px solid #8FD9A8;border-radius:14px;padding:14px">
-  <span style="background:#16a34a;color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:100px">USO INTERNO</span>
-  <p style="font-size:12.5px;color:#4a5568;margin-top:8px">O RIZZIERI ONE é uma ferramenta interna, sem plano pago nem período de teste — aqui não existe trava de funcionalidade por assinatura.</p>
-  <div style="font-size:11px;color:#6b7a93;margin-top:8px">Versão instalada: <b>${APP_VERSION}</b></div>
- </div></section>
+ ${planCardHTML()}</section>
 
  <section class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>🔔 Avisos</h3></div>
  <p style="font-size:12px;color:#6b7a93;margin-bottom:4px">O sino avisa sobre o financeiro em aberto. Escolha quais avisos você quer ver no painel inicial:</p>
@@ -1593,24 +2134,24 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
  <div class="form-grid">
   <div class="form-field"><label>Avisar a partir de quantos dias</label><input id="ajBellWarn" type="number" min="1" max="60" value="${bell.warnDays}"></div>
   <div class="form-field"><label>Piscar a partir de quantos dias (com pendência no checklist)</label><input id="ajBellUrgent" type="number" min="1" max="60" value="${bell.urgentDays}"></div>
-  <div class="form-actions full"><button class="btn btn-primary" id="ajSalvarBell">Salvar prazos do sino</button></div>
+  <div class="form-actions full"><div class="aj-actions" style="width:100%"><button class="btn btn-secondary" data-aj-discard style="width:auto">Descartar</button><button class="btn btn-primary" id="ajSalvarBell" style="width:auto">Gravar</button></div></div>
  </div></div></section>
- <section class="panel"><div class="panel-head"><h3>🏷️ Tipos de evento</h3></div><p style="font-size:12.5px;color:#4a5568;margin-top:0">Controla quais tipos aparecem como filtro na tela de Eventos. Esconder um tipo não apaga os eventos que já usam ele — só tira o botão de filtro da tela.</p>
- <div class="summary-list" style="margin-top:10px">${evTypes.map((t,i)=>`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px"><b>${t.name}</b><button class="small-btn" data-ev-type-toggle="${i}">${t.visible?'👁️ Visível':'🚫 Escondido'}</button></div>`).join('')}</div>
+ <section class="panel"><div class="panel-head"><h3>🏷️ Tipos de evento</h3></div><p style="font-size:12.5px;color:#4a5568;margin-top:0">Controla quais tipos aparecem como filtro na tela de Eventos. ✏️ renomeia (e atualiza todos os eventos que usam), 🚫 esconde só o botão de filtro, 🗑️ exclui (se algum evento usa, você escolhe pra qual tipo ele passa).</p>
+ <div class="aj-list" style="margin-top:10px">${ajListRowsHTML('eventTypes')}</div>
  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><input type="text" id="ajNewEventType" placeholder="Nome do novo tipo (ex.: Chá de bebê)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="ajAddEventType" style="width:auto">＋ Adicionar tipo</button></div>
  </section>
  <section class="panel"><div class="panel-head"><h3>🧰 Categorias de fornecedor</h3></div><p style="font-size:12.5px;color:#4a5568;margin-top:0">A lista que aparece pra escolher ao cadastrar um fornecedor. Adicione quantas quiser — ficam disponíveis pra sempre, sem precisar digitar de novo toda vez.</p>
- <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">${supCats.map(cat=>`<span class="pill">${cat}</span>`).join('')}</div>
+ <div class="aj-list" style="margin-top:10px">${ajListRowsHTML('supplierCategories')}</div>
  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><input type="text" id="ajNewSupplierCategory" placeholder="Nome da nova categoria (ex.: Florista)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="ajAddSupplierCategory" style="width:auto">＋ Adicionar categoria</button></div>
  </section>
 
  <section class="panel"><div class="panel-head"><h3>📖 Categorias de catálogo</h3></div><p style="font-size:12.5px;color:#4a5568;margin-top:0">A lista que aparece pra escolher ao cadastrar um item do catálogo. Adicione quantas quiser — ficam disponíveis pra sempre, sem precisar digitar de novo toda vez.</p>
- <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">${catCats.map(cat=>`<span class="pill">${cat}</span>`).join('')}</div>
+ <div class="aj-list" style="margin-top:10px">${ajListRowsHTML('catalogCategories')}</div>
  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><input type="text" id="ajNewCatalogCategory" placeholder="Nome da nova categoria (ex.: Doces finos)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="ajAddCatalogCategory" style="width:auto">＋ Adicionar categoria</button></div>
  </section>
 
  <section class="panel"><div class="panel-head"><h3>🗓️ Tipos de compromisso</h3></div><p style="font-size:12.5px;color:#4a5568;margin-top:0">A lista que aparece pra escolher ao cadastrar um compromisso na agenda. Adicione quantos quiser — ficam disponíveis pra sempre, sem precisar digitar de novo toda vez.</p>
- <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px">${apptTypes.map(t=>`<span class="pill">${t}</span>`).join('')}</div>
+ <div class="aj-list" style="margin-top:10px">${ajListRowsHTML('appointmentTypes')}</div>
  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap"><input type="text" id="ajNewAppointmentType" placeholder="Nome do novo tipo (ex.: Reunião de equipe)" style="flex:1;min-width:160px;margin:0"><button class="btn btn-secondary" id="ajAddAppointmentType" style="width:auto">＋ Adicionar tipo</button></div>
  </section>
 
@@ -1636,17 +2177,19 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
  <section class="panel" style="margin-bottom:14px"><div class="panel-head"><h3>🔒 Segurança / Login</h3></div>
  <p style="font-size:12px;color:#6b7a93;margin-bottom:8px">Credenciais da tela de entrada deste protótipo (ficam salvas só neste navegador).</p>
  <div class="form-grid"><div class="form-field"><label>E-mail de acesso</label><input id="ajLoginEmail" type="email" value="${finEsc(lg.email)}"></div><div class="form-field"><label>Senha de acesso</label><input id="ajLoginSenha" value="${finEsc(lg.senha)}"></div>
- <div class="form-actions full"><button class="btn btn-primary" id="ajSalvarLogin">Salvar credenciais</button></div></div>
+ <div class="form-actions full"><div class="aj-actions" style="width:100%"><button class="btn btn-secondary" data-aj-discard style="width:auto">Descartar</button><button class="btn btn-primary" id="ajSalvarLogin" style="width:auto">Gravar</button></div></div></div>
  <button class="link-btn" data-nav="seguranca" style="margin-top:6px">Ver arquitetura de segurança completa (produção) →</button>
  ${hasPassword()?`
  <div style="margin-top:14px;padding:12px;background:#eafbf1;border:1px solid #b9e8cc;border-radius:12px">
   <div style="font-size:13px;font-weight:700;color:#1f8a4c;margin-bottom:4px">🔐 Senha de acesso ativa</div>
   <p style="font-size:12px;color:#4a5568;margin:0 0 10px">Seus dados ficam criptografados neste aparelho. Sem a senha, o app não abre e ninguém consegue ler o que está salvo.</p>
+  <p style="font-size:11.5px;color:#6b7a93;margin:0 0 10px">Ao trocar, vale a mesma regra: de 4 a 50 caracteres, com maiúscula, minúscula, número e símbolo.</p>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary" id="ajTrocarSenha" style="width:auto">Trocar senha</button><button class="btn btn-secondary" id="ajRemoverSenha" style="width:auto;color:#c0392b;border-color:#f3c9c4">Remover senha</button></div>
  </div>`:`
  <div style="margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #e3e8ef;border-radius:12px">
   <div style="font-size:13px;font-weight:700;color:#273142;margin-bottom:4px">🔐 Senha de acesso</div>
   <p style="font-size:12px;color:#6b7a93;margin:0 0 10px">Ainda não ativada — qualquer pessoa com acesso a este aparelho pode abrir o app. Criar uma senha criptografa tudo (eventos, clientes, financeiro) e passa a exigi-la pra abrir.</p>
+   <p style="font-size:11.5px;color:#6b7a93;margin:0 0 10px"><b>Regra da senha</b> (igual ao corsyncimoveis): de 4 a 50 caracteres, com 1 maiúscula, 1 minúscula, 1 número e 1 símbolo. Ao criar, você pode mandar uma cópia pro seu WhatsApp.</p>
   <button class="btn btn-primary" id="ajCriarSenha" style="width:auto">🔒 Criar senha de acesso</button>
  </div>`}
  </section>
@@ -1658,7 +2201,8 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
  <section class="panel"><div class="panel-head"><h3>ℹ️ Sobre</h3></div>
  <p style="font-size:13px"><b>RIZZIERI ONE</b> — Life, Business & Projects</p>
  <p style="font-size:12px;color:#6b7a93;margin-top:4px">Central única para administrar projetos, aplicativos, estratégia, eventos, finanças e vida pessoal em quatro workspaces: Negócios, Eventos, Pessoal e Ideias.</p>
- <p style="font-size:11px;color:#6b7a93;margin-top:8px">Versão ${APP_VERSION} · Protótipo local (localStorage)</p></section>`}
+ <p style="font-size:11px;color:#6b7a93;margin-top:8px">Versão ${APP_VERSION} · Protótipo local (localStorage)</p></section>
+ <button class="link-btn" data-back style="margin-top:6px">← Voltar</button>`}
 function ajWire(){
  const $$q=sel=>[...document.querySelectorAll(sel)];
  const byId=id=>document.getElementById(id);
@@ -1667,22 +2211,29 @@ function ajWire(){
  byId('ajZoomMais').onclick=()=>{storage.setItem('r1_zoom',String(Math.min(1.6,ajZoom()+0.1)));ajApplyZoom();finRebuild()};
  byId('ajZoomReset').onclick=()=>{storage.setItem('r1_zoom','1');ajApplyZoom();finRebuild()};
  byId('ajFoto').onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;if(file.size>1500000){toast('Use uma foto de até 1,5 MB.');e.target.value='';return}const data=await fileToDataURL(file);byId('ajFotoPreview').innerHTML=`<img src="${data}" alt="Foto">`;byId('ajFotoPreview').dataset.foto=data};
- byId('ajSalvarConsultor').onclick=()=>{const foto=byId('ajFotoPreview').dataset.foto||ajCfg().foto||'';storage.setItem('r1_consultor_profile',JSON.stringify({nome:byId('ajNome').value.trim(),cargo:byId('ajCargo').value.trim(),telefone:byId('ajTelefone').value.trim(),email:byId('ajEmail').value.trim(),foto}));toast('Consultor salvo.')};
+ byId('ajSalvarConsultor').onclick=()=>{const foto=byId('ajFotoPreview').dataset.foto||ajCfg().foto||'';storage.setItem('r1_consultor_profile',JSON.stringify({nome:byId('ajNome').value.trim(),cargo:byId('ajCargo').value.trim(),telefone:byId('ajTelefone').value.trim(),email:byId('ajEmail').value.trim(),foto}));toast('Consultor salvo.');goBack();};
+ $$q('[data-aj-list-hide]').forEach(b=>b.onclick=()=>{ajListToggleHide(b.dataset.list,b.dataset.name);ajRefresh()});
+ $$q('[data-aj-list-rename]').forEach(b=>b.onclick=()=>ajListDialog('rename',b.dataset.list,b.dataset.name));
+ $$q('[data-aj-list-del]').forEach(b=>b.onclick=()=>ajListDialog('del',b.dataset.list,b.dataset.name));
+ $$q('[data-aj-discard]').forEach(b=>b.onclick=()=>{toast('Alterações descartadas.');goBack()});
  $$q('[data-aj-aviso]').forEach(inp=>inp.onchange=()=>{const av=ajAvisos();av[inp.dataset.ajAviso]=inp.checked;storage.setItem('r1_avisos_cfg',JSON.stringify(av));toast('Preferência de aviso salva.')});
  byId('ajInstalar').onclick=()=>byId('installBtn').click();
  byId('ajTutorial').onclick=()=>render('tutorial');
  if(byId('ajPermissoes'))byId('ajPermissoes').onclick=()=>{const info=byId('ajPermissoesInfo');info.style.display=info.style.display==='none'?'block':'none'};
  byId('ajBackupBaixar').onclick=()=>ajDownloadBackup();
  byId('ajBackupArquivo').onchange=e=>{const file=e.target.files&&e.target.files[0];if(file)ajRestoreFile(file)};
- byId('ajSalvarLogin').onclick=()=>{const email=byId('ajLoginEmail').value.trim()||'demo@rizzieri.one',senha=byId('ajLoginSenha').value||'123456';storage.setItem('r1_login_cfg',JSON.stringify({email,senha}));ajApplyLogin();toast('Credenciais atualizadas.')};
- if(byId('ajSalvarTemplates'))byId('ajSalvarTemplates').onclick=()=>{storage.setItem('r1_wa_templates',JSON.stringify({event:byId('ajTplEvent').value,checklist:byId('ajTplChecklist').value,timeline:byId('ajTplTimeline').value,guests:byId('ajTplGuests').value}));toast('Mensagens salvas.')};
- if(byId('ajSalvarBell'))byId('ajSalvarBell').onclick=()=>{const warnDays=Math.max(1,Number(byId('ajBellWarn').value)||15),urgentDays=Math.max(1,Number(byId('ajBellUrgent').value)||7);storage.setItem('r1_event_bell_cfg',JSON.stringify({warnDays,urgentDays}));toast('Prazos do sino salvos.')};
+ byId('ajSalvarLogin').onclick=()=>{const email=byId('ajLoginEmail').value.trim()||'demo@rizzieri.one',senha=byId('ajLoginSenha').value||'123456';storage.setItem('r1_login_cfg',JSON.stringify({email,senha}));ajApplyLogin();toast('Credenciais atualizadas.');goBack();};
+ if(byId('ajSalvarTemplates'))byId('ajSalvarTemplates').onclick=()=>{storage.setItem('r1_wa_templates',JSON.stringify({event:byId('ajTplEvent').value,checklist:byId('ajTplChecklist').value,timeline:byId('ajTplTimeline').value,guests:byId('ajTplGuests').value}));toast('Mensagens salvas.');goBack();};
+ if(byId('ajSalvarBell'))byId('ajSalvarBell').onclick=()=>{const warnDays=Math.max(1,Number(byId('ajBellWarn').value)||15),urgentDays=Math.max(1,Number(byId('ajBellUrgent').value)||7);storage.setItem('r1_event_bell_cfg',JSON.stringify({warnDays,urgentDays}));toast('Prazos do sino salvos.');goBack();};
  if(byId('ajApagarTudo'))byId('ajApagarTudo').onclick=ajApagarTudo;
  $$('[data-ev-type-toggle]').forEach(b=>b.onclick=()=>{const list=getEventTypes().slice();const i=Number(b.dataset.evTypeToggle);list[i]={...list[i],visible:!list[i].visible};saveEventTypes(list);openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)});
  if(byId('ajAddEventType'))byId('ajAddEventType').onclick=()=>{const inp=byId('ajNewEventType');const name=(inp.value||'').trim();if(!name){toast('Digite o nome do tipo.');return}const list=getEventTypes().slice();if(list.some(t=>t.name.toLowerCase()===name.toLowerCase())){toast('Esse tipo já existe.');return}list.push({name,visible:true});saveEventTypes(list);toast('Tipo adicionado.');openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)};
  if(byId('ajAddSupplierCategory'))byId('ajAddSupplierCategory').onclick=()=>{const inp=byId('ajNewSupplierCategory');const name=(inp.value||'').trim();if(!name){toast('Digite o nome da categoria.');return}const list=getSupplierCategories().slice();if(list.some(c=>c.toLowerCase()===name.toLowerCase())){toast('Essa categoria já existe.');return}list.push(name);saveSupplierCategories(list);toast('Categoria adicionada.');openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)};
  if(byId('ajAddCatalogCategory'))byId('ajAddCatalogCategory').onclick=()=>{const inp=byId('ajNewCatalogCategory');const name=(inp.value||'').trim();if(!name){toast('Digite o nome da categoria.');return}const list=getCatalogCategories().slice();if(list.some(c=>c.toLowerCase()===name.toLowerCase())){toast('Essa categoria já existe.');return}list.push(name);saveCatalogCategories(list);toast('Categoria adicionada.');openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)};
  if(byId('ajAddAppointmentType'))byId('ajAddAppointmentType').onclick=()=>{const inp=byId('ajNewAppointmentType');const name=(inp.value||'').trim();if(!name){toast('Digite o nome do tipo.');return}const list=getAppointmentTypes().slice();if(list.some(t=>t.toLowerCase()===name.toLowerCase())){toast('Esse tipo já existe.');return}list.push(name);saveAppointmentTypes(list);toast('Tipo adicionado.');openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav)};
+ if(byId('ajPlanoCopiar'))byId('ajPlanoCopiar').onclick=planCopyDev;
+ if(byId('ajPlanoWhats'))byId('ajPlanoWhats').onclick=()=>{if(!planProfileReady())openPlanProfile(planOpenWhats);else planOpenWhats()};
+ if(byId('ajPlanoAtivar'))byId('ajPlanoAtivar').onclick=()=>openProDialog('');
  if(byId('ajCriarSenha'))byId('ajCriarSenha').onclick=()=>{$('#pwSetupTitle').textContent='Criar senha de acesso';$('#pwSetupBtn').textContent='Criar senha e ativar';$('#pwSetupPass').value='';$('#pwSetupPass2').value='';$('#pwSetupErr').textContent='';$('#pwSetupMatch').textContent='';checkPwRules();$('#pwSetupDialog').showModal()};
  if(byId('ajTrocarSenha'))byId('ajTrocarSenha').onclick=()=>{$('#pwSetupTitle').textContent='Trocar senha de acesso';$('#pwSetupBtn').textContent='Trocar senha';$('#pwSetupPass').value='';$('#pwSetupPass2').value='';$('#pwSetupErr').textContent='';$('#pwSetupMatch').textContent='';checkPwRules();$('#pwSetupDialog').showModal()};
  if(byId('ajRemoverSenha'))byId('ajRemoverSenha').onclick=()=>{$('#pwRemoveDialog').showModal()};
@@ -1735,8 +2286,9 @@ async function openForm(type,eventId='',record=null){if(type==='finance'||type==
  $$('#dynamicForm [data-other-select]').forEach(sel=>{const isOther=/^outro(s)?$/i.test(String(obj[sel.name]||'').trim());const customVal=(obj[sel.name+'__other']||'').trim();if(isOther&&customVal)obj[sel.name]=customVal;delete obj[sel.name+'__other']});
  (f.fields||[]).filter(fl=>fl[2]==='money').forEach(fl=>{obj[fl[0]]=finParseMoeda(obj[fl[0]])/100});
  (f.fields||[]).forEach(fl=>{
-  const cfg=MANAGED_LIST_FIELDS[fl[2]];const val=(obj[fl[0]]||'').trim();
-  if(!cfg||!val)return;
+  const cfg=MANAGED_LIST_FIELDS[fl[2]];if(!cfg)return;
+  const val=String(obj[fl[0]]??'').trim();
+  if(!val)return;
   const list=cfg.get().slice();
   const already=cfg.isObj?list.some(x=>x.name.toLowerCase()===val.toLowerCase()):list.some(x=>x.toLowerCase()===val.toLowerCase());
   if(!already){list.push(cfg.isObj?{name:val,visible:true}:val);cfg.save(list)}

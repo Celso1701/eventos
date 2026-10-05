@@ -53,3 +53,16 @@ repositório) e nas conversas anteriores.
 
 Todos os direitos reservados. Ver arquivo `LICENSE`. O repositório é público apenas para permitir a
 hospedagem gratuita via GitHub Pages — isso não autoriza uso, cópia ou redistribuição do código.
+
+
+## Senha de acesso (opcional) e criptografia local
+- Em **Ajustes → Segurança** você pode criar uma senha. Com ela, todos os dados do app (eventos, clientes, financeiro, convidados…) ficam **criptografados neste aparelho** (PBKDF2 com 150.000 iterações + AES-256-GCM). A senha nunca é gravada; o app só guarda uma "prova" cifrada pra conferir.
+- Regra da senha (igual ao corsyncimoveis): de 4 a 50 caracteres, com 1 maiúscula, 1 minúscula, 1 número e 1 símbolo. Errou 5 vezes: espera 30 segundos.
+- **Sem a senha os dados não podem ser recuperados.** Ao criar, o app oferece mandar uma cópia pro seu próprio WhatsApp (a mensagem leva a senha em texto — guarde com cuidado).
+- O backup (Ajustes → Backup) é um arquivo legível, sem a senha, a licença nem o ID do aparelho. Guarde-o em local seguro.
+
+## Plano: teste grátis de 30 dias e Pro
+- Na primeira abertura começa o **teste grátis de 30 dias** com tudo liberado. Depois do teste o app fica só para consulta por 1 dia e então pede o código Pro (com opção de baixar um backup antes). **Nada é apagado.**
+- O **Pro de 1 mês custa R$ 90,00** e é assinado pelo WhatsApp. O código tem o formato `RZ-XXXX-0000`, é gerado para o **ID do aparelho** (Ajustes → Plano) e só funciona nele.
+- Quem gera os códigos usa o arquivo `gerador-codigo-pro-rizzieri.html` (fica **fora** da pasta `github/` — não publique).
+- A licença e o teste não entram no backup.

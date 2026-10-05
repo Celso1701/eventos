@@ -45,6 +45,29 @@
     </div>
   </section>
 
+
+  <section id="planLockView" class="login-shell hidden">
+    <div class="login-brand"><div class="brand-emblem">R1</div><div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div></div>
+    <div class="login-panel" style="max-width:440px;margin:0 auto">
+      <span class="eyebrow">PLANO PRO</span>
+      <h1 style="font-size:28px">Seu teste grátis terminou</h1>
+      <p>Para continuar usando o RIZZIERI ONE, assine o Plano Pro. Seus dados continuam salvos neste aparelho e são liberados assim que você ativar.</p>
+      <div class="login-card" style="display:flex;flex-direction:column;gap:10px">
+        <div style="background:#eef4fb;border:1.5px dashed #2563a8;border-radius:12px;padding:12px 14px">
+          <div style="font-size:10px;font-weight:800;color:#2563a8;text-transform:uppercase;letter-spacing:.4px">ID deste aparelho</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px"><b id="planLockDev" style="font-size:19px;letter-spacing:1.5px;font-family:monospace">AP-----</b><button class="small-btn" id="planLockCopy" type="button">Copiar</button></div>
+          <div style="font-size:11px;color:#6b7a93;margin-top:6px">Seu código Pro é gerado para ESTE ID e só funciona neste aparelho.</div>
+        </div>
+        <button class="btn btn-primary" id="planLockWhats" type="button" style="background:#25D366">Assinar pelo WhatsApp</button>
+        <label>Já tem um código? Digite aqui</label>
+        <input id="planLockCode" placeholder="RZ-XXXX-0000" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700">
+        <button class="btn btn-primary" id="planLockActivate" type="button">Ativar Pro</button>
+        <div id="planLockErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b"></div>
+        <button class="link-btn" id="planLockBackup" type="button" style="text-align:left">⬇ Baixar meu backup (seus dados são seus)</button>
+      </div>
+    </div>
+  </section>
+
   <section id="lockView" class="login-shell hidden">
     <div class="login-brand">
       <div class="brand-emblem">R1</div>
@@ -66,13 +89,13 @@
 
   <section id="appView" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.18.1</span></div>
+      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.19.0</span></div>
       <div class="workspace-card">
         <span>WORKSPACE</span>
         <button id="workspaceBtn"><span class="workspace-current"><i id="workspaceDot" class="workspace-dot"></i><b id="workspaceName">Negócios</b></span><i class="workspace-chevron">⌄</i></button>
       </div>
       <nav id="sideNav" class="side-nav"></nav>
-      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.18.1</small>
+      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.19.0</small>
         <button id="tutorialBtn" class="tutorial-entry-btn"><span data-icon="help-circle"></span><span><b>Tutorial completo</b><small>Aprenda passo a passo</small></span></button>
         <button id="installBtn" class="install-btn">⬇ Instalar aplicativo</button>
         <div class="user-card"><span class="avatar">BR</span><div><b>Bruno</b><small>Administrador</small></div><button data-open-ajustes title="Ajustes">⋯</button></div>
@@ -147,6 +170,78 @@
   <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>Remover senha de acesso?</h3></div><button class="close-btn" data-close="pwRemoveDialog">×</button></div>
   <p style="font-size:13px;color:#4a5568;margin:0 0 16px">Seus dados voltam a ficar legíveis neste aparelho sem precisar de senha. Você pode criar uma nova senha depois, a qualquer momento.</p>
   <div class="form-actions"><button class="btn btn-secondary" data-close="pwRemoveDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="pwRemoveConfirmBtn" style="width:auto">Remover senha</button></div>
+</dialog>
+
+<dialog id="budgetDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">ORÇAMENTO / PROPOSTA</span><h3 id="budgetTitle">Orçamento em PDF</h3></div><button class="close-btn" data-close="budgetDialog">×</button></div>
+  <p style="font-size:12.5px;color:#4a5568;margin:0 0 10px">Gera uma proposta para o cliente com os itens escolhidos, o total, o <b>sinal de reserva</b>, as parcelas e o campo de aceite. Valores internos (o que você paga aos fornecedores) <b>não</b> entram.</p>
+  <div class="form-grid">
+   <div class="form-field"><label>Validade da proposta (dias)</label><input id="budValidade" type="number" min="1" max="90" value="7"></div>
+   <div class="form-field"><label>Sinal para reservar a data (%)</label><input id="budSinal" type="number" min="0" max="100" value="30"></div>
+   <div class="form-field full"><label>Observações para o cliente</label><textarea id="budObs" rows="3" placeholder="Ex.: Valores sujeitos a reajuste após a validade. Alterações no número de convidados até 15 dias antes do evento."></textarea></div>
+   <label class="full" style="display:flex;gap:8px;align-items:center;font-size:13px"><input type="checkbox" id="budParcelas" checked> Incluir as parcelas já lançadas no financeiro</label>
+  </div>
+  <div class="form-actions" style="margin-top:12px"><button class="btn btn-secondary" data-close="budgetDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="budGerar" style="width:auto">Gerar PDF</button></div>
+</dialog>
+
+<dialog id="payPlanDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">FECHAR A RESERVA</span><h3 id="ppTitle">Plano de pagamento</h3></div><button class="close-btn" data-close="payPlanDialog">×</button></div>
+  <p style="font-size:12.5px;color:#4a5568;margin:0 0 10px">Gera o <b>sinal</b> e as <b>parcelas</b> do cliente como receitas pendentes no Financeiro deste evento. O portal do cliente passa a mostrar o andamento do pagamento.</p>
+  <div class="form-grid">
+   <div class="form-field"><label>Valor total do contrato (R$)</label><input id="ppTotal" inputmode="numeric" autocomplete="off" placeholder="0,00"></div>
+   <div class="form-field"><label>Sinal para reservar (%)</label><input id="ppSinal" type="number" min="0" max="100" value="30"></div>
+   <div class="form-field"><label>Vencimento do sinal</label><input id="ppSinalData" type="date"></div>
+   <div class="form-field"><label>Parcelas do saldo (1 a 12)</label><input id="ppParcelas" type="number" min="1" max="12" value="3"></div>
+   <div class="form-field full"><label>A última parcela vence quantos dias antes do evento?</label><input id="ppDiasAntes" type="number" min="0" max="120" value="10"></div>
+  </div>
+  <div id="ppPreview" style="margin-top:10px;font-size:12.5px"></div>
+  <div id="ppExistWrap" style="display:none;margin-top:8px;background:#fdf1e3;border:1px solid #eccb9c;border-radius:10px;padding:8px 10px;font-size:12.5px;color:#a15b1f"><span id="ppExistText"></span><label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="ppExistOk"> Quero adicionar mesmo assim</label></div>
+  <div id="ppErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b;margin-top:4px"></div>
+  <div class="form-actions" style="margin-top:8px"><button class="btn btn-secondary" data-close="payPlanDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="ppGerar" style="width:auto">Gerar lançamentos</button></div>
+</dialog>
+
+<dialog id="guestImportDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">LISTA DE CONVIDADOS</span><h3>Importar de planilha</h3></div><button class="close-btn" data-close="guestImportDialog">×</button></div>
+  <p style="font-size:12.5px;color:#4a5568;margin:0 0 8px">Copie as células da sua planilha (Excel, Google Planilhas) e cole aqui, ou escolha um arquivo <b>.csv</b>. Colunas aceitas: <b>Nome</b>, <b>Telefone</b>, <b>Mesa</b> e <b>Status</b> (Confirmado / Pendente / Recusado). A primeira linha pode ser o cabeçalho.</p>
+  <textarea id="giText" rows="5" placeholder="Nome&#9;Telefone&#9;Mesa&#9;Status&#10;Maria Silva&#9;(11) 98888-7766&#9;Mesa 1&#9;Confirmado" style="width:100%;resize:vertical;font-size:13px"></textarea>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px"><label class="small-btn" style="cursor:pointer;margin:0">📄 Escolher arquivo .csv<input id="giFile" type="file" accept=".csv,.tsv,.txt,text/csv,text/plain" style="display:none"></label><small id="giFileName" style="color:#6b7a93"></small></div>
+  <div id="giPreview" style="margin-top:12px;font-size:12.5px"></div>
+  <div class="form-actions" style="margin-top:12px"><button class="btn btn-secondary" data-close="guestImportDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="giOk" disabled style="width:auto">Importar</button></div>
+</dialog>
+
+<dialog id="ajListDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="ajListTitle">Renomear</h3></div><button class="close-btn" data-close="ajListDialog">×</button></div>
+  <p id="ajListText" style="font-size:13px;color:#4a5568;margin:0 0 12px"></p>
+  <div class="form-field" id="ajListInputWrap"><label>Novo nome</label><input id="ajListInput" autocomplete="off"></div>
+  <div class="form-field" id="ajListSelWrap" style="display:none"><label>Passar os registros para</label><select id="ajListSelect"></select></div>
+  <div id="ajListErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b;margin-top:4px"></div>
+  <div class="form-actions" style="margin-top:8px"><button class="btn btn-secondary" data-close="ajListDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="ajListOk" style="width:auto">Salvar</button></div>
+</dialog>
+
+<dialog id="proDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>Plano Pro</h3></div><button class="close-btn" data-close="proDialog">×</button></div>
+  <div id="proReason" style="display:none;background:#fff6e0;border:1.5px solid #f0a500;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px"></div>
+  <div style="font-size:14px;font-weight:800;margin-bottom:6px">Planos</div>
+  <div style="font-size:13.5px;line-height:1.9;color:#273142">1 mês — <b id="proPreco1">R$ 90,00</b> <span style="display:inline-block;background:#2563a8;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;vertical-align:middle">PROMOÇÃO POR TEMPO LIMITADO</span><br>6 meses — <span style="color:#6b7a93">Em breve</span><br>12 meses — <span style="color:#6b7a93">Em breve</span></div>
+  <div style="background:#eef4fb;border:1.5px dashed #2563a8;border-radius:12px;padding:12px 14px;margin-top:12px">
+    <div style="font-size:10px;font-weight:800;color:#2563a8;text-transform:uppercase;letter-spacing:.3px">ID deste aparelho</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px"><b id="proDevId" style="font-size:18px;letter-spacing:1.5px;font-family:monospace">AP-----</b><button class="small-btn" id="proCopyDev" type="button">Copiar</button></div>
+    <div style="font-size:11px;color:#6b7a93;margin-top:6px">Seu código Pro é gerado para ESTE ID e só funciona neste aparelho.</div>
+  </div>
+  <button class="btn btn-primary" id="proWhatsBtn" type="button" style="background:#25D366;margin-top:12px;width:100%">Assinar pelo WhatsApp</button>
+  <label style="display:block;margin-top:14px;font-size:12px;font-weight:700;color:#4a5568">Já tem um código? Digite aqui</label>
+  <input id="proCode" placeholder="RZ-XXXX-0000" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;width:100%">
+  <div id="proErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b;margin-top:4px"></div>
+  <div class="form-actions" style="margin-top:8px"><button class="btn btn-secondary" data-close="proDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="proActivateBtn" style="width:auto">Ativar Pro</button></div>
+</dialog>
+
+<dialog id="planProfileDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>Seus dados para assinar</h3></div><button class="close-btn" data-close="planProfileDialog">×</button></div>
+  <p style="font-size:13px;color:#4a5568;margin:0 0 12px">Para assinar o Pro, informe seu nome e seu WhatsApp (com DDD). Eles identificam a assinatura e ficam salvos em Ajustes → Consultor.</p>
+  <div class="form-field"><label>Nome</label><input id="planProfNome" autocomplete="off"></div>
+  <div class="form-field"><label>WhatsApp (com DDD)</label><input id="planProfTel" placeholder="(11) 99999-9999" inputmode="tel" autocomplete="off"></div>
+  <div id="planProfErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b;margin-top:4px"></div>
+  <div class="form-actions" style="margin-top:8px"><button class="btn btn-secondary" data-close="planProfileDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="planProfSalvar" style="width:auto">Continuar</button></div>
 </dialog>
 
 <dialog id="pwWhatsDialog" class="modal">
