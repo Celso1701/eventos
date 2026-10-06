@@ -437,3 +437,55 @@ body{font-weight:400}
 .pp-st{font-size:11px;font-weight:700}
 
 .fin-ev-name{display:inline-block;margin:4px 0 8px;padding:6px 14px;border-radius:999px;background:var(--workspace-accent,#b6692f);color:#fff;font-weight:800;font-size:14px;line-height:1.3;max-width:100%}
+
+/* Degustação do evento */
+.tasting-card{border-left:4px solid var(--soft-line,#d9dee6)}
+.tasting-card[data-approved="Sim"]{border-left-color:#1f8a4c}
+.tasting-card[data-approved="Não"]{border-left-color:#c0392b}
+.tasting-approve{display:flex;align-items:center;gap:8px;margin:10px 0;flex-wrap:wrap}
+.tasting-approve>span{font-weight:700;font-size:13px}
+.tasting-approve button{min-width:84px;padding:9px 14px;border-radius:999px;border:1px solid var(--soft-line,#d9dee6);background:#fff;color:#4a5568;font-weight:800;cursor:pointer}
+.tasting-approve button.on-sim{background:#eafbf1;border-color:#b9e8cc;color:#1f8a4c}
+.tasting-approve button.on-nao{background:#fdecec;border-color:#f3c9c4;color:#c0392b}
+
+/* Convidados: status com texto + escolha de mesa */
+.guest-row{flex-wrap:wrap}
+.guest-main{flex:1 1 140px}
+.guest-status-group{order:3;flex:1 1 100%;display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.guest-status-btn{width:auto;height:36px;border-radius:999px;padding:0 8px;font-size:12.5px;white-space:nowrap}
+@media(min-width:720px){.guest-row{flex-wrap:nowrap}.guest-status-group{order:0;flex:0 0 auto;display:flex}.guest-status-btn{padding:0 14px}}
+[data-table-chooser] select{width:100%}
+
+/* Degustação v2 + aprovação do cliente 0–10 */
+.tasting-kind{background:#fdf1e3;color:#a15b1f;font-weight:800}
+.tasting-notes{background:#f8fafc;border-radius:10px;padding:8px 10px;font-size:13px;color:#4a5568;margin:8px 0;white-space:pre-wrap}
+.tasting-file{display:block;margin:8px 0}
+.tasting-file img{max-width:100%;max-height:170px;border-radius:10px;border:1px solid var(--soft-line,#d9dee6);display:block}
+.tasting-file span{font-size:12px;color:#a15b1f;font-weight:700}
+.tasting-file-pdf{display:inline-block;margin:8px 0;text-decoration:none}
+.score-scale{margin:6px 0 12px}
+.score-head{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#4a5568;margin-bottom:4px}
+.score-head b{color:#1f2b3a}
+.score-btns{display:grid;grid-template-columns:repeat(11,1fr);gap:3px}
+.score-btn{min-width:0;height:30px;border:1.5px solid var(--c);background:#fff;color:var(--c);border-radius:8px;font-weight:800;font-size:12.5px;padding:0;cursor:pointer}
+.score-btn.on{background:var(--c);color:#fff}
+.approval-group{margin-bottom:14px}
+.approval-item{padding:10px 0;border-bottom:1px solid #eef1f5}
+.approval-item:last-child{border-bottom:0}
+.approval-title b{display:block;font-size:14px}
+.approval-title small{color:#8a95a1;font-size:12px}
+.approval-board.only-unrated .approval-item:not([data-score=""]){display:none}
+.score-btn.s0{--c:hsl(0,68%,42%)}
+.score-btn.s1{--c:hsl(12,68%,42%)}
+.score-btn.s2{--c:hsl(24,68%,42%)}
+.score-btn.s3{--c:hsl(36,68%,42%)}
+.score-btn.s4{--c:hsl(48,68%,42%)}
+.score-btn.s5{--c:hsl(60,68%,42%)}
+.score-btn.s6{--c:hsl(72,68%,42%)}
+.score-btn.s7{--c:hsl(84,68%,42%)}
+.score-btn.s8{--c:hsl(96,68%,42%)}
+.score-btn.s9{--c:hsl(108,68%,42%)}
+.score-btn.s10{--c:hsl(120,68%,42%)}
+
+/* Escala 0–10 no celular: duas fileiras com botões maiores (toque) */
+@media(max-width:560px){.score-btns{grid-template-columns:repeat(6,1fr);gap:6px}.score-btn{height:40px;font-size:14px}}
