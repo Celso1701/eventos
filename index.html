@@ -89,13 +89,13 @@
 
   <section id="appView" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.19.0</span></div>
+      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.20.0</span></div>
       <div class="workspace-card">
         <span>WORKSPACE</span>
         <button id="workspaceBtn"><span class="workspace-current"><i id="workspaceDot" class="workspace-dot"></i><b id="workspaceName">Negócios</b></span><i class="workspace-chevron">⌄</i></button>
       </div>
       <nav id="sideNav" class="side-nav"></nav>
-      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.19.0</small>
+      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.20.0</small>
         <button id="tutorialBtn" class="tutorial-entry-btn"><span data-icon="help-circle"></span><span><b>Tutorial completo</b><small>Aprenda passo a passo</small></span></button>
         <button id="installBtn" class="install-btn">⬇ Instalar aplicativo</button>
         <div class="user-card"><span class="avatar">BR</span><div><b>Bruno</b><small>Administrador</small></div><button data-open-ajustes title="Ajustes">⋯</button></div>
@@ -104,7 +104,7 @@
 
     <div class="main-shell">
       <header class="topbar">
-        <div><span class="eyebrow" id="sectionEyebrow">CENTRAL DE COMANDO</span><h2 id="pageTitle">Visão geral</h2></div>
+        <div class="top-left"><button class="back-top" id="topBackBtn" type="button" hidden aria-label="Voltar"><span aria-hidden="true">←</span><span>Voltar</span></button><div class="top-title"><span class="eyebrow" id="sectionEyebrow">CENTRAL DE COMANDO</span><h2 id="pageTitle">Visão geral</h2></div></div>
         <div class="top-actions">
           <button class="icon-btn mobile-workspace-btn" id="mobileWorkspaceBtn" title="Trocar workspace"><span data-icon="grid"></span></button>
           <button class="icon-btn tutorial-top-btn" id="tutorialTopBtn" title="Tutorial e ajuda"><span data-icon="help-circle"></span></button>
@@ -187,17 +187,22 @@
 <dialog id="payPlanDialog" class="modal">
   <div class="modal-head"><div><span class="eyebrow">FECHAR A RESERVA</span><h3 id="ppTitle">Plano de pagamento</h3></div><button class="close-btn" data-close="payPlanDialog">×</button></div>
   <p style="font-size:12.5px;color:#4a5568;margin:0 0 10px">Gera o <b>sinal</b> e as <b>parcelas</b> do cliente como receitas pendentes no Financeiro deste evento. O portal do cliente passa a mostrar o andamento do pagamento.</p>
-  <div class="form-grid">
+  <div id="ppExisting" style="display:none">
+   <div id="ppExList"></div>
+   <div id="ppAsk" style="margin-top:10px;padding:10px 12px;background:#f6f8fc;border:1px solid #e3e8ef;border-radius:12px"><b style="font-size:13px">O que você quer fazer com este plano?</b><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn btn-primary" id="ppAskMais" style="width:auto">＋ Incluir mais parcelas</button><button type="button" class="btn btn-secondary" id="ppAskAlterar" style="width:auto">✏️ Alterar as existentes</button></div></div>
+  </div>
+  <div class="form-grid" id="ppForm">
    <div class="form-field"><label>Valor total do contrato (R$)</label><input id="ppTotal" inputmode="numeric" autocomplete="off" placeholder="0,00"></div>
-   <div class="form-field"><label>Sinal para reservar (%)</label><input id="ppSinal" type="number" min="0" max="100" value="30"></div>
-   <div class="form-field"><label>Vencimento do sinal</label><input id="ppSinalData" type="date"></div>
-   <div class="form-field"><label>Parcelas do saldo (1 a 12)</label><input id="ppParcelas" type="number" min="1" max="12" value="3"></div>
-   <div class="form-field full"><label>A última parcela vence quantos dias antes do evento?</label><input id="ppDiasAntes" type="number" min="0" max="120" value="10"></div>
+   <div class="form-field pp-gen"><label>Sinal para reservar (%)</label><input id="ppSinal" type="number" min="0" max="100" value="30"></div>
+   <div class="form-field pp-gen"><label>Vencimento do sinal</label><input id="ppSinalData" type="date"></div>
+   <div class="form-field"><label id="ppParcLabel">Parcelas do saldo (1 a 12)</label><input id="ppParcelas" type="number" min="1" max="12" value="3"></div>
+   <div class="form-field full pp-gen"><label>A última parcela vence quantos dias antes do evento?</label><input id="ppDiasAntes" type="number" min="0" max="120" value="10"></div>
   </div>
   <div id="ppPreview" style="margin-top:10px;font-size:12.5px"></div>
+  <div id="ppConfirm" style="display:none;margin-top:10px"></div>
   <div id="ppExistWrap" style="display:none;margin-top:8px;background:#fdf1e3;border:1px solid #eccb9c;border-radius:10px;padding:8px 10px;font-size:12.5px;color:#a15b1f"><span id="ppExistText"></span><label style="display:flex;gap:8px;align-items:center;margin-top:6px"><input type="checkbox" id="ppExistOk"> Quero adicionar mesmo assim</label></div>
   <div id="ppErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b;margin-top:4px"></div>
-  <div class="form-actions" style="margin-top:8px"><button class="btn btn-secondary" data-close="payPlanDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="ppGerar" style="width:auto">Gerar lançamentos</button></div>
+  <div class="form-actions" style="margin-top:8px"><button class="btn btn-secondary" data-close="payPlanDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="ppGerar" style="width:auto">Gerar lançamentos</button><button class="btn btn-secondary" id="ppVoltarEdit" style="width:auto;display:none">← Voltar e ajustar</button><button class="btn btn-primary" id="ppRevisar" style="width:auto;display:none">Revisar e gravar</button><button class="btn btn-primary" id="ppGravar" style="width:auto;display:none">Confirmar e gravar</button></div>
 </dialog>
 
 <dialog id="guestImportDialog" class="modal">

@@ -425,3 +425,15 @@ body{font-weight:400}
 
 /* barra de baixo sempre à vista: cancela o zoom do body (senão a barra fixa desloca/corta) e reserva espaço no fim da página */
 @media (max-width:760px){.bottom-nav{zoom:calc(1 / var(--app-zoom,1));transform:translateZ(0);-webkit-transform:translateZ(0)}body{padding-bottom:calc(var(--bottomnav-h,76px) + env(safe-area-inset-bottom))}}
+
+/* Voltar único: sempre no canto superior esquerdo (acompanha a rolagem); o "← Voltar" de dentro da tela fica escondido */
+.top-left{display:flex;align-items:center;gap:12px;min-width:0;flex:1 1 auto}
+.top-title{min-width:0}
+.back-top{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:40px;padding:8px 14px;border:1px solid var(--soft-line,#e4e8ee);border-radius:999px;background:#fff;color:var(--workspace-accent,#b6692f);font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(33,45,60,.10)}
+.back-top[hidden]{display:none}
+#content [data-back]{display:none}
+/* celular: o Voltar vira só a seta (mesmo lugar, 40px) pra não esmagar o título; o texto fica no aria-label */
+@media (max-width:520px){.back-top{padding:0;width:40px;min-width:40px;justify-content:center}.back-top span:last-child{display:none}.top-left{gap:8px}.top-left:has(#topBackBtn:not([hidden])) .top-title h2{font-size:20px}}
+.pp-st{font-size:11px;font-weight:700}
+
+.fin-ev-name{display:inline-block;margin:4px 0 8px;padding:6px 14px;border-radius:999px;background:var(--workspace-accent,#b6692f);color:#fff;font-weight:800;font-size:14px;line-height:1.3;max-width:100%}
