@@ -1,4 +1,4 @@
-# RIZZIERI ONE — V:1.21.1
+# RIZZIERI ONE — V:1.25.1
 
 PWA "Life, Business & Projects" — central única para projetos, eventos, financeiro e vida pessoal em quatro workspaces (Negócios, Eventos, Pessoal, Ideias).
 
@@ -21,7 +21,7 @@ SECURITY.md           arquitetura de segurança necessária para uso em produç�
 ```
 git init
 git add .
-git commit -m "RIZZIERI ONE V:1.21.1"
+git commit -m "RIZZIERI ONE V:1.25.1"
 git remote add origin <seu-repositorio>
 git push -u origin main
 ```
@@ -30,13 +30,17 @@ Depois, em **Settings → Pages**, escolha a branch `main` e a pasta raiz (`/`).
 
 ## Principais recursos do workspace Eventos
 
-- **Hub do evento**, na ordem de produção: 🍽️ Degustação → ✓ Checklist → ⭐ Aprovação do cliente → ⏱ Cronograma → 🎟 Convidados → 🪑 Mapa de mesas → 🔗 Portal do cliente → ◈ Financeiro.
+- **Hub do evento**, na ordem de produção: 🍽️ Degustação → ✓ Checklist → ⭐ Aprovação do cliente → ⏱ Cronograma → 🎟 Convidados → 🪑 Mapa de mesas → 🔗 Portal do cliente → 👥 Fornecedores deste evento → ◈ Financeiro.
 - **Degustações (várias por evento):** cada uma com tipo (cardápio/buffet, bebidas, doces e bolo, outro), data, horário, fornecedor, cardápio, observações, arquivo (foto ou PDF de até 1 MB) e botões **Aprovado Sim/Não**. Fornecedor e cardápio têm busca (e permitem incluir o que não existe).
 - **Checklist:** cada degustação vira um item do grupo "Degustação", que aparece primeiro e é concluído quando ela é aprovada (marcar o item no checklist também aprova a degustação).
 - **Aprovação do cliente de 0 a 10** em todos os itens (degustações, checklist, itens escolhidos do catálogo e cronograma), com tela própria, média no resumo do evento e nos PDFs.
-- **Convidados:** status com texto (Confirmado / Pendente / Recusado), escolha da mesa ao cadastrar (um, vários ou importando planilha) e mapa de mesas com arrastar.
+- **Convidados:** status com texto (Confirmado / Pendente / Recusado) e escolha da mesa ao cadastrar (um, vários ou importando planilha).
+- **Mapa de mesas:** o nome de quem está na mesa aparece na linha do título (✓ confirmado, ✕ recusou); mesa vazia oferece "Escolher convidado" (abre a lista de convidados do evento, com busca) ou "Manter vazia"; também dá para arrastar ou usar o menu de cada convidado.
+- **Fornecedores deste evento:** só quem está ligado ao evento (itens de catálogo escolhidos, degustações, despesas do evento e os que você incluir à mão), com busca, PDF e etiquetas de origem.
 - **Novo evento** já pergunta a quantidade de mesas e cria Mesa 1…N no Mapa de mesas.
 - **Financeiro do evento:** receitas, despesas e fluxo de caixa só do evento, com o nome dele em destaque; plano de pagamento, orçamento em PDF e histórico de alterações.
+- **Projetos (workspace Negócios):** cada cartão tem Hub, Editar, Abrir e **Excluir** (com confirmação; o roadmap do projeto sai junto e os lançamentos financeiros ficam).
+- **Tutorial guiado pelos botões:** na Central de Aprendizado cada rotina mostra o "Caminho dos botões" e o botão "👆 Guiar pelos botões": o app destaca, um por vez, os botões reais que você toca até chegar na rotina (celular e computador, de qualquer workspace).
 
 ## Sobre os ícones
 
@@ -48,7 +52,7 @@ O app guarda tudo em `localStorage` do navegador (protótipo local, sem backend 
 
 ## Versão
 
-V:1.21.1 — auditoria e lista do que mudou em `LEIA-ISTO-V1.21.1.txt` (na entrega, fora deste repositório).
+V:1.25.1 — auditoria e lista do que mudou em `LEIA-ISTO-V1.25.1.txt` (na entrega, fora deste repositório).
 
 ## Direitos autorais
 

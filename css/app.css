@@ -406,7 +406,7 @@ body{font-weight:400}
 
 
 /* v1.19 — "← Voltar" sempre visível ao rolar + rótulos legíveis nos painéis claros */
-#content>.link-btn[data-back]:first-child{width:fit-content;justify-self:start;max-width:100%;position:sticky;top:calc(var(--topbar-h,73px) + 8px);z-index:14;display:inline-flex;align-items:center;gap:6px;margin:6px 0 10px;padding:9px 16px;border-radius:100px;background:rgba(255,255,255,.97)!important;border:1px solid var(--soft-line,#e3e8ef);box-shadow:0 6px 16px rgba(33,45,60,.12);font-size:13.5px}
+
 .panel .form-field label{color:#4a5568}
 .aj-actions{align-items:center;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
 .aj-list-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #eef1f5}
@@ -431,7 +431,7 @@ body{font-weight:400}
 .top-title{min-width:0}
 .back-top{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;min-height:40px;padding:8px 14px;border:1px solid var(--soft-line,#e4e8ee);border-radius:999px;background:#fff;color:var(--workspace-accent,#b6692f);font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 2px 8px rgba(33,45,60,.10)}
 .back-top[hidden]{display:none}
-#content [data-back]{display:none}
+#content [data-back]{display:none!important}
 /* celular: o Voltar vira só a seta (mesmo lugar, 40px) pra não esmagar o título; o texto fica no aria-label */
 @media (max-width:520px){.back-top{padding:0;width:40px;min-width:40px;justify-content:center}.back-top span:last-child{display:none}.top-left{gap:8px}.top-left:has(#topBackBtn:not([hidden])) .top-title h2{font-size:20px}}
 .pp-st{font-size:11px;font-weight:700}
@@ -489,3 +489,43 @@ body{font-weight:400}
 
 /* Escala 0–10 no celular: duas fileiras com botões maiores (toque) */
 @media(max-width:560px){.score-btns{grid-template-columns:repeat(6,1fr);gap:6px}.score-btn{height:40px;font-size:14px}}
+
+/* Tutorial guiado pelos botões */
+.tutorial-route-target{position:relative!important;z-index:2!important;outline:3px solid var(--workspace-accent)!important;outline-offset:4px!important;border-radius:14px!important;animation:trPulse 1.1s ease-in-out infinite}
+@keyframes trPulse{0%,100%{box-shadow:0 0 0 4px var(--workspace-soft)}50%{box-shadow:0 0 0 12px var(--workspace-soft)}}
+.tutorial-route-hint{position:fixed;inset:auto;margin:0;border:0;background:var(--workspace-accent,#a15b1f);color:#fff;padding:7px 13px;border-radius:999px;font-size:12px;font-weight:800;box-shadow:0 8px 24px rgba(0,0,0,.25);white-space:nowrap;pointer-events:none;overflow:visible}
+.tutorial-route-hint::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:inherit;transform:translateX(-50%) rotate(45deg)}
+.tutorial-route-hint.below::after{bottom:auto;top:-5px}
+.tutorial-path{margin:0 0 12px}.tutorial-path[hidden]{display:none}
+.tutorial-path small,.tutorial-card-path small{display:block;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8a95a1;margin-bottom:5px}
+.tutorial-path>div,.tutorial-card-path>div{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.trk-chip{background:#f1f4f7;color:#4a5568;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700}
+.trk-chip.now{background:var(--workspace-accent,#a15b1f);color:#fff}
+.trk-chip.done{background:#e8f7ef;color:#16825d}
+.trk-sep{color:#a0aab5;font-weight:800}
+.tutorial-card-path{margin:10px 0 12px}
+.tutorial-guide-btn{width:100%;margin:0 0 12px;padding:10px 12px;border-radius:12px;border:1px dashed var(--workspace-accent,#a15b1f);background:#fff;color:var(--workspace-accent,#a15b1f);font-weight:800;cursor:pointer}
+.tutorial-guide-btn[hidden]{display:none}
+.tutorial-coach.at-top{inset:12px 14px auto auto}
+
+/* V1.24: projeto (contraste + excluir), fornecedores do evento */
+.project-meta div{background:#f6f8fb!important;border-color:#e3e8ef!important}
+.project-meta small{color:#5b6674!important}
+.project-card p{color:#5b6674!important}
+.project-meta b{color:#1f2b3a!important}
+.project-actions.wrap{flex-wrap:wrap}
+.small-btn.danger-btn{color:#c0392b!important;border-color:#f3c9c4!important;background:#fff!important;flex:1 1 100%}
+.small-btn.danger-btn:hover{background:#fdecec!important;border-color:#e9a79e!important}
+.btn.danger-solid{background:#c0392b!important;border-color:#c0392b!important;color:#fff!important}
+.evsup-tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.evsup-tags .pill{background:#fdf1e3;color:#a15b1f;font-weight:800;font-size:11px}
+.evsup-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border:1px solid #e3e8ef;border-radius:12px;margin-bottom:6px;cursor:pointer;background:#fff}
+.evsup-row small{color:#8a95a1}
+
+/* Mapa de mesas: nome do convidado na linha da mesa + mesa vazia com escolha */
+.seating-table h4{align-items:baseline;gap:8px}
+.seating-table h4 .seat-tname{flex:0 0 auto}
+.seating-table h4 .seat-names{flex:1 1 auto;min-width:0;font-style:normal;font-weight:600;font-size:12.5px;color:#4a5568;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seating-table h4 span{flex:0 0 auto}
+.seat-empty-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.seat-empty-actions .small-btn{flex:1 1 auto}

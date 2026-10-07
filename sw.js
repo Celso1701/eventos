@@ -1,4 +1,4 @@
-const CACHE='rizzieri-one-v1.21.1';
+const CACHE='rizzieri-one-v1.25.1';
 const ASSETS=['./','./index.html','./css/app.css','./js/app.js','./manifest.json'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))));
