@@ -529,3 +529,14 @@ body{font-weight:400}
 .seating-table h4 span{flex:0 0 auto}
 .seat-empty-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .seat-empty-actions .small-btn{flex:1 1 auto}
+
+/* Modo manual (dados fictícios) */
+.manual-bar{position:sticky;top:0;z-index:70;height:40px;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 16px;background:#b45309;color:#fff;font-size:13px}
+.manual-bar[hidden]{display:none}
+.manual-exit{border:0;border-radius:999px;background:#fff;color:#7c2d12;font-weight:800;padding:7px 14px;cursor:pointer;white-space:nowrap}
+body.manual-on .topbar{top:var(--manual-h,40px)}
+.tutorial-manual-card{margin:12px 0;padding:12px 14px;border:1px dashed #b45309;border-radius:14px;background:rgba(180,83,9,.12)}
+.tutorial-manual-card p{margin:6px 0 10px;font-size:13px}
+.tutorial-manual-exit{width:100%;margin:8px 0 0;border:1px solid #b45309;border-radius:10px;background:#fff7ed;color:#7c2d12;font-weight:800;padding:8px;cursor:pointer}
+.tutorial-manual-exit[hidden]{display:none}
+@media(max-width:760px){.manual-bar{font-size:12px;padding:7px 12px}}

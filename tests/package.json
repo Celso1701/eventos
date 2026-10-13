@@ -1,0 +1,7 @@
+{
+  "name": "rizzieri-one-tests",
+  "private": true,
+  "description": "Testes automatizados do RIZZIERI ONE (jsdom). Rodar: npm install && npm test",
+  "scripts": { "test": "node run-all.js" },
+  "devDependencies": { "jsdom": "^24.0.0" }
+}

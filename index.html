@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self' data: blob:; frame-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <meta name="theme-color" content="#071624"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -59,8 +60,8 @@
           <div style="font-size:11px;color:#6b7a93;margin-top:6px">Seu código Pro é gerado para ESTE ID e só funciona neste aparelho.</div>
         </div>
         <button class="btn btn-primary" id="planLockWhats" type="button" style="background:#25D366">Assinar pelo WhatsApp</button>
-        <label>Já tem um código? Digite aqui</label>
-        <input id="planLockCode" placeholder="RZ-XXXX-0000" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700">
+        <label>Já tem um código? Cole aqui</label>
+        <textarea id="planLockCode" rows="4" placeholder="Cole aqui o código recebido" autocapitalize="characters" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:1px;text-align:center;font-weight:700;font-family:monospace;font-size:12px;word-break:break-all;width:100%;box-sizing:border-box"></textarea>
         <button class="btn btn-primary" id="planLockActivate" type="button">Ativar Pro</button>
         <div id="planLockErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b"></div>
         <button class="link-btn" id="planLockBackup" type="button" style="text-align:left">⬇ Baixar meu backup (seus dados são seus)</button>
@@ -89,13 +90,13 @@
 
   <section id="appView" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.25.1</span></div>
+      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.31.0</span></div>
       <div class="workspace-card">
         <span>WORKSPACE</span>
         <button id="workspaceBtn"><span class="workspace-current"><i id="workspaceDot" class="workspace-dot"></i><b id="workspaceName">Negócios</b></span><i class="workspace-chevron">⌄</i></button>
       </div>
       <nav id="sideNav" class="side-nav"></nav>
-      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.25.1</small>
+      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.31.0</small>
         <button id="tutorialBtn" class="tutorial-entry-btn"><span data-icon="help-circle"></span><span><b>Tutorial completo</b><small>Aprenda passo a passo</small></span></button>
         <button id="installBtn" class="install-btn">⬇ Instalar aplicativo</button>
         <div class="user-card"><span class="avatar">BR</span><div><b>Bruno</b><small>Administrador</small></div><button data-open-ajustes title="Ajustes">⋯</button></div>
@@ -103,6 +104,7 @@
     </aside>
 
     <div class="main-shell">
+      <div id="manualBar" class="manual-bar" hidden><span>📘 <b>MODO MANUAL</b> — dados fictícios, nada aqui é seu.</span><button id="manualExitBtn" type="button" class="manual-exit">Sair do manual</button></div>
       <header class="topbar">
         <div class="top-left"><button class="back-top" id="topBackBtn" type="button" hidden aria-label="Voltar"><span aria-hidden="true">←</span><span>Voltar</span></button><div class="top-title"><span class="eyebrow" id="sectionEyebrow">CENTRAL DE COMANDO</span><h2 id="pageTitle">Visão geral</h2></div></div>
         <div class="top-actions">
@@ -248,8 +250,8 @@
     <div style="font-size:11px;color:#6b7a93;margin-top:6px">Seu código Pro é gerado para ESTE ID e só funciona neste aparelho.</div>
   </div>
   <button class="btn btn-primary" id="proWhatsBtn" type="button" style="background:#25D366;margin-top:12px;width:100%">Assinar pelo WhatsApp</button>
-  <label style="display:block;margin-top:14px;font-size:12px;font-weight:700;color:#4a5568">Já tem um código? Digite aqui</label>
-  <input id="proCode" placeholder="RZ-XXXX-0000" autocapitalize="characters" autocomplete="off" style="text-transform:uppercase;letter-spacing:2px;text-align:center;font-weight:700;width:100%">
+  <label style="display:block;margin-top:14px;font-size:12px;font-weight:700;color:#4a5568">Já tem um código? Cole aqui</label>
+  <textarea id="proCode" rows="4" placeholder="Cole aqui o código recebido" autocapitalize="characters" autocomplete="off" spellcheck="false" style="text-transform:uppercase;letter-spacing:1px;text-align:center;font-weight:700;width:100%;font-family:monospace;font-size:12px;word-break:break-all"></textarea>
   <div id="proErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b;margin-top:4px"></div>
   <div class="form-actions" style="margin-top:8px"><button class="btn btn-secondary" data-close="proDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="proActivateBtn" style="width:auto">Ativar Pro</button></div>
 </dialog>
@@ -289,7 +291,7 @@
   <div class="modal-head"><div><span class="eyebrow">PRIMEIROS PASSOS</span><h3>Quer aprender usando o sistema?</h3></div><button class="close-btn" data-close="tutorialWelcomeDialog">×</button></div>
   <div class="tutorial-welcome-body">
     <div class="tutorial-welcome-icon"><span data-icon="help-circle"></span></div>
-    <div><p>O tutorial não é apenas um manual. Ele leva você até a tela correta, destaca o botão e acompanha a execução passo a passo.</p><div class="tutorial-welcome-actions"><button id="startEssentialTutorial" class="btn btn-primary"><span data-icon="play-circle"></span> Começar tour essencial</button><button id="openTutorialCenter" class="btn btn-secondary">Ver todos os tutoriais</button></div></div>
+    <div><p>O tutorial não é apenas um manual. Ele leva você até a tela correta, destaca o botão e acompanha a execução passo a passo. Prefere praticar sem medo? Abra o <b>manual com dados fictícios</b>: seus dados reais ficam guardados e voltam quando você sair.</p><div class="tutorial-welcome-actions"><button id="startEssentialTutorial" class="btn btn-primary"><span data-icon="play-circle"></span> Começar tour essencial</button><button id="startManualBtn" class="btn btn-primary"><span data-icon="play-circle"></span> Explorar com dados fictícios</button><button id="openTutorialCenter" class="btn btn-secondary">Ver todos os tutoriais</button></div></div>
   </div>
 </dialog>
 
@@ -332,6 +334,7 @@
   <div id="tutorialCoachPath" class="tutorial-path" hidden></div>
   <button id="tutorialGuide" class="tutorial-guide-btn" hidden>👆 Me guie pelos botões</button>
   <div class="tutorial-coach-progress"><i id="tutorialCoachProgress"></i></div>
+  <button id="tutorialManualExit" class="tutorial-manual-exit" type="button" hidden>Sair do manual</button>
   <div class="tutorial-coach-actions"><button id="tutorialBack" class="tutorial-mini-btn">← Voltar</button><button id="tutorialNext" class="tutorial-next-btn">Próximo passo →</button></div>
 </div>
 
