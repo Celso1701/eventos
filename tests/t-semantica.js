@@ -16,6 +16,8 @@ async function run(){
   L.check('escL preserva falsy e escapa truthy',r.escL[0]===0&&r.escL[1]===''&&r.escL[2]===null&&r.escL[3]==='&lt;',JSON.stringify(r.escL));
   const f=a.ev(`(function(){const d=document.createElement('div');d.innerHTML=finTotalsBar(1000,400,'Mês');return d.textContent.replace(/\\s+/g,' ')})()`);
   L.check('finTotalsBar: totais corretos e sem "false"/"undefined"',/Receitas/.test(f)&&!/false|undefined|NaN/.test(f),f.slice(0,160));
+  const vers=a.ev(`(function(){const o={};['Negócios','Eventos','Pessoal','Ideias'].forEach(w=>{applyWorkspace(w);render('dashboard');const b=document.querySelector('#content .ws-version-badge');o[w]=b?b.textContent:null});o.lateral=document.querySelector('#appVersion').textContent;o.v=APP_VERSION;return o})()`);
+  L.check('versão igual em todos os pontos visíveis (4 dashboards + lateral)',['Negócios','Eventos','Pessoal','Ideias'].every(w=>vers[w]===vers.v)&&vers.lateral.includes(vers.v),JSON.stringify(vers));
   const st=require('fs').readFileSync(__dirname+'/../js/app.js','utf8');
   L.check('sem soma numérica escapada ("esc(i)+1")',!/esc\((i|j|k)\)\+1/.test(st));
   return L.summary('semântica');
