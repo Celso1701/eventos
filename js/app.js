@@ -201,7 +201,7 @@ const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'B
 /* ===== FINANCEIRO UNIFICADO — V:1.05.0 =====
    Modelo único para Negócios, Eventos e Pessoal. Valores em CENTAVOS (inteiros),
    datas sempre em horário LOCAL (nunca toISOString), visões inspiradas no corsyncimoveis. */
-const APP_VERSION='V:1.32.0';
+const APP_VERSION='V:1.33.0';
 const FIN_STORE='r1_fin_v2',FIN_OV='r1_fin_v2_ov',FIN_DEL='r1_fin_v2_del',FIN_CFG='r1_fin_cfg',FIN_MIG='r1_fin_v2_mig';
 const FIN_WS=['Negócios','Eventos','Pessoal'];
 const FIN_CATS={'Negócios':['Assinaturas de clientes','Licenças e ferramentas','Infraestrutura','Marketing','Impostos','Outros'],'Eventos':['Contrato','Parcela','Fornecedor','Decoração','Buffet','DJ & Música','Som & Luz','Transporte','Outros'],'Pessoal':['Renda','Moradia','Alimentação','Transporte','Assinaturas','Saúde','Lazer','Outros']};
@@ -772,7 +772,12 @@ const MORE_MODULES={
   'Ideias':[['lightbulb','Incubadora','Funil de ideias','ideias'],['edit','Canvas','Estrutura da ideia','canvas'],['flask','Validação','Hipóteses e evidências','validacao'],['route','Roadmap','Evolução das ideias','roadmap-ideias'],['history','Decisões','Histórico de escolhas','decisoes'],['settings','Ajustes','Consultor, acessibilidade, backup…','__ajustes__']]
  };
 const WS_PICK=[['Negócios','briefcase','Empresas, apps, clientes e resultados','business'],['Eventos','calendar-heart','Casamentos, debutantes, corporativo e produção','events'],['Pessoal','user','Objetivos, rotina, documentos e finanças','personal'],['Ideias','lightbulb','Incubadora e validação de projetos','ideas']];
-function dashWithStrip(html,workspace){const i=html.indexOf('</section>');const strip=wsStripHTML(workspace);return i<0?strip+html:html.slice(0,i+10)+strip+html.slice(i+10)}
+function wsGroupHTML(workspace){return `<div class="ws-group" id="mobileWsGroup">${WS_PICK.map(w=>`<button class="ws-group-btn ${esc(w[3])} ${w[0]===workspace?'active':''}" data-more-ws="${esc(w[0])}"><span class="ws-group-ico" data-icon="${esc(w[1])}"></span><span class="ws-group-txt"><b>${esc(w[0])}</b><small>${esc(w[2])}</small></span><i class="ws-group-dot"></i></button>`).join('')}</div>`}
+function dashWithStrip(html,workspace){const i=html.indexOf('</section>');const strip=wsStripHTML(workspace),grp=wsGroupHTML(workspace);
+ const q=html.indexOf('<div class="quick-grid">');let strip2='';
+ if(q>=0)html=html.slice(0,q)+grp+html.slice(q);
+ else strip2=`<section class="panel ws-mobile-panel"><div class="panel-head"><h3>Atalhos</h3></div>${grp}</section>`;
+ return i<0?strip+html:html.slice(0,i+10)+strip+(q>=0?'':strip2)+html.slice(i+10)}
 function wsStripHTML(workspace){return `<nav class="ws-strip" id="homeWorkspaces" aria-label="Escolha seu ambiente">${WS_PICK.map(w=>`<button class="ws-chip ${esc(w[3])} ${w[0]===workspace?'active':''}" data-more-ws="${esc(w[0])}" title="${esc(w[2])}"><span class="ws-chip-ico" data-icon="${esc(w[1])}"></span><b>${esc(w[0])}</b></button>`).join('')}</nav>`}
 function wsPickerHTML(workspace){return `<section class="panel more-ws" id="moreWorkspaces"><div class="panel-head"><div><span class="eyebrow">WORKSPACES</span><h3>Escolha seu ambiente</h3></div></div><div class="more-ws-list">${WS_PICK.map(w=>`<button class="more-ws-btn ${w[3]} ${w[0]===workspace?'active':''}" data-more-ws="${esc(w[0])}"><span class="more-ws-ico" data-icon="${esc(w[1])}"></span><span class="more-ws-txt"><b>${esc(w[0])}</b><small>${esc(w[2])}</small></span><span class="more-ws-check">${w[0]===workspace?'✓':'›'}</span></button>`).join('')}</div></section>`;}
 function moreView(workspace='Negócios'){
@@ -2247,7 +2252,7 @@ function trEventFromScreen(){const ids=new Set(getEvents().map(e=>e.id)),cont={}
 function tutorialEvent(){return getEvents().find(x=>x.id===tutorialEventId)||getEvents()[0]}
 function trSpecFor(flowId,idx){const sp=TUTORIAL_ROUTE_SPECS[flowId];if(!sp||!tutorialFlows[flowId])return null;if(sp.steps&&sp.steps[idx])return{...sp.steps[idx],flowId,idx};return idx===0?{...sp,flowId,idx}:null}
 function trBuildHops(spec){const flow=tutorialFlows[spec.flowId],ws=flow.workspace;let hops=[];
- if(!spec.anyWs&&currentWorkspace!==ws)hops.push({label:'Trocar workspace',sel:'#workspaceBtn, #mobileWorkspaceBtn',wsHop:true},{label:ws,sel:`#workspaceDialog [data-workspace="${esc(ws)}"]`,wsHop:true});
+ if(!spec.anyWs&&currentWorkspace!==ws)hops.push({label:'Início',sel:'#bottomNav [data-nav="dashboard"]',only:'bottom'},{label:ws,sel:`#content [data-more-ws="${esc(ws)}"]`,only:'bottom',wsHop:true},{label:'Trocar workspace',sel:'#workspaceBtn',only:'side',wsHop:true},{label:ws,sel:`#workspaceDialog [data-workspace="${esc(ws)}"]`,only:'side',wsHop:true});
  if(spec.hops)hops=hops.concat(spec.hops);
  if(spec.nav)hops=hops.concat(trNavHops(ws,spec.nav));
  if(spec.hub||spec.hubOnly)hops.push({label:'Abrir detalhes',sel:'[data-open-event]'});

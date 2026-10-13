@@ -228,7 +228,7 @@ body{font-weight:400}
 .top-actions #quickAddBtn .ui-icon{width:18px;height:18px}
 @media(max-width:760px){.top-actions #quickAddBtn{width:44px!important;height:44px!important;min-width:44px!important;padding:0!important;font-size:inherit!important;border-radius:14px}.top-actions #quickAddBtn .quick-label{display:none}.top-actions #quickAddBtn::after{content:none!important}.top-actions #quickAddBtn .ui-icon{width:20px;height:20px}}
 .mobile-workspace-btn{display:none!important}
-@media(max-width:760px){.mobile-workspace-btn{display:grid!important}.top-actions #searchBtn{display:none!important}}
+@media(max-width:760px){.top-actions #searchBtn{display:none!important}}
 
 
 /* readability fix for white subtelas / dialogs */
@@ -572,3 +572,20 @@ body.manual-on .topbar{top:var(--manual-h,40px)}
 .quick-featured .qf-ico .ui-icon{width:26px;height:26px;color:#fff!important}
 .quick-featured .qf-txt{display:block;margin:0!important}.quick-featured .qf-txt b{display:block;font-size:17px;font-weight:800}.quick-featured .qf-txt small{display:block;margin-top:2px;font-size:12px;opacity:.92;font-weight:500;line-height:1.3}
 .quick-featured .qf-go{font-size:22px;font-weight:800;margin:0!important}
+
+/* V1.32 mobile: ambientes dentro dos atalhos; sem botão de quadradinhos no topo */
+.ws-group,.ws-mobile-panel{display:none}
+@media(max-width:760px){
+ .ws-strip{display:none}
+ .ws-group{display:grid;grid-column:1/-1;gap:8px;margin-bottom:10px}
+ .ws-mobile-panel{display:block}.ws-mobile-panel .ws-group{margin-bottom:0}
+ .quick-grid button.quick-featured{display:none}
+}
+.ws-group-btn{display:grid;grid-template-columns:44px 1fr 12px;align-items:center;gap:12px;width:100%;text-align:left;padding:10px 12px;background:#fff!important;color:#425062!important;border:1px solid var(--soft-line,#e3e8ee)!important;border-radius:14px;cursor:pointer}
+.ws-group-btn.business{--ws:#2366b1}.ws-group-btn.events{--ws:#b8743c}.ws-group-btn.personal{--ws:#16867a}.ws-group-btn.ideas{--ws:#7657b5}
+.ws-group-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:color-mix(in srgb,var(--ws) 14%,#fff);color:var(--ws)}.ws-group-ico .ui-icon{width:22px;height:22px}
+.ws-group-txt{display:block;min-width:0}.ws-group-txt b{display:block;font-size:15px}.ws-group-txt small{display:block;margin-top:2px;font-size:12px;color:#6b7a93;line-height:1.25}
+.ws-group-dot{width:12px;height:12px;border-radius:50%;background:var(--ws);justify-self:center}
+.ws-group-btn.active{background:color-mix(in srgb,var(--ws) 9%,#fff)!important;box-shadow:0 0 0 1.5px var(--ws) inset}
+.ws-group-btn.events{background:linear-gradient(135deg,#b8743c,#d08a4e)!important;color:#fff!important;border:0!important;box-shadow:0 8px 20px rgba(184,116,60,.25)}
+.ws-group-btn.events .ws-group-ico{background:rgba(255,255,255,.22);color:#fff}.ws-group-btn.events small{color:rgba(255,255,255,.92)}.ws-group-btn.events .ws-group-dot{background:#fff}
