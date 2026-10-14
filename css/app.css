@@ -589,3 +589,27 @@ body.manual-on .topbar{top:var(--manual-h,40px)}
 .ws-group-btn.active{background:color-mix(in srgb,var(--ws) 9%,#fff)!important;box-shadow:0 0 0 1.5px var(--ws) inset}
 .ws-group-btn.events{background:linear-gradient(135deg,#b8743c,#d08a4e)!important;color:#fff!important;border:0!important;box-shadow:0 8px 20px rgba(184,116,60,.25)}
 .ws-group-btn.events .ws-group-ico{background:rgba(255,255,255,.22);color:#fff}.ws-group-btn.events small{color:rgba(255,255,255,.92)}.ws-group-btn.events .ws-group-dot{background:#fff}
+
+/* V1.34 ações no cabeçalho de Eventos em andamento */
+.panel-head-actions{display:flex;gap:12px;align-items:center;flex-wrap:nowrap;justify-content:flex-end;flex-shrink:0;white-space:nowrap}
+.panel-head-actions .link-btn{font-size:13px}
+.link-btn-add{font-weight:700}
+
+/* V1.34 cartão de evento compacto: caixas cinza translúcido + botões em destaque */
+.event-card .event-stats div{background:rgba(110,125,145,.09)!important;border:1px solid rgba(110,125,145,.18)!important;border-left:3px solid var(--workspace-accent,#b8733a)!important;color:var(--ink,#1c2733)!important}
+.event-card .event-stats small{color:#6b7a93!important}
+.event-card .event-stats b{color:var(--ink,#1c2733)!important}
+.event-card .event-stats em{color:var(--workspace-accent,#b8733a)!important;font-weight:700}
+.event-card .event-card-foot .small-btn{font-weight:800;font-size:13px;letter-spacing:.01em;border-radius:12px;padding:10px 12px;color:var(--workspace-accent,#b8733a)!important;background:#fff!important;border:1.5px solid var(--workspace-accent,#b8733a)!important}
+.event-card .event-card-foot .small-btn[data-open-event]{background:var(--workspace-accent,#b8733a)!important;color:#fff!important}
+@media(max-width:520px){
+ .event-card{padding:14px!important}
+ .event-card h4{font-size:19px;margin:6px 0 3px}
+ .event-card .event-stats{gap:5px;margin:10px 0 9px}
+ .event-card .event-stats div{padding:5px 8px;border-radius:10px}
+ .event-card .event-card-foot{flex-direction:row;flex-wrap:wrap;gap:8px;margin-top:9px}
+ .event-card .event-card-foot span{flex:0 0 100%}
+ .event-card .event-card-foot .small-btn{flex:1 1 0;width:auto;min-width:0;padding:9px 6px}
+}
+
+.score-note{display:block;margin-top:6px}.score-note span{display:block;font-size:11px;color:#6b7a93;margin-bottom:3px}.score-note textarea{width:100%;box-sizing:border-box;border:1px solid #dfe5ee;border-radius:10px;padding:8px 10px;font:inherit;font-size:13px;resize:vertical;background:#fff;color:#1c2733}

@@ -1,4 +1,4 @@
-# RIZZIERI ONE — V:1.33.0
+# RIZZIERI ONE — V:1.34.0
 
 PWA "Life, Business & Projects" — central única para projetos, eventos, financeiro e vida pessoal em quatro workspaces (Negócios, Eventos, Pessoal, Ideias).
 
@@ -23,7 +23,7 @@ tools/build-preview.py  gera o arquivo único preview-standalone.html
 ```
 git init
 git add .
-git commit -m "RIZZIERI ONE V:1.33.0"
+git commit -m "RIZZIERI ONE V:1.34.0"
 git remote add origin <seu-repositorio>
 git push -u origin main
 ```
@@ -66,7 +66,7 @@ Instalações novas começam **sem nenhum dado de exemplo**: o dashboard mostra 
 
 ## Versão
 
-V:1.33.0 — auditoria e lista do que mudou em `LEIA-ISTO-V1.33.0.txt` (na entrega, fora deste repositório).
+V:1.34.0 — auditoria e lista do que mudou em `LEIA-ISTO-V1.34.0.txt` (na entrega, fora deste repositório).
 
 ## Direitos autorais
 
