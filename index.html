@@ -90,13 +90,13 @@
 
   <section id="appView" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.34.0</span></div>
+      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.37.0</span></div>
       <div class="workspace-card">
         <span>WORKSPACE</span>
         <button id="workspaceBtn"><span class="workspace-current"><i id="workspaceDot" class="workspace-dot"></i><b id="workspaceName">Negócios</b></span><i class="workspace-chevron">⌄</i></button>
       </div>
       <nav id="sideNav" class="side-nav"></nav>
-      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.34.0</small>
+      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.37.0</small>
         <button id="tutorialBtn" class="tutorial-entry-btn"><span data-icon="help-circle"></span><span><b>Tutorial completo</b><small>Aprenda passo a passo</small></span></button>
         <button id="installBtn" class="install-btn">⬇ Instalar aplicativo</button>
         <div class="user-card"><span class="avatar">BR</span><div><b>Bruno</b><small>Administrador</small></div><button data-open-ajustes title="Ajustes">⋯</button></div>
@@ -151,6 +151,23 @@
   <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="finConfirmTitle">Ver detalhes?</h3></div><button class="close-btn" data-close="finConfirmDialog">×</button></div>
   <p id="finConfirmText" style="color:#4a5568;margin:0 0 16px"></p>
   <div class="form-actions"><button class="btn btn-secondary" data-close="finConfirmDialog" style="width:auto">Não</button><button class="btn btn-primary" id="finConfirmYes" style="width:auto">Sim, ver detalhes</button></div>
+</dialog>
+
+<dialog id="pixDialog" class="modal small-modal">
+  <div class="modal-head"><div><span class="eyebrow">COBRANÇA POR PIX</span><h3 id="pixTitle">Pix</h3></div><button class="close-btn" data-close="pixDialog">×</button></div>
+  <div id="pixBody"></div>
+</dialog>
+
+<dialog id="guestInviteDialog" class="modal small-modal">
+  <div class="modal-head"><div><span class="eyebrow">CONVITES</span><h3>Convidados pendentes</h3></div><button class="close-btn" data-close="guestInviteDialog">×</button></div>
+  <p style="font-size:13px;color:#4a5568;margin:0 0 12px">Toque em Enviar para abrir o WhatsApp com o convite pronto de cada convidado.</p>
+  <div id="guestInviteBody"></div>
+</dialog>
+
+<dialog id="tlOwnersDialog" class="modal small-modal">
+  <div class="modal-head"><div><span class="eyebrow">CRONOGRAMA</span><h3>Por responsável</h3></div><button class="close-btn" data-close="tlOwnersDialog">×</button></div>
+  <p style="font-size:13px;color:#4a5568;margin:0 0 12px">Cada responsável recebe só os horários dele (PDF ou WhatsApp).</p>
+  <div id="tlOwnersBody"></div>
 </dialog>
 
 <dialog id="pwSetupDialog" class="modal">
@@ -228,6 +245,13 @@
   <div style="margin-top:10px"><label style="font-weight:700;font-size:12.5px;display:block;margin-bottom:4px">Mesa para quem vier sem mesa na planilha <span style="font-weight:400;color:#6b7a93">(opcional)</span></label><div id="giTableBox"></div></div>
   <div id="giPreview" style="margin-top:12px;font-size:12.5px"></div>
   <div class="form-actions" style="margin-top:12px"><button class="btn btn-secondary" data-close="guestImportDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="giOk" disabled style="width:auto">Importar</button></div>
+</dialog>
+
+<dialog id="catManageDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">CADASTRO</span><h3 id="catManageTitle">Categorias</h3></div><button class="close-btn" data-close="catManageDialog">×</button></div>
+  <div class="form-field"><label>Nova categoria</label><div style="display:flex;gap:8px"><input id="catManageInput" autocomplete="off" placeholder="Nome da nova categoria" style="flex:1;min-width:0;border:1px solid #dfe5ee;border-radius:14px;padding:12px 14px;font-size:15px;background:#fff"><button type="button" class="btn btn-primary" id="catManageAdd" style="width:auto">Adicionar</button></div><div id="catManageErr" style="min-height:18px;font-size:12.5px;font-weight:700;color:#c0392b;margin-top:4px"></div></div>
+  <div id="catManageList" class="aj-list" style="max-height:46vh;overflow:auto"></div>
+  <div class="form-actions" style="margin-top:10px"><button type="button" class="btn btn-secondary" data-close="catManageDialog" style="width:auto">Concluir</button></div>
 </dialog>
 
 <dialog id="ajListDialog" class="modal">
