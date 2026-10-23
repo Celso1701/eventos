@@ -1,5 +1,5 @@
 // Roda toda a suíte. Uso: npm install && npm test   (ou: JSDOM_PATH=/caminho/com/node_modules node run-all.js)
-const suites=[['estático','./t-estatico'],['financeiro','./t-financeiro'],['diálogos','./t-dialogs'],['licença','./t-license'],['navegação','./t-smoke'],['semântica','./t-semantica'],['manual','./t-manual'],['vazio','./t-vazio'],['XSS','./t-xss']];
+const suites=[['estático','./t-estatico'],['financeiro','./t-financeiro'],['diálogos','./t-dialogs'],['licença','./t-license'],['navegação','./t-smoke'],['semântica','./t-semantica'],['manual','./t-manual'],['vazio','./t-vazio'],['XSS','./t-xss'],['novos','./t-novos']];
 (async()=>{let tp=0,tf=0;const falhas=[];const t0=Date.now();
  for(const [nome,mod] of suites){
   const L=require('./lib.js');

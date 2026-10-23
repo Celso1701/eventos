@@ -1,6 +1,6 @@
 // Licença Pro assinada: ativação, adulteração, janela de validade, renovação.
 const L=require('./lib.js'),LC=require('./lib-license.js');
-const iso=(d)=>d.toISOString().slice(0,10);
+const iso=(d)=>{const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())};// data LOCAL, como o app (antes UTC: falhava depois das 21h no Brasil)
 async function run(){
   L.reset();
   const K=await LC.newKeys(),K2=await LC.newKeys();
