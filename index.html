@@ -11,7 +11,7 @@
   <title>RIZZIERI ONE</title>
   <link rel="manifest" href="./manifest.json"/>
   <link rel="icon" href="./assets/icons/icon192.png"/>
-  <link rel="apple-touch-icon" href="./assets/icons/icon192.png"/>
+  <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png"/>
   
   <link rel="stylesheet" href="./css/app.css"/>
 </head>
@@ -19,7 +19,7 @@
 <div id="app">
   <section id="loginView" class="login-shell">
     <div class="login-brand">
-      <div class="brand-emblem">R1</div>
+      <div class="brand-emblem"><img src="./assets/icons/logo.png" alt="" width="40" height="26"></div>
       <div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div>
     </div>
     <div class="login-panel">
@@ -48,7 +48,7 @@
 
 
   <section id="planLockView" class="login-shell hidden">
-    <div class="login-brand"><div class="brand-emblem">R1</div><div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div></div>
+    <div class="login-brand"><div class="brand-emblem"><img src="./assets/icons/logo.png" alt="" width="40" height="26"></div><div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div></div>
     <div class="login-panel" style="max-width:440px;margin:0 auto">
       <span class="eyebrow">PLANO PRO</span>
       <h1 style="font-size:28px">Seu teste grátis terminou</h1>
@@ -71,7 +71,7 @@
 
   <section id="lockView" class="login-shell hidden">
     <div class="login-brand">
-      <div class="brand-emblem">R1</div>
+      <div class="brand-emblem"><img src="./assets/icons/logo.png" alt="" width="40" height="26"></div>
       <div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div>
     </div>
     <div class="login-panel" style="max-width:420px;margin:0 auto">
@@ -90,13 +90,13 @@
 
   <section id="appView" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="brand-row"><div class="brand-emblem small">R1</div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.38.0</span></div>
+      <div class="brand-row"><div class="brand-emblem small"><img src="./assets/icons/logo.png" alt="" width="30" height="20"></div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.39.0</span></div>
       <div class="workspace-card">
         <span>WORKSPACE</span>
         <button id="workspaceBtn"><span class="workspace-current"><i id="workspaceDot" class="workspace-dot"></i><b id="workspaceName">Negócios</b></span><i class="workspace-chevron">⌄</i></button>
       </div>
       <nav id="sideNav" class="side-nav"></nav>
-      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.38.0</small>
+      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.39.0</small>
         <button id="tutorialBtn" class="tutorial-entry-btn"><span data-icon="help-circle"></span><span><b>Tutorial completo</b><small>Aprenda passo a passo</small></span></button>
         <button id="installBtn" class="install-btn">⬇ Instalar aplicativo</button>
         <div class="user-card"><span class="avatar">BR</span><div><b>Bruno</b><small>Administrador</small></div><button data-open-ajustes title="Ajustes">⋯</button></div>
@@ -156,6 +156,18 @@
 <dialog id="pixDialog" class="modal small-modal">
   <div class="modal-head"><div><span class="eyebrow">COBRANÇA POR PIX</span><h3 id="pixTitle">Pix</h3></div><button class="close-btn" data-close="pixDialog">×</button></div>
   <div id="pixBody"></div>
+</dialog>
+
+<dialog id="evMsgDialog" class="modal">
+  <div class="modal-head"><div><span class="eyebrow">MENSAGENS DE WHATSAPP</span><h3 id="evMsgTitle">Evento</h3></div><button class="close-btn" data-close="evMsgDialog">×</button></div>
+  <p style="font-size:12.5px;color:#4a5568;margin:0 0 10px">Texto que entra na frente do resumo quando você usa os botões de WhatsApp <b>deste evento</b>. Deixe em branco para enviar só o resumo.</p>
+  <div class="form-grid">
+   <div class="form-field full"><label>Ao compartilhar o evento</label><textarea id="evMsgEvent" rows="2" placeholder="Ex.: Oi! Segue o resumo do nosso evento:"></textarea></div>
+   <div class="form-field full"><label>Ao compartilhar o checklist</label><textarea id="evMsgChecklist" rows="2" placeholder="Ex.: Pessoal, segue o que falta pra fechar:"></textarea></div>
+   <div class="form-field full"><label>Ao compartilhar o cronograma</label><textarea id="evMsgTimeline" rows="2" placeholder="Ex.: Equipe, aqui está a ordem do dia:"></textarea></div>
+   <div class="form-field full"><label>Ao compartilhar a lista de convidados</label><textarea id="evMsgGuests" rows="2" placeholder="Ex.: Atualização de confirmações:"></textarea></div>
+  </div>
+  <div class="form-actions" style="margin-top:8px"><button class="btn btn-secondary" data-close="evMsgDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="evMsgSave" style="width:auto">Gravar</button></div>
 </dialog>
 
 <dialog id="photoViewDialog" class="modal">
@@ -229,6 +241,7 @@
    <div id="ppAsk" style="margin-top:10px;padding:10px 12px;background:#f6f8fc;border:1px solid #e3e8ef;border-radius:12px"><b style="font-size:13px">O que você quer fazer com este plano?</b><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px"><button type="button" class="btn btn-primary" id="ppAskMais" style="width:auto">＋ Incluir mais parcelas</button><button type="button" class="btn btn-secondary" id="ppAskAlterar" style="width:auto">✏️ Alterar as existentes</button></div></div>
   </div>
   <div class="form-grid" id="ppForm">
+   <small id="ppPrevisto" style="grid-column:1/-1;display:block;color:#6c7887;font-size:12px;margin-bottom:6px"></small>
    <div class="form-field"><label>Valor total do contrato (R$)</label><input id="ppTotal" inputmode="numeric" autocomplete="off" placeholder="0,00"></div>
    <div class="form-field pp-gen"><label>Sinal para reservar (%)</label><input id="ppSinal" type="number" min="0" max="100" value="30"></div>
    <div class="form-field pp-gen"><label>Vencimento do sinal</label><input id="ppSinalData" type="date"></div>
