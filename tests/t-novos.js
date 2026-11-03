@@ -92,13 +92,22 @@ async function run(){
  // ── Outros / Fotos ──
  L.check('Hub do evento tem o botão "Outros / Fotos" depois do Mapa de mesas',(()=>{const h=a.ev(`eventHubView(${JSON.stringify(eid)})`);return h.indexOf('data-open-seating')>0&&h.indexOf('data-open-photos')>h.indexOf('data-open-seating')})());
  a.ev(`openSubView('Outros / Fotos','EVENTOS & EXPERIÊNCIAS',()=>photosView(${JSON.stringify(eid)}),'eventos')`);await L.sleep(60);
- L.check('Fotos: campo de assunto com exemplo "locais turísticos" e botões câmera + galeria',/locais tur/.test(a.d.querySelector('#phSubject').placeholder)&&!!a.d.querySelector('#phCamIn[capture]')&&!!a.d.querySelector('#phGalIn[multiple]'));
+ L.check('Fotos: assunto, botões Tirar foto/Galeria (botões reais), 9 espaços e vídeo',/locais tur/.test(a.d.querySelector('#phSubject').placeholder)&&a.d.querySelector('#phCam').tagName==='BUTTON'&&!!a.d.querySelector('#phGal')&&a.d.querySelectorAll('.ph-slot').length===9&&!!a.d.querySelector('#phVidCam'));
+ L.check('Fotos: só o espaço 1 está liberado; 2 a 9 trancados',a.d.querySelectorAll('.ph-next').length===1&&a.d.querySelector('.ph-next').dataset.phSlot==='0'&&a.d.querySelectorAll('.ph-lock').length===8);
+ L.check('Fotos: 6 públicas e 3 privativas nos títulos',/Fotos principais públicas/.test(a.d.body.textContent)&&/Fotos adicionais privativas/.test(a.d.body.textContent));
+ a.d.querySelector('.ph-lock').click();
  const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
- a.ev(`(function(){const o={subject:'locais turísticos',notes:'',fotos:[]};for(let i=0;i<10;i++)o.fotos.push({id:'p'+i,data:${JSON.stringify(png)}});storage.setItem(phKey(${JSON.stringify(eid)}),JSON.stringify(o));phRefresh(${JSON.stringify(eid)})})()`);await L.sleep(80);
- L.check('Fotos: com 10 fotos mostra 10 miniaturas, contador "10 de 10" e botões desativados',a.d.querySelectorAll('.ph-item').length===10&&/10 de 10/.test(a.d.querySelector('#phCount').textContent)&&a.d.querySelector('#phCamIn').disabled);
+ a.ev(`(function(){const o={subject:'locais turísticos',notes:'',fotos:[]};for(let i=0;i<3;i++)o.fotos.push({id:'p'+i,data:${JSON.stringify(png)},publica:true});storage.setItem(phKey(${JSON.stringify(eid)}),JSON.stringify(o));phRefresh(${JSON.stringify(eid)})})()`);await L.sleep(80);
+ L.check('Fotos: com 3 fotos o próximo liberado é o 4',a.d.querySelectorAll('.ph-slot.filled').length===3&&a.d.querySelector('.ph-next').dataset.phSlot==='3'&&/3 de 9/.test(a.d.querySelector('#phCount').textContent));
+ a.ev(`(function(){const o=phGet(${JSON.stringify(eid)});for(let i=3;i<9;i++)o.fotos.push({id:'p'+i,data:${JSON.stringify(png)},publica:i<6});storage.setItem(phKey(${JSON.stringify(eid)}),JSON.stringify(o));phRefresh(${JSON.stringify(eid)})})()`);await L.sleep(80);
+ L.check('Fotos: com 9 fotos botões desativados, e as 3 últimas têm selo Privada',a.d.querySelectorAll('.ph-slot.filled').length===9&&a.d.querySelector('#phCam').disabled&&a.d.querySelectorAll('.ph-badge').length===3&&/Privada/.test(a.d.querySelector('.ph-badge').textContent));
  await a.ev(`phAdd(${JSON.stringify(eid)},[{type:'image/png',name:'x.png'}])`);
- L.check('Fotos: tentar passar de 10 não adiciona',a.ev(`phGet(${JSON.stringify(eid)}).fotos.length`)===10);
+ L.check('Fotos: tentar passar de 9 não adiciona',a.ev(`phGet(${JSON.stringify(eid)}).fotos.length`)===9);
+ a.d.querySelector('[data-ph-del="p0"]').click();await L.sleep(60);
+ a.ev(`(function(){const o=phGet(${JSON.stringify(eid)});o.fotos=o.fotos.filter(f=>f.id!=='p0');storage.setItem(phKey(${JSON.stringify(eid)}),JSON.stringify(o));phRefresh(${JSON.stringify(eid)})})()`);await L.sleep(60);
+ L.check('Fotos: após remover, sem buracos (8 preenchidas, próximo = 9º)',a.d.querySelectorAll('.ph-slot.filled').length===8&&a.d.querySelector('.ph-next').dataset.phSlot==='8');
  L.check('Fotos: assunto salvo no armazenamento',a.ev(`phGet(${JSON.stringify(eid)}).subject`)==='locais turísticos');
+ L.check('Fotos: "Tirar foto" cria input com capture fora da tela e clica nele',(()=>{const w=a.w;let clicked=null;const orig=w.HTMLInputElement.prototype.click;w.HTMLInputElement.prototype.click=function(){clicked=this};a.ev(`phPegar('image/*','environment',false,()=>{})`);w.HTMLInputElement.prototype.click=orig;const ok=clicked&&clicked.type==='file'&&clicked.getAttribute('capture')==='environment'&&clicked.isConnected;if(clicked&&clicked.parentNode)clicked.parentNode.removeChild(clicked);return !!ok})());
  // ── Degustação: evento travado ──
  a.ev(`document.querySelector('#formDialog').open&&document.querySelector('#formDialog').close()`);
  // ── Botão Salvar avaliação na degustação ──
@@ -165,6 +174,39 @@ async function run(){
  const hg=a.d.querySelector('.hero-glass').textContent;
  L.check('Tela de entrada: cartão mostra o exemplo fictício (eventos do modo manual) e não os apps reais',/DADOS FICTÍCIOS/.test(hg)&&/Camila/.test(hg)&&!/VetFlow|AttimoDrive|PDVMix/.test(hg));
  L.check('Tela de entrada: totais batem com os dados do modo manual (3 eventos, 570 convidados, 3 críticos)',/3\s*eventos/.test(hg)&&/570\s*convidados/.test(hg)&&/3\s*críticos/.test(hg));
+ // ── Financeiro: evento travado e no topo quando vem da tela do evento ──
+ const eidF=a.ev(`getEvents()[0].id`);
+ a.ev(`finOpenForm({tipo:'desp',scope:'Eventos',eventId:${JSON.stringify(eidF)}})`);await L.sleep(80);
+ const ff=a.d.querySelector('#dynamicForm');
+ L.check('Lançamento vindo do evento: caixa "Evento" é a PRIMEIRA do formulário e está travada (sem seleção)',!!ff.firstElementChild.querySelector('[data-ev-locked]')&&!ff.querySelector('select[name="eventId"]'));
+ L.check('...e envia o evento certo no formulário',new a.w.FormData(ff).get('eventId')===eidF);
+ a.ev(`document.querySelector('#formDialog').close()`);
+ a.ev(`finOpenForm({tipo:'desp',scope:'*'})`);await L.sleep(80);
+ L.check('Lançamento avulso (Financeiro geral): continua escolhendo o evento (opcional)',!!a.d.querySelector('#dynamicForm select[name="eventId"]')&&!a.d.querySelector('#dynamicForm [data-ev-locked]'));
+ a.ev(`document.querySelector('#formDialog').close()`);
+ // ── "+ Adicionar novo" no lugar de "Outro" (tipos e categorias) ──
+ for(const [form,field,list,label] of [['event','type','eventTypes','tipo de evento'],['supplier','category','supplierCategories','categoria de fornecedor'],['catalog','category','catalogCategories','categoria de catálogo'],['project','category','projectCategories','categoria de projeto'],['appointment','type','appointmentTypes','tipo de compromisso']]){
+  a.ev(`openForm('${form}')`);await L.sleep(70);
+  const sl=a.d.querySelector(`#dynamicForm select[name="${field}"]`);
+  const ops=sl?[...sl.options].map(o=>o.value):[];
+  L.check(`${label}: sem opção "Outro" e com "Adicionar novo…"`,!!sl&&!ops.some(o=>/^outro$/i.test(o))&&ops.some(o=>/Adicionar novo/.test(o))&&sl.dataset.catList===list);
+  sl.value=ops.find(o=>/Adicionar novo/.test(o));sl.dispatchEvent(new a.w.Event('change'));await L.sleep(40);
+  const dlg=a.d.querySelector('#catManageDialog');
+  const novo=('Novo '+label.slice(0,8)).trim();
+  a.d.querySelector('#catManageInput').value=novo;a.d.querySelector('#catManageAdd').click();await L.sleep(60);
+  const sl2=a.d.querySelector(`#dynamicForm select[name="${field}"]`);
+  L.check(`${label}: cadastrar fecha o cadastro, volta ao formulário com o novo item selecionado`,!dlg.open&&a.d.querySelector('#formDialog').open&&sl2.value===novo);
+  a.ev(`document.querySelector('#formDialog').close()`);await L.sleep(30);
+ }
+ // ── Plano de pagamento: valor editável em todas as parcelas; soma = total do contrato ──
+ {const ev=a.ev(`getEvents()[0]`),E=JSON.stringify({id:'ppx',date:'2027-03-20'});
+  const calc=(vals)=>a.ev(`(function(){_ppVal=${JSON.stringify(vals)};const r=payPlanCompute(${E},{ov:{},totalCent:5000000,sinalPct:30,sinalData:'2026-11-10',parcelas:3,diasAntes:10});_ppVal={};return {soma:r.soma,dif:r.dif,neg:r.neg,v:r.linhas.map(l=>l.cent),d:r.linhas[0].desc}})()`);
+  const r0=calc({});L.check('Plano: sem edição, soma = total (R$ 50.000)',r0.soma===5000000&&r0.dif===0&&r0.v[0]===1500000);
+  const r1=calc({p1of3:1000000});L.check('Plano: editar 1 parcela redistribui o resto e a soma continua = total',r1.dif===0&&r1.v[1]===1000000&&r1.soma===5000000);
+  const r2=calc({sinal:2000000,p1of3:1000000,p2of3:1000000,p3of3:1100000});L.check('Plano: todas editadas com soma errada → diferença acusada (bloqueia gerar)',r2.dif===100000);
+  const r3=calc({sinal:2000000,p1of3:1000000,p2of3:1000000,p3of3:1000000});L.check('Plano: todas editadas fechando 50.000 → ok e sinal mostra 40%',r3.dif===0&&/40%/.test(r3.d));
+  const r4=calc({sinal:6000000});L.check('Plano: valor acima do total não gera parcela negativa silenciosa',r4.dif!==0||r4.neg);
+ }
  return L.summary();
 }
 module.exports={run};

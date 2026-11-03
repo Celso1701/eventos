@@ -201,7 +201,7 @@ const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'B
 /* ===== FINANCEIRO UNIFICADO — V:1.05.0 =====
    Modelo único para Negócios, Eventos e Pessoal. Valores em CENTAVOS (inteiros),
    datas sempre em horário LOCAL (nunca toISOString), visões inspiradas no corsyncimoveis. */
-const APP_VERSION='V:1.41.0';
+const APP_VERSION='V:1.42.0';
 const FIN_STORE='r1_fin_v2',FIN_OV='r1_fin_v2_ov',FIN_DEL='r1_fin_v2_del',FIN_CFG='r1_fin_cfg',FIN_MIG='r1_fin_v2_mig';
 const FIN_WS=['Negócios','Eventos','Pessoal'];
 const FIN_CATS={'Negócios':['Assinaturas de clientes','Licenças e ferramentas','Infraestrutura','Marketing','Impostos','Outros'],'Eventos':['Contrato','Parcela','Fornecedor','Decoração','Buffet','DJ & Música','Som & Luz','Transporte','Outros'],'Pessoal':['Renda','Moradia','Alimentação','Transporte','Assinaturas','Saúde','Lazer','Outros']};
@@ -381,7 +381,8 @@ function finOpenFormInner(opts){
  const hoje=finLocalISO();
  const sel=(name,items,cur)=>`<select name="${esc(name)}">${items.map(i=>`<option value="${finEsc(i[0])}" ${String(i[0])===String(cur||'')?'selected':''}>${finEsc(i[1])}</option>`).join('')}</select>`;
  $('#formTitle').textContent=ex?'Editar lançamento':(v.tipo==='rec'?'Nova receita':'Nova despesa');
- $('#dynamicForm').innerHTML=`<div class="form-field"><label>Tipo</label>${sel('tipo',[['rec','Receita (a receber)'],['desp','Despesa (a pagar)']],v.tipo)}</div>
+ const evCtx=opts.eventId||(ex&&finEventScope&&ex.eventId===finEventScope?finEventScope:''),evLock=!!evCtx,evObj=evLock?getEvents().find(e=>e.id===(v.eventId||evCtx)):null,evHead=evLock?`<div class="form-field full"><label>Evento</label><div class="ev-locked" data-ev-locked>${finEsc(evObj?evObj.title:'Evento')} 🔒</div><input type="hidden" name="eventId" value="${finEsc(v.eventId||evCtx)}"><small>Vem da tela do evento e não pode ser alterado aqui.</small></div>`:'';
+  $('#dynamicForm').innerHTML=`${evHead}<div class="form-field"><label>Tipo</label>${sel('tipo',[['rec','Receita (a receber)'],['desp','Despesa (a pagar)']],v.tipo)}</div>
  <div class="form-field"><label>Workspace</label>${sel('ws',FIN_WS.map(w=>[w,w]),v.ws)}</div>
  <div class="form-field"><label>Categoria</label><input name="categoria" list="finCatList" maxlength="40" value="${finEsc(v.categoria)}"><datalist id="finCatList">${(FIN_CATS[v.ws]||[]).map(c=>`<option value="${finEsc(c)}">`).join('')}</datalist></div>
  <div class="form-field"><label id="finParteLbl">${v.tipo==='rec'?'Fonte pagadora':'Favorecido'}</label><input name="parte" maxlength="60" value="${finEsc(v.parte)}"></div>
@@ -389,7 +390,7 @@ function finOpenFormInner(opts){
  <div class="form-field"><label>Pagamento</label>${sel('forma',[['vista','À vista'],['cartao','💳 Cartão de crédito (só despesas)']],v.forma)}</div>
  <div class="form-field"><label>Data (vencimento)</label><input name="data" type="date" value="${finEsc(v.data)}"></div>
  <div class="form-field"><label>Data realizada</label><input name="dataReal" type="date" max="${hoje}" value="${finEsc(v.dataReal||'')}"><small>Em branco = em aberto. Não pode estar no futuro.</small></div>
- <div class="form-field"><label>Evento (opcional)</label>${sel('eventId',[['','— nenhum —'],...getEvents().map(e=>[e.id,e.title])],v.eventId)}</div>
+ ${evLock?'':`<div class="form-field"><label>Evento (opcional)</label>${sel('eventId',[['','— nenhum —'],...getEvents().map(e=>[e.id,e.title])],v.eventId)}</div>`}
  <div class="form-field"><label>Projeto (opcional)</label>${sel('projectId',[['','— nenhum —'],...getProjects().map(p=>[p.id,p.name])],v.projectId)}</div>
  <div class="form-field"><label>Cliente (opcional)</label>${sel('clientId',[['','— nenhum —'],...getClients().map(c=>[c.id,c.name])],v.clientId)}</div>
  ${ex?'':`<div class="form-field"><label>Repetição</label>${sel('rep',[['unica','Lançamento único'],['parcelada','Parcelada (divide o valor)'],['mensal','Recorrente mensal (repete o valor)']],'unica')}</div><div class="form-field"><label>Nº de parcelas / meses</label><input name="n" type="number" min="2" max="60" value="2"></div>`}
@@ -671,21 +672,21 @@ Maria Silva
 João Pereira" style="width:100%;resize:vertical"></textarea><div style="margin-top:10px"><label style="font-weight:700;font-size:13px;display:block;margin-bottom:4px">Mesa dos convidados <span style="font-weight:400;color:#6c7887">(opcional)</span></label>${tableChooserHTML({id:'guestBulkTable',eventId:e.id})}<small style="display:block;color:#6c7887;font-size:11.5px;line-height:1.5;margin-top:4px">Todos os nomes entram nessa mesa. Deixe “Sem mesa” para organizar depois no Mapa de mesas.</small></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn btn-secondary" id="guestBulkAdd" data-event-id="${esc(e.id)}">＋ Adicionar à lista</button><button class="btn btn-secondary" data-guest-import="${esc(e.id)}">📥 Importar de planilha</button></div></div><input type="text" id="guestSearch" placeholder="Buscar convidado por nome ou telefone..." style="margin:16px 0 10px;width:100%"/><div class="guest-list">${rows.length?rows.map(g=>`<article class="guest-row" data-guest-row data-guest-search="${finEsc(`${g.name} ${g.phone||''}`.toLowerCase())}"><div class="guest-main"><b>${esc(g.name)}</b><small>${escL(g.phone)||'sem telefone'}${g.table?' • '+esc(g.table):''}</small></div><div class="guest-status-group"><button class="guest-status-btn ${g.status==='Confirmado'?'active confirmado':''}" data-guest-set="${esc(g.id)}" data-status="Confirmado" title="Confirmado">✓ Confirmado</button><button class="guest-status-btn ${g.status==='Pendente'?'active pendente':''}" data-guest-set="${esc(g.id)}" data-status="Pendente" title="Pendente">? Pendente</button><button class="guest-status-btn ${g.status==='Recusado'?'active recusado':''}" data-guest-set="${esc(g.id)}" data-status="Recusado" title="Recusado">✕ Recusado</button></div><button class="small-btn" data-guest-invite="${esc(g.id)}" title="Enviar convite por WhatsApp">💌 Convidar</button><button class="small-btn" data-edit="guest::${esc(g.id)}">✏️</button></article>`).join(''):'<p style="color:#6c7887">Nenhum convidado cadastrado ainda. Cole uma lista acima ou use "Novo convidado".</p>'}</div>`}
 const getEventTables=eventId=>readJSON(`r1_event_tables_${eventId}`,[]);
 function createEventTables(eid,n){const tabs=getEventTables(eid).slice(),have=new Set(tabs.map(t=>gsNorm(t)));for(let i=1;i<=n;i++){const nm='Mesa '+i;if(!have.has(gsNorm(nm))){tabs.push(nm);have.add(gsNorm(nm))}}storage.setItem(`r1_event_tables_${eid}`,JSON.stringify(tabs));return tabs.length}
-const defaultEventTypes=[{name:'Casamento',visible:true},{name:'Debutante',visible:true},{name:'Corporativo',visible:true},{name:'Aniversário',visible:false},{name:'Formatura',visible:false},{name:'Outro',visible:false}];
+const defaultEventTypes=[{name:'Casamento',visible:true},{name:'Debutante',visible:true},{name:'Corporativo',visible:true},{name:'Aniversário',visible:false},{name:'Formatura',visible:false}];
 const getEventTypes=()=>{const saved=readJSON('r1_event_types',null);return (saved&&saved.length)?saved:defaultEventTypes};
 const saveEventTypes=list=>storage.setItem('r1_event_types',JSON.stringify(list));
-const defaultSupplierCategories=['Buffet','DJ & Música','Decoração','Foto & Vídeo','Som & Luz','Bar & Bebidas','Espaço','Segurança','Outro'];
+const defaultSupplierCategories=['Buffet','DJ & Música','Decoração','Foto & Vídeo','Som & Luz','Bar & Bebidas','Espaço','Segurança'];
 /* Banco de categorias: na primeira leitura grava as categorias atuais (padrão + as já usadas nos registros), para poder editar/excluir */
 function seedCats(key,defaults,used){const saved=readJSON(key,null);if(saved&&saved.length)return saved;const out=[];[...defaults,...used()].forEach(n=>{n=String(n||'').trim();if(n&&!out.some(x=>x.toLowerCase()===n.toLowerCase()))out.push(n)});try{storage.setItem(key,JSON.stringify(out))}catch(e){}return out}
 const getSupplierCategories=()=>seedCats('r1_supplier_categories',defaultSupplierCategories,()=>getSuppliers().map(x=>x.category));
 const saveSupplierCategories=list=>storage.setItem('r1_supplier_categories',JSON.stringify(list));
-const defaultCatalogCategories=['Cardápio','Decoração','DJ & Música','Foto & Vídeo','Bar & Bebidas','Som & Luz','Outro'];
+const defaultCatalogCategories=['Cardápio','Decoração','DJ & Música','Foto & Vídeo','Bar & Bebidas','Som & Luz'];
 const getCatalogCategories=()=>seedCats('r1_catalog_categories',defaultCatalogCategories,()=>getCatalog().map(x=>x.category));
-const defaultProjectCategories=['Tecnologia','Negócio','Produto','Marketing','Pessoal','Outro'];
+const defaultProjectCategories=['Tecnologia','Negócio','Produto','Marketing','Pessoal'];
 const getProjectCategories=()=>seedCats('r1_project_categories',defaultProjectCategories,()=>getProjects().map(x=>x.cat||x.category));
 const saveProjectCategories=list=>storage.setItem('r1_project_categories',JSON.stringify(list));
 const CAT_ADD='➕ Adicionar novo…';
-function ajCatEnsure(key,name){const L=AJ_LISTS[key],n=String(name||'').trim();if(!n)return n;const ex=L.get().find(x=>x.toLowerCase()===n.toLowerCase());if(ex)return ex;const a=L.get().slice();a.push(n);L.save(a);return n}
+function ajCatEnsure(key,name){const L=AJ_LISTS[key],n=String(name||'').trim();if(!n)return n;const ex=L.get().find(x=>x.toLowerCase()===n.toLowerCase());if(ex)return ex;if(L.obj){const arr=getEventTypes().slice();arr.push({name:n,visible:true});saveEventTypes(arr);return n}const a=L.get().slice();a.push(n);L.save(a);return n}
 const saveCatalogCategories=list=>storage.setItem('r1_catalog_categories',JSON.stringify(list));
 const defaultAppointmentTypes=['Compromisso','Pessoal','Planejamento','Evento','Cliente','Fornecedor','Financeiro'];
 const getAppointmentTypes=()=>{const saved=readJSON('r1_appointment_types',null);return (saved&&saved.length)?saved:defaultAppointmentTypes};
@@ -975,7 +976,7 @@ const tutorialFlows={
  photos:{title:'Outros / Fotos',group:'Eventos',workspace:'Eventos',icon:'camera',minutes:2,description:'Guarde até 10 fotos do evento com um assunto, como locais turísticos, referências ou o local do evento.',steps:[
   {workspace:'Eventos',nav:'eventos',action:'eventHub',target:'[data-open-photos]',title:'Abra “Outros / Fotos” pelo hub',text:'Fica logo depois do Mapa de mesas. Serve para tudo que não tem tela própria: locais turísticos, referências de decoração, fotos do espaço.',tip:'Cada evento tem a sua própria galeria.'},
   {action:'photos',target:'#phSubject',title:'Escreva o assunto',text:'Digite o que são essas fotos, por exemplo “locais turísticos”. Há também um campo de observações. Tudo grava sozinho.',tip:'Dá para mudar o texto quando quiser.'},
-  {action:'photos',target:'#phCam, #phGal',title:'Tire foto ou escolha da galeria',text:'“Tirar foto” abre a câmera do celular. “Galeria / arquivos” deixa escolher várias fotos de uma vez, da galeria ou de outra pasta. O limite é de 10 fotos por evento.',tip:'As fotos são reduzidas automaticamente para caber no aparelho. Toque numa foto para ampliar e no ✕ para remover.'}
+  {action:'photos',target:'#phCam, #phGal',title:'6 fotos públicas, 3 privativas e 1 vídeo',text:'“Tirar foto” abre a câmera do celular e “Galeria / arquivos” deixa escolher da galeria. As fotos entram sempre na ordem 1, 2, 3…: a foto 2 só libera depois da foto 1, e assim por diante. São 6 públicas e 3 privativas, mais 1 vídeo de até 45 segundos.',tip:'As fotos são reduzidas para caber no aparelho. Toque numa foto para ampliar e no ✕ para remover (as seguintes sobem uma posição). O vídeo fica só neste aparelho e não vai no backup.'}
  ]},
  orcamento:{title:'Orçamento em PDF',group:'Eventos',workspace:'Eventos',icon:'file-signature',minutes:2,description:'Monte a proposta para o cliente com os itens escolhidos do evento e gere o PDF.',steps:[
   {workspace:'Eventos',nav:'eventos',action:'eventHub',target:'[data-open-budget]',title:'O orçamento sai do hub do evento',text:'No hub do evento, o botão 💰 Orçamento PDF monta a proposta para o cliente com os itens escolhidos do catálogo, o total, o sinal de reserva, as parcelas e o campo de aceite.',tip:'O que você paga aos fornecedores não entra na proposta.'},
@@ -1114,7 +1115,7 @@ const AJ_LISTS={
   usage:n=>getAppointments().filter(x=>x.type===n).length,
   rewrite:(o,n)=>getAppointments().filter(x=>x.type===o).forEach(x=>updateRecord('appointment',{id:x.id,type:n}))}
 };
-AJ_LISTS.supplierCategories.names=()=>getSupplierCategories();AJ_LISTS.catalogCategories.names=()=>getCatalogCategories();AJ_LISTS.projectCategories.names=()=>getProjectCategories();AJ_LISTS.appointmentTypes.names=()=>getAppointmentTypes();
+AJ_LISTS.eventTypes.get=()=>getEventTypes().map(t=>t.name);AJ_LISTS.supplierCategories.names=()=>getSupplierCategories();AJ_LISTS.catalogCategories.names=()=>getCatalogCategories();AJ_LISTS.projectCategories.names=()=>getProjectCategories();AJ_LISTS.appointmentTypes.names=()=>getAppointmentTypes();
 ['supplierCategories','catalogCategories','projectCategories','appointmentTypes'].forEach(k=>{const L=AJ_LISTS[k];L.items=()=>{const h=_hid(L.hiddenKey);return L.get().map(n=>({name:n,visible:!h.has(n)}))}});
 const ajHidden=key=>{const L=AJ_LISTS[key];return L.hiddenKey?_hid(L.hiddenKey):new Set()};
 function ajListRename(key,oldName,newName){
@@ -1310,6 +1311,17 @@ function payPlanBase(e){ // valor do contrato = "Orçamento previsto" do evento;
  const porPessoa=u=>/pessoa|convidado|cabe[cç]a/i.test(String(u||''));
  return ids.map(id=>cat.find(c=>c.id===id)).filter(Boolean).reduce((a,c)=>a+Number(c.price||0)*(porPessoa(c.unit)?Math.max(1,Number(e.guests||0)):1),0);
 }
+let _ppVal={};
+/* valores digitados à mão em cada parcela: o que sobrar do total é redistribuído nas parcelas não editadas; a soma precisa fechar com o total do contrato */
+function ppSpread(rows,total,keyOf,canEdit,autoFree){
+ rows.forEach(r=>{const k=keyOf(r);if(canEdit(r)&&_ppVal[k]!=null){r.cent=_ppVal[k];r.manualV=true}});
+ const free=rows.filter(r=>!r.manualV&&autoFree(r));
+ if(rows.some(r=>r.manualV)&&free.length){const lock=rows.filter(r=>!free.includes(r)).reduce((a,r)=>a+r.cent,0),rest=total-lock,w=free.reduce((a,r)=>a+r.cent,0);let acc=0;
+  free.forEach((r,i)=>{const c=i===free.length-1?rest-acc:Math.max(0,Math.floor(w>0?rest*r.cent/w:rest/free.length));r.cent=c;acc+=c})}
+ const soma=rows.reduce((a,r)=>a+r.cent,0);return{soma,dif:soma-total,neg:rows.some(r=>r.cent<0)}}
+function ppSomaMsg(r){if(r.neg)return 'Os valores digitados passam do total do contrato.';if(!r.dif)return '';return `A soma das parcelas (${moneyApp(r.soma/100)}) não bate com o total do contrato (${moneyApp(r.totalC/100)}): ${r.dif<0?'faltam':'sobram'} ${moneyApp(Math.abs(r.dif)/100)}. Ajuste os valores.`}
+function ppValInput(key,cent,manual){return `<input type="text" inputmode="numeric" data-pp-val="${esc(key)}" value="${esc(finFmtNum(cent))}" aria-label="Valor: ${esc(key)}" style="width:100%;max-width:112px;text-align:right;font-size:12.5px;font-weight:700;padding:3px 4px;margin:0${manual?';border-color:#c47a3a':''}">`}
+function ppBindVals(refresh){$$('#ppPreview [data-pp-val]').forEach(inp=>{inp.oninput=()=>finMaskMoeda(inp);inp.onchange=()=>{const c=finParseMoeda(inp.value);if(c>0)_ppVal[inp.dataset.ppVal]=c;else delete _ppVal[inp.dataset.ppVal];refresh()}})}
 function payPlanCompute(e,o){
  const totalC=Math.round(Number(o.totalCent)||0),pct=Number(o.sinalPct),n=Math.floor(Number(o.parcelas)),dias=Math.floor(Number(o.diasAntes));
  if(!(totalC>0))return {erro:'Informe o valor total do contrato.'};
@@ -1331,8 +1343,10 @@ function payPlanCompute(e,o){
  }
  const ov=o.ov||{};let manuais=0;
  linhas.forEach(l=>{const v=ov[l.key];if(v&&/^\d{4}-\d{2}-\d{2}$/.test(v)){if(v!==l.data)manuais++;l.data=v;l.manual=true}});
+ const sp=ppSpread(linhas,totalC,l=>l.key,()=>true,()=>true);
+ linhas.forEach(l=>{if(l.key==='sinal'&&l.cent!==sinalC)l.desc=`Sinal (${Math.round(l.cent*1000/totalC)/10}%)`});
  linhas.forEach((l,i)=>{if(l.data>e.date)avisos.push(`${l.desc}: vence depois do evento (${finBR(e.date)}).`);if(i>0&&l.data<linhas[i-1].data)avisos.push(`${l.desc}: está antes da linha anterior.`)});
- return {linhas,totalC,avisos,manuais};
+ return {linhas,totalC,avisos,manuais:manuais+linhas.filter(l=>l.manualV).length,soma:sp.soma,dif:sp.dif,neg:sp.neg};
 }
 let _ppMode='gen',_ppEx=null,_ppDel=new Set(),_ppDelOk=false,_ppEscolheu=false,_ppConfirm=false;
 function payPlanExLines(e){return finAll().filter(x=>x.tipo==='rec'&&x.eventId===e.id).slice().sort((a,b)=>String(a.data).localeCompare(String(b.data)))}
@@ -1347,7 +1361,7 @@ function payPlanSetMode(){
  if(ex){const w=$('#ppExistWrap');if(w)w.style.display='none'}
 }
 function payPlanExStart(e,lin){
- _ppMode='exist';_ppEscolheu=false;_ppConfirm=false;_ppDel=new Set();_ppDelOk=false;_ppOv={};
+ _ppMode='exist';_ppEscolheu=false;_ppConfirm=false;_ppDel=new Set();_ppDelOk=false;_ppOv={};_ppVal={};
  const open=lin.filter(x=>!x.dataReal&&x.categoria!=='Sinal');
  _ppEx={e,lines:lin,open,curTotalC:lin.reduce((a,x)=>a+Number(x.valorCent),0),delFor:0};
  $('#ppTotal').value=finFmtNum(_ppEx.curTotalC);$('#ppParcelas').value=open.length;$('#ppErr').textContent='';
@@ -1377,11 +1391,12 @@ function payPlanExCompute(){
   const ultima=[...open,...fixos].map(x=>x.data).sort().pop()||hoje;
   for(let k=0;k<novas;k++){const i=manter.length+k,key='new'+(k+1);rows.push({id:null,key,novo:true,data:_ppOv[key]||finAddMonths(ultima,k+1),desc:`Parcela ${rParc+i+1}/${M}`,cent:cents(i),old:null})}
  }
+ const sp=fase==='ok'?ppSpread(rows,totalC,r=>r.id||r.key,r=>!r.recebida,r=>!r.recebida&&!r.fixo):{soma:totalC,dif:0,neg:false};
  rows.sort((a,b)=>String(a.data).localeCompare(String(b.data)));
  const avisos=[];rows.forEach(r=>{if(!r.recebida&&r.data>e.date)avisos.push(`${r.desc}: vence depois do evento (${finBR(e.date)}).`)});
  const alterar=[],incluir=[],excluir=[];
  if(fase==='ok'){rows.forEach(r=>{if(r.novo)incluir.push(r);else if(!r.recebida&&r.old&&(r.data!==r.old.data||r.cent!==r.old.cent||r.desc!==r.old.desc))alterar.push(r)});open.filter(x=>excl.has(x.id)).forEach(x=>excluir.push({id:x.id,data:x.data,cent:Number(x.valorCent),desc:x.descricao}))}
- return{rows,avisos,fase,needDel,totalC,D,n,M,open,resumo:{alterar,incluir,excluir}};
+ return{rows,avisos,fase,needDel,totalC,D,n,M,open,resumo:{alterar,incluir,excluir},soma:sp.soma,dif:sp.dif,neg:sp.neg};
 }
 function payPlanExTable(r){
  const hoje=finLocalISO(),L=_ppEx.lines;
@@ -1389,11 +1404,12 @@ function payPlanExTable(r){
  const td='padding:4px 6px;border-bottom:1px solid #eef1f5';
  const tr=x=>{const s=stOf(x),mudou=x.old&&x.old.cent!==x.cent;
   const dt=x.recebida?finBR(x.data):`<input type="date" data-pp-date="${escL(x.id)||esc(x.key)}" value="${esc(x.data)}" aria-label="Data: ${finEsc(x.desc)}" style="width:100%;max-width:150px;font-size:12.5px;padding:3px 4px;margin:0${_ppOv[x.id||x.key]?';border-color:#c47a3a':''}">`;
-  return `<tr data-pp-status="${esc(s.k)}"${x.novo?' data-pp-new':''} style="background:${s.bg};color:${s.fg}"><td style="${td}">${dt}</td><td style="${td}">${finEsc(x.desc)}<div class="pp-st">${esc(s.tag)}</div></td><td style="${td};text-align:right">${mudou?`<s style="opacity:.6">${moneyApp(x.old.cent/100)}</s><br>`:''}<b>${moneyApp(x.cent/100)}</b></td>${r.fase==='excluir'&&!x.fixo?`<td style="${td}"><button type="button" class="small-btn" data-pp-del="${esc(x.id)}" aria-pressed="${!!x.sel}">${x.sel?'Excluir: Sim':'Excluir: Não'}</button></td>`:(r.fase==='excluir'?`<td style="${td}"></td>`:'')}</tr>`};
- const soma=r.rows.reduce((a,x)=>a+x.cent,0);
+  return `<tr data-pp-status="${esc(s.k)}"${x.novo?' data-pp-new':''} style="background:${s.bg};color:${s.fg}"><td style="${td}">${dt}</td><td style="${td}">${finEsc(x.desc)}<div class="pp-st">${esc(s.tag)}</div></td><td style="${td};text-align:right">${mudou?`<s style="opacity:.6">${moneyApp(x.old.cent/100)}</s><br>`:''}${x.recebida||r.fase==='excluir'?`<b>${moneyApp(x.cent/100)}</b>`:ppValInput(x.id||x.key,x.cent,x.manualV)}</td>${r.fase==='excluir'&&!x.fixo?`<td style="${td}"><button type="button" class="small-btn" data-pp-del="${esc(x.id)}" aria-pressed="${!!x.sel}">${x.sel?'Excluir: Sim':'Excluir: Não'}</button></td>`:(r.fase==='excluir'?`<td style="${td}"></td>`:'')}</tr>`};
+ const soma=r.fase==='ok'?r.soma:r.rows.reduce((a,x)=>a+x.cent,0);
  let h=`<table style="width:100%;border-collapse:collapse;font-size:12.5px">${r.rows.map(tr).join('')}<tr><td colspan="2" style="padding:6px"><b>Total</b></td><td style="padding:6px;text-align:right"><b>${moneyApp(soma/100)}</b></td>${r.fase==='excluir'?'<td></td>':''}</tr></table>`;
- const nOv=Object.keys(_ppOv).length;
- h+=`<div style="font-size:11.5px;color:#6b7a93;margin-top:6px">Recebidas ficam em verde, atrasadas em vermelho. Toque numa data para ajustá-la.${nOv?` <button type="button" class="link-btn" id="ppResetDatas">↺ Voltar às datas originais (${esc(nOv)})</button>`:''}</div>`;
+ const nOv=Object.keys(_ppOv).length+Object.keys(_ppVal).length;
+ if(r.fase==='ok'&&ppSomaMsg(r))h+=`<div id="ppSomaErr" style="color:#c0392b;font-size:12.5px;margin-top:6px">⚠️ ${finEsc(ppSomaMsg(r))}</div>`;
+ h+=`<div style="font-size:11.5px;color:#6b7a93;margin-top:6px">Recebidas ficam em verde, atrasadas em vermelho. Toque numa data ou num valor para ajustá-lo; o que sobrar é redistribuído nas parcelas em aberto que você não mexeu.${nOv?` <button type="button" class="link-btn" id="ppResetDatas">↺ Voltar ao original (${esc(nOv)})</button>`:''}</div>`;
  if(r.fase==='excluir')h+=`<div style="margin-top:8px;background:#fdf1e3;border:1px solid #eccb9c;border-radius:10px;padding:8px 10px;font-size:12.5px;color:#a15b1f">Você reduziu de ${r.open.length} para ${esc(r.n)} parcela(s). Marque <b>${esc(r.needDel)}</b> parcela(s) com <b>Excluir: Sim</b> (marcadas: ${_ppDel.size}).<div style="margin-top:6px"><button type="button" class="btn btn-secondary" id="ppConfirmDel" style="width:auto"${_ppDel.size===r.needDel?'':' disabled'}>Confirmar exclusão</button></div></div>`;
  else if(r.resumo.excluir.length)h+=`<div style="margin-top:8px;font-size:12px;color:#c0392b">Serão excluídas: ${r.resumo.excluir.map(x=>`${finEsc(x.desc)} (${moneyApp(x.cent/100)})`).join(', ')} — os valores das parcelas restantes foram recalculados. <button type="button" class="link-btn" id="ppUndoDel">↩ Desfazer</button></div>`;
  h+=r.avisos.map(a=>`<div style="color:#a15b1f;margin-top:4px">⚠️ ${finEsc(a)}</div>`).join('');
@@ -1408,18 +1424,19 @@ function payPlanExRefresh(){
  if(r.erro){$('#ppPreview').innerHTML='';$('#ppErr').textContent=r.erro;$('#ppRevisar').disabled=true;return}
  $('#ppErr').textContent='';$('#ppPreview').innerHTML=payPlanExTable(r);
  $$('#ppPreview [data-pp-date]').forEach(inp=>inp.onchange=()=>{const k=inp.dataset.ppDate,v=inp.value;if(/^\d{4}-\d{2}-\d{2}$/.test(v))_ppOv[k]=v;else delete _ppOv[k];payPlanExRefresh()});
+ ppBindVals(payPlanExRefresh);
  $$('#ppPreview [data-pp-del]').forEach(b=>b.onclick=()=>{const id=b.dataset.ppDel;if(_ppDel.has(id))_ppDel.delete(id);else _ppDel.add(id);payPlanExRefresh()});
  const cd=$('#ppConfirmDel');if(cd)cd.onclick=()=>{if(_ppDel.size===r.needDel){_ppDelOk=true;payPlanExRefresh()}};
  const ud=$('#ppUndoDel');if(ud)ud.onclick=()=>{_ppDel=new Set();_ppDelOk=false;payPlanExRefresh()};
- const rb=$('#ppResetDatas');if(rb)rb.onclick=()=>{_ppOv={};payPlanExRefresh()};
- const m=r.resumo;$('#ppRevisar').disabled=!(r.fase==='ok'&&(m.alterar.length||m.incluir.length||m.excluir.length));
+ const rb=$('#ppResetDatas');if(rb)rb.onclick=()=>{_ppOv={};_ppVal={};payPlanExRefresh()};
+ const m=r.resumo;$('#ppRevisar').disabled=!(r.fase==='ok'&&!r.dif&&!r.neg&&(m.alterar.length||m.incluir.length||m.excluir.length));
 }
 function payPlanExConfirm(r){
  const m=r.resumo,li=a=>a.map(x=>`<li>${finEsc(x.desc)}: ${x.old?`${finBR(x.old.data)} ${moneyApp(x.old.cent/100)} → `:''}<b>${finBR(x.data)} ${moneyApp(x.cent/100)}</b></li>`).join('');
  $('#ppConfirm').innerHTML=`<div style="background:#f6f8fc;border:1px solid #e3e8ef;border-radius:12px;padding:12px 14px;font-size:13px"><b>Confirme as mudanças no Financeiro de ${finEsc(_ppEx.e.title)}</b><div style="margin:6px 0">Total do contrato: <b>${moneyApp(r.totalC/100)}</b></div>${m.alterar.length?`<div style="margin-top:6px"><b>Alterar ${m.alterar.length} parcela(s)</b><ul style="margin:4px 0 0 18px;padding:0">${li(m.alterar)}</ul></div>`:''}${m.incluir.length?`<div style="margin-top:6px"><b>Incluir ${m.incluir.length} parcela(s)</b><ul style="margin:4px 0 0 18px;padding:0">${li(m.incluir)}</ul></div>`:''}${m.excluir.length?`<div style="margin-top:6px;color:#c0392b"><b>Excluir ${m.excluir.length} parcela(s)</b><ul style="margin:4px 0 0 18px;padding:0">${m.excluir.map(x=>`<li>${finEsc(x.desc)} — ${finBR(x.data)} ${moneyApp(x.cent/100)}</li>`).join('')}</ul></div>`:''}<div style="font-size:11.5px;color:#6b7a93;margin-top:8px">As parcelas já recebidas não são alteradas. Isso regrava o Financeiro deste evento.</div></div>`;
 }
 function payPlanExApply(){
- const r=payPlanExCompute();if(r.erro||r.fase!=='ok')return;const e=_ppEx.e;
+ const r=payPlanExCompute();if(r.erro||r.fase!=='ok'||r.dif||r.neg)return;const e=_ppEx.e;
  try{if(typeof planWriteBlocked==='function'&&planWriteBlocked(FIN_STORE)){planNotifyReadOnly();return}}catch(err){}
  r.resumo.alterar.forEach(x=>{const orig=_ppEx.lines.find(l=>l.id===x.id);if(orig)finSave({...orig,data:x.data,valorCent:x.cent,descricao:x.desc})});
  if(r.resumo.incluir.length)finAdd(r.resumo.incluir.map(x=>({id:finUid(),eventId:e.id,ws:'Eventos',tipo:'rec',forma:'vista',projectId:'',clientId:'',origem:'plano',categoria:'Parcela',parte:e.client||'',descricao:x.desc,valorCent:x.cent,data:x.data,dataReal:''})));
@@ -1438,14 +1455,14 @@ function payPlanRefresh(){
  const precisaOk=exist.length>0&&!$('#ppExistOk').checked;
  if(r.erro){$('#ppPreview').innerHTML='';$('#ppErr').textContent=r.erro;$('#ppGerar').disabled=true;return}
  $('#ppErr').textContent='';
- $('#ppPreview').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12.5px">${r.linhas.map(l=>`<tr><td style="padding:4px 6px;border-bottom:1px solid #eef1f5"><input type="date" data-pp-date="${esc(l.key)}" value="${esc(l.data)}" aria-label="Data: ${finEsc(l.desc)}" style="width:100%;max-width:150px;font-size:12.5px;padding:3px 4px;margin:0${l.manual?';border-color:#c47a3a':''}"></td><td style="padding:4px 6px;border-bottom:1px solid #eef1f5">${finEsc(l.desc)}</td><td style="padding:4px 6px;border-bottom:1px solid #eef1f5;text-align:right"><b>${moneyApp(l.cent/100)}</b></td></tr>`).join('')}<tr><td colspan="2" style="padding:6px"><b>Total</b></td><td style="padding:6px;text-align:right"><b>${moneyApp(r.linhas.reduce((a,l)=>a+l.cent,0)/100)}</b></td></tr></table><div style="font-size:11.5px;color:#6b7a93;margin-top:6px">Toque numa data para ajustá-la antes de gerar.${r.manuais?` <button type="button" class="link-btn" id="ppResetDatas">↺ Voltar às datas automáticas (${esc(r.manuais)})</button>`:''}</div>${r.avisos.map(a=>`<div style="color:#a15b1f;margin-top:4px">⚠️ ${finEsc(a)}</div>`).join('')}`;
- $('#ppGerar').disabled=precisaOk;
+ $('#ppPreview').innerHTML=`<table style="width:100%;border-collapse:collapse;font-size:12.5px">${r.linhas.map(l=>`<tr><td style="padding:4px 6px;border-bottom:1px solid #eef1f5"><input type="date" data-pp-date="${esc(l.key)}" value="${esc(l.data)}" aria-label="Data: ${finEsc(l.desc)}" style="width:100%;max-width:150px;font-size:12.5px;padding:3px 4px;margin:0${l.manual?';border-color:#c47a3a':''}"></td><td style="padding:4px 6px;border-bottom:1px solid #eef1f5">${finEsc(l.desc)}</td><td style="padding:4px 6px;border-bottom:1px solid #eef1f5;text-align:right">${ppValInput(l.key,l.cent,l.manualV)}</td></tr>`).join('')}<tr><td colspan="2" style="padding:6px"><b>Total</b></td><td style="padding:6px;text-align:right"><b>${moneyApp(r.soma/100)}</b></td></tr></table>${ppSomaMsg(r)?`<div id="ppSomaErr" style="color:#c0392b;font-size:12.5px;margin-top:6px">⚠️ ${finEsc(ppSomaMsg(r))}</div>`:''}<div style="font-size:11.5px;color:#6b7a93;margin-top:6px">Toque numa data ou num valor para ajustá-lo antes de gerar. O que sobrar é redistribuído nas parcelas que você não mexeu.${r.manuais?` <button type="button" class="link-btn" id="ppResetDatas">↺ Voltar ao automático (${esc(r.manuais)})</button>`:''}</div>${r.avisos.map(a=>`<div style="color:#a15b1f;margin-top:4px">⚠️ ${finEsc(a)}</div>`).join('')}`;
+ $('#ppGerar').disabled=precisaOk||!!r.dif||r.neg;ppBindVals(payPlanRefresh);
  $$('#ppPreview [data-pp-date]').forEach(inp=>inp.onchange=()=>{const k=inp.dataset.ppDate,v=inp.value;if(k==='sinal'){if(v)$('#ppSinalData').value=v;payPlanRefresh();return}if(/^\d{4}-\d{2}-\d{2}$/.test(v))_ppOv[k]=v;else delete _ppOv[k];payPlanRefresh()});
- const rb=$('#ppResetDatas');if(rb)rb.onclick=()=>{_ppOv={};payPlanRefresh()};
+ const rb=$('#ppResetDatas');if(rb)rb.onclick=()=>{_ppOv={};_ppVal={};payPlanRefresh()};
 }
 function openPayPlanDialog(eventId){
  const e=getEvents().find(x=>x.id===eventId);if(!e)return;
- const d=$('#payPlanDialog');d.dataset.eventId=eventId;_ppOv={};const lin=payPlanExLines(e);
+ const d=$('#payPlanDialog');d.dataset.eventId=eventId;_ppOv={};_ppVal={};const lin=payPlanExLines(e);
  $('#ppTitle').textContent='Plano de pagamento — '+e.title;
  const base=payPlanBase(e),hoje=finLocalISO();let sd=finAddDays(hoje,3);if(sd>e.date)sd=hoje;
  $('#ppTotal').value=base>0?finFmtNum(Math.round(base*100)):'';
@@ -1462,6 +1479,7 @@ function doPayPlanGenerate(){
  const id=$('#payPlanDialog').dataset.eventId,e=getEvents().find(x=>x.id===id);if(!e)return;
  const r=payPlanCompute(e,payPlanOpts());
  if(r.erro){$('#ppErr').textContent=r.erro;return}
+ if(r.dif||r.neg){$('#ppErr').textContent=ppSomaMsg(r);return}
  try{if(typeof planWriteBlocked==='function'&&planWriteBlocked(FIN_STORE)){planNotifyReadOnly();return}}catch(err){}
  finAdd(r.linhas.map(l=>({id:finUid(),eventId:e.id,ws:'Eventos',tipo:'rec',forma:'vista',projectId:'',clientId:'',origem:'plano',categoria:l.cat,parte:e.client||'',descricao:l.desc,valorCent:l.cent,data:l.data,dataReal:''})));
  $('#payPlanDialog').close();
@@ -2051,16 +2069,16 @@ try{if(typeof HTMLDialogElement!=='undefined'&&HTMLDialogElement.prototype.showM
 /* ── Rotina de cadastro de categorias, aberta pelo "➕ Adicionar novo…" do formulário ── */
 let _catCtx=null;
 const catManageOpen=()=>{const d=document.getElementById('catManageDialog');return !!(d&&d.open)};
-function catManageRender(){const c=_catCtx,L=c&&AJ_LISTS[c.key];if(!L)return;$('#catManageTitle').textContent='Categorias de '+(c.key==='supplierCategories'?'fornecedor':'catálogo');
+function catManageRender(){const c=_catCtx,L=c&&AJ_LISTS[c.key];if(!L)return;$('#catManageTitle').textContent=({supplierCategories:'Categorias de fornecedor',catalogCategories:'Categorias de catálogo',projectCategories:'Categorias de projeto',eventTypes:'Tipos de evento',appointmentTypes:'Tipos de compromisso'})[c.key]||'Cadastro';
  $('#catManageList').innerHTML=L.get().map(nm=>{const n=L.usage(nm);return `<div class="aj-list-row"><div class="aj-list-name"><b>${finEsc(nm)}</b><small>${esc(n)} ${n===1?'uso':'usos'}</small></div><div class="aj-list-btns"><button type="button" class="small-btn" data-cm-use data-name="${finEsc(nm)}">Usar</button><button type="button" class="small-btn" data-cm-ren data-name="${finEsc(nm)}" title="Renomear">✏️</button><button type="button" class="small-btn" data-cm-del data-name="${finEsc(nm)}" title="Excluir">🗑️</button></div></div>`}).join('');
  $$('#catManageList [data-cm-use]').forEach(b=>b.onclick=()=>{c.pick=b.dataset.name;$('#catManageDialog').close()});
  $$('#catManageList [data-cm-ren]').forEach(b=>b.onclick=()=>ajListDialog('rename',c.key,b.dataset.name));
  $$('#catManageList [data-cm-del]').forEach(b=>b.onclick=()=>ajListDialog('del',c.key,b.dataset.name))}
 function catSelectRefresh(sel,want){if(!sel||!sel.isConnected)return;const key=sel.dataset.catList,L=AJ_LISTS[key],h=ajHidden(key),all=L.get();const val=all.includes(want)?want:(all.includes(sel.dataset.prev)?sel.dataset.prev:(all.find(n=>!h.has(n))||''));
- const opts=all.filter(n=>!h.has(n)||n===val);sel.innerHTML=opts.map(x=>`<option ${x===val?'selected':''}>${esc(x)}</option>`).join('')+`<option>${esc(CAT_ADD)}</option>`;sel.value=val;sel.dataset.prev=val}
+ const opts=all.filter(n=>(!h.has(n)||n===val)&&(String(n).trim().toLowerCase()!=='outro'||n===val));sel.innerHTML=opts.map(x=>`<option ${x===val?'selected':''}>${esc(x)}</option>`).join('')+`<option>${esc(CAT_ADD)}</option>`;sel.value=val;sel.dataset.prev=val}
 function catBindSelects(){$$('#dynamicForm select[data-cat-list]').forEach(sel=>{sel.dataset.prev=sel.value;sel.onchange=()=>{if(sel.value===CAT_ADD){sel.value=sel.dataset.prev;_catCtx={sel,key:sel.dataset.catList,pick:''};catManageRender();$('#catManageInput').value='';$('#catManageErr').textContent='';$('#catManageDialog').showModal()}else sel.dataset.prev=sel.value}})}
 function catManageWire(){const d=document.getElementById('catManageDialog');if(!d||d._w)return;d._w=true;
- const add=()=>{const inp=$('#catManageInput'),nm=(inp.value||'').trim();if(!nm){$('#catManageErr').textContent='Digite o nome da categoria.';return}const L=AJ_LISTS[_catCtx.key];if(L.get().some(x=>x.toLowerCase()===nm.toLowerCase())){$('#catManageErr').textContent='Essa categoria já existe.';return}_catCtx.pick=ajCatEnsure(_catCtx.key,nm);inp.value='';$('#catManageErr').textContent='';catManageRender();toast('Categoria adicionada.')};
+ const add=()=>{const inp=$('#catManageInput'),nm=(inp.value||'').trim();if(!nm){$('#catManageErr').textContent='Digite o nome da categoria.';return}const L=AJ_LISTS[_catCtx.key];if(L.get().some(x=>x.toLowerCase()===nm.toLowerCase())){$('#catManageErr').textContent='Essa categoria já existe.';return}_catCtx.pick=ajCatEnsure(_catCtx.key,nm);inp.value='';$('#catManageErr').textContent='';toast('Cadastrado e selecionado.');$('#catManageDialog').close()};
  $('#catManageAdd').onclick=add;$('#catManageInput').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();add()}};
  d.addEventListener('close',()=>{if(_catCtx){catSelectRefresh(_catCtx.sel,_catCtx.pick);_catCtx=null}})}
 function currentScreenRebuild(){return currentDescriptor.kind==='nav'?(()=>render(currentDescriptor.id)):(currentDescriptor.rebuild||(()=>render(currentDescriptor.parent||'dashboard')))}
@@ -2107,7 +2125,7 @@ function bindContent(){syncTopbarH();
  $$('[data-open-seating]').forEach(b=>b.onclick=()=>openSubView('Mapa de mesas','EVENTOS & EXPERIÊNCIAS',()=>seatingView(b.dataset.openSeating),'eventos'));
  $$('[data-open-evmsg]').forEach(b=>b.onclick=()=>evMsgOpen(b.dataset.openEvmsg));
  $$('[data-open-photos]').forEach(b=>b.onclick=()=>openSubView('Outros / Fotos','EVENTOS & EXPERIÊNCIAS',()=>photosView(b.dataset.openPhotos),'eventos'));
- phBind();
+ phBind();phSourceWire();
  $$('[data-open-portal]').forEach(b=>b.onclick=()=>generateClientPortal(b.dataset.openPortal));
  const seatAddTable=$('#seatAddTable');
  if(seatAddTable)seatAddTable.onclick=()=>{
@@ -2566,7 +2584,7 @@ $('#proWhatsBtn').onclick=planOpenWhats;
 $('#proCode').oninput=function(){planMaskCode(this)};
 $('#proActivateBtn').onclick=async()=>{const r=await planTryActivate($('#proCode').value);if(r.ok)planAfterActivate();else if(!r.pendente)$('#proErr').textContent=r.msg||''};
 $('#budGerar').onclick=()=>{const id=$('#budGerar').dataset.eventId;$('#budgetDialog').close();generateBudgetPdf(id,{validade:$('#budValidade').value,sinal:$('#budSinal').value,obs:$('#budObs').value.trim(),parcelas:$('#budParcelas').checked})};
-$('#ppTotal').oninput=function(){finMaskMoeda(this);payPlanRefresh()};['ppSinal','ppSinalData','ppParcelas','ppDiasAntes'].forEach(id=>$('#'+id).oninput=payPlanRefresh);$('#ppExistOk').onchange=payPlanRefresh;$('#ppGerar').onclick=doPayPlanGenerate;
+$('#ppTotal').oninput=function(){finMaskMoeda(this);_ppVal={};payPlanRefresh()};['ppSinal','ppSinalData','ppParcelas','ppDiasAntes'].forEach(id=>$('#'+id).oninput=()=>{if(id!=='ppSinalData'&&id!=='ppDiasAntes')_ppVal={};payPlanRefresh()});$('#ppExistOk').onchange=payPlanRefresh;$('#ppGerar').onclick=doPayPlanGenerate;
 $('#ppAskMais').onclick=()=>{if(!_ppEx)return;_ppEscolheu=true;$('#ppParcelas').value=Math.min(12,_ppEx.open.length+1);payPlanSetMode();payPlanExRefresh();$('#ppParcelas').focus()};
 $('#ppAskAlterar').onclick=()=>{if(!_ppEx)return;_ppEscolheu=true;payPlanSetMode();payPlanExRefresh()};
 $('#ppRevisar').onclick=()=>{const r=payPlanExCompute();if(r.erro||r.fase!=='ok')return;_ppConfirm=true;payPlanSetMode();payPlanExConfirm(r)};
@@ -2776,12 +2794,14 @@ function renderField([key,label,kind,ph],eventId='',rawValue){
  const val=rawValue===true?'Sim':rawValue===false?'Não':(rawValue===undefined||rawValue===null?'':rawValue);
  if(kind==='select'||kind==='eventTypeSelect'||kind==='supplierCategorySelect'||kind==='catalogCategorySelect'||kind==='projectCategorySelect'||kind==='appointmentTypeSelect'){
   const vis=(lk,arr)=>{const h=ajHidden(lk);return arr.filter(n=>!h.has(n)||n===val)};
-  const opts=kind==='eventTypeSelect'?getEventTypes().map(t=>t.name):kind==='supplierCategorySelect'?[...vis('supplierCategories',getSupplierCategories()),...(val&&!getSupplierCategories().includes(val)?[val]:[]),CAT_ADD]:kind==='catalogCategorySelect'?[...vis('catalogCategories',getCatalogCategories()),...(val&&!getCatalogCategories().includes(val)?[val]:[]),CAT_ADD]:kind==='projectCategorySelect'?[...vis('projectCategories',getProjectCategories()),...(val&&!getProjectCategories().includes(val)?[val]:[]),CAT_ADD]:kind==='appointmentTypeSelect'?[...vis('appointmentTypes',getAppointmentTypes()),'Outro']:ph.split('|');
-  const isCatSel=kind==='supplierCategorySelect'||kind==='catalogCategorySelect'||kind==='projectCategorySelect',isOtherOpt=o=>isCatSel?String(o)===CAT_ADD:/^outro(s)?$/i.test(String(o).trim());
+  const noO=arr=>arr.filter(n=>String(n).trim().toLowerCase()!=='outro'||String(n)===String(val));
+  const withCur=(arr)=>[...noO(arr),...(val&&!arr.includes(val)?[val]:[]),CAT_ADD];
+  const opts=kind==='eventTypeSelect'?withCur(getEventTypes().map(t=>t.name)):kind==='supplierCategorySelect'?withCur(vis('supplierCategories',getSupplierCategories())):kind==='catalogCategorySelect'?withCur(vis('catalogCategories',getCatalogCategories())):kind==='projectCategorySelect'?withCur(vis('projectCategories',getProjectCategories())):kind==='appointmentTypeSelect'?withCur(vis('appointmentTypes',getAppointmentTypes())):ph.split('|');
+  const isCatSel=kind==='eventTypeSelect'||kind==='supplierCategorySelect'||kind==='catalogCategorySelect'||kind==='projectCategorySelect'||kind==='appointmentTypeSelect',isOtherOpt=o=>isCatSel?String(o)===CAT_ADD:/^outro(s)?$/i.test(String(o).trim());
   const hasOther=!isCatSel&&opts.some(isOtherOpt);
   const isCustom=hasOther && val!==undefined && val!==null && val!=='' && !opts.map(String).includes(String(val));
   const selectVal=isCustom?opts.find(isOtherOpt):val;
-  return `<div class="form-field"><label>${esc(label)}</label><select name="${esc(key)}" ${hasOther?`data-other-select="${esc(key)}"`:''} ${isCatSel?`data-cat-list="${kind==='supplierCategorySelect'?'supplierCategories':kind==='projectCategorySelect'?'projectCategories':'catalogCategories'}"`:''}>${opts.map(x=>`<option ${String(x)===String(selectVal)?'selected':''}>${esc(x)}</option>`).join('')}</select>${hasOther?`<input type="text" name="${esc(key)}__other" placeholder="${isCatSel?'Nome da nova categoria':'Escreva aqui...'}" value="${String(isCustom?val:'').replace(/"/g,'&quot;')}" style="margin-top:6px;width:100%;${isCustom?'':'display:none'}" data-other-input="${esc(key)}">`:''}</div>`;
+  return `<div class="form-field"><label>${esc(label)}</label><select name="${esc(key)}" ${hasOther?`data-other-select="${esc(key)}"`:''} ${isCatSel?`data-cat-list="${({eventTypeSelect:'eventTypes',supplierCategorySelect:'supplierCategories',projectCategorySelect:'projectCategories',appointmentTypeSelect:'appointmentTypes'})[kind]||'catalogCategories'}"`:''}>${opts.map(x=>`<option ${String(x)===String(selectVal)?'selected':''}>${esc(x)}</option>`).join('')}</select>${hasOther?`<input type="text" name="${esc(key)}__other" placeholder="${isCatSel?'Nome da nova categoria':'Escreva aqui...'}" value="${String(isCustom?val:'').replace(/"/g,'&quot;')}" style="margin-top:6px;width:100%;${isCustom?'':'display:none'}" data-other-input="${esc(key)}">`:''}</div>`;
  }
  if(kind==='eventselect')return `<div class="form-field"><label>${esc(label)}</label><select name="${esc(key)}">${getEvents().map(e=>`<option value="${esc(e.id)}" ${e.id===(val||eventId)?'selected':''}>${esc(e.title)}</option>`).join('')}</select></div>`;
  if(kind==='projectselect'){const ps=getProjects(),cur=val||eventId,tem=ps.some(p=>p.id===cur);return `<div class="form-field"><label>${esc(label)}</label><select name="${esc(key)}">${tem?'':`<option value="" selected disabled>${ps.length?'— Escolha o projeto —':'— Cadastre um projeto antes —'}</option>`}${ps.map(p=>`<option value="${finEsc(p.id)}" ${p.id===cur?'selected':''}>${finEsc(p.name)||'(sem nome)'}</option>`).join('')}</select>${tem&&eventId&&!val?'<small style="display:block;color:#6b7a93;font-size:11.5px;margin-top:4px">Projeto trazido da tela anterior.</small>':''}</div>`}
@@ -3310,31 +3330,70 @@ function evMsgOpen(eid){const e=getEvents().find(x=>x.id===eid);if(!e)return;con
  $('#evMsgEvent').value=m.event;$('#evMsgChecklist').value=m.checklist;$('#evMsgTimeline').value=m.timeline;$('#evMsgGuests').value=m.guests;d.showModal()}
 function evMsgSave(){const d=$('#evMsgDialog'),eid=d.dataset.eventId;if(!eid)return;storage.setItem('r1_wa_templates_'+eid,JSON.stringify({event:$('#evMsgEvent').value,checklist:$('#evMsgChecklist').value,timeline:$('#evMsgTimeline').value,guests:$('#evMsgGuests').value}));d.close();toast('Mensagens deste evento salvas.')}
 
-/* ═══ Outros / Fotos (até 10 fotos por evento, câmera ou galeria) ═══ */
-const PH_MAX=10,phById=id=>document.getElementById(id);
+/* ═══ Outros / Fotos: 6 públicas + 3 privativas + 1 vídeo (45 s), sempre na sequência 1,2,3… ═══ */
+const PH_PUB=6,PH_MAX=9,PH_VID_SEG=45,phById=id=>document.getElementById(id);
 const phKey=eid=>`r1_event_photos_${eid}`;
-const phGet=eid=>{const o=readJSON(phKey(eid),null);return o&&typeof o==='object'?{subject:o.subject||'',notes:o.notes||'',fotos:Array.isArray(o.fotos)?o.fotos:[]}:{subject:'',notes:'',fotos:[]}};
+const phGet=eid=>{const o=readJSON(phKey(eid),null);return o&&typeof o==='object'?{subject:o.subject||'',notes:o.notes||'',fotos:Array.isArray(o.fotos)?o.fotos:[],video:o.video&&typeof o.video==='object'?o.video:null}:{subject:'',notes:'',fotos:[],video:null}};
 function phSave(eid,o){try{storage.setItem(phKey(eid),JSON.stringify(o));return true}catch(e){toast('Sem espaço no aparelho para guardar mais fotos. Remova alguma ou faça um backup.');return false}}
-function photosView(eid){const e=getEvents().find(x=>x.id===eid)||getEvents()[0],o=phGet(e.id),n=o.fotos.length,cheio=n>=PH_MAX;
- return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">OUTROS / FOTOS</span><h3>${esc(e.title)}</h3><p>Guarde até ${PH_MAX} fotos deste evento com um assunto.</p></div></div>
+/* vídeo fica no IndexedDB (não cabe no localStorage); só o nome e a duração ficam no registro do evento */
+function phIdb(){return new Promise((ok,no)=>{try{const r=indexedDB.open('diadoevento_midia',1);r.onupgradeneeded=()=>r.result.createObjectStore('midia');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}})}
+async function phIdbOp(mode,fn){const db=await phIdb();return new Promise((ok,no)=>{const t=db.transaction('midia',mode),st=t.objectStore('midia'),rq=fn(st);t.oncomplete=()=>{db.close();ok(rq&&rq.result)};t.onerror=()=>{db.close();no(t.error)}})}
+const phVidKey=eid=>'video_'+eid;
+/* abre a câmera/galeria do aparelho: o input nasce dentro do toque do usuário e fica fora da tela (método que funciona no Android e no iPhone) */
+function phPegar(accept,capture,multi,cb){const i=document.createElement('input');i.type='file';i.accept=accept;if(capture)i.setAttribute('capture',capture);if(multi)i.multiple=true;i.style.cssText='position:fixed;left:-9999px;top:0;opacity:0';document.body.appendChild(i);
+ i.onchange=()=>{const fs=[...(i.files||[])];if(i.parentNode)i.parentNode.removeChild(i);if(fs.length)cb(fs)};i.click()}
+function photosView(eid){const e=getEvents().find(x=>x.id===eid)||getEvents()[0],o=phGet(e.id),n=Math.min(o.fotos.length,PH_MAX),cheio=n>=PH_MAX,extra=o.fotos.slice(PH_MAX);
+ const slot=i=>{const f=o.fotos[i],priv=i>=PH_PUB,nm=(i+1);
+  if(f)return `<div class="ph-slot filled"><img src="${esc(f.data)}" alt="Foto ${nm}" data-ph-view="${esc(f.id)}"><span class="ph-num">${nm}</span>${priv?`<button type="button" class="ph-badge" data-ph-pub="${esc(f.id)}">${f.publica?'Pública':'Privada'}</button>`:''}<button type="button" class="ph-del" data-ph-del="${esc(f.id)}" aria-label="Remover foto ${nm}">✕</button></div>`;
+  if(i===n)return `<button type="button" class="ph-slot ph-next" data-ph-slot="${i}"><span aria-hidden="true">📷</span><b>Foto ${nm}</b></button>`;
+  return `<div class="ph-slot ph-lock" data-ph-lock="${i}"><span aria-hidden="true">🔒</span><small>Foto ${i} primeiro</small></div>`};
+ const v=o.video;
+ return `<button class="link-btn" data-back>← Voltar ao evento</button><div class="section-title"><div><span class="eyebrow">OUTROS / FOTOS</span><h3>${esc(e.title)}</h3><p>${PH_PUB} fotos públicas, ${PH_MAX-PH_PUB} privativas e 1 vídeo de até ${PH_VID_SEG} segundos.</p></div></div>
  <section class="panel" data-ph="${esc(e.id)}"><div class="form-grid"><div class="form-field full"><label>Assunto</label><input id="phSubject" autocomplete="off" maxlength="80" placeholder="Exemplo: locais turísticos" value="${finEsc(o.subject)}"></div>
  <div class="form-field full"><label>Observações <span style="font-weight:400;color:#6c7887">(opcional)</span></label><textarea id="phNotes" rows="3" maxlength="600" placeholder="Anotações sobre estas fotos" style="width:100%;resize:vertical">${finEsc(o.notes)}</textarea></div></div>
- <div class="ph-bar"><b id="phCount">${n} de ${PH_MAX} fotos</b><div class="ph-btns"><label class="btn btn-primary ph-add${cheio?' disabled':''}" id="phCam">📷 Tirar foto<input type="file" accept="image/*" capture="environment" id="phCamIn" ${cheio?'disabled':''} hidden></label><label class="btn btn-secondary ph-add${cheio?' disabled':''}" id="phGal">🖼️ Galeria / arquivos<input type="file" accept="image/*" multiple id="phGalIn" ${cheio?'disabled':''} hidden></label></div></div>
- ${cheio?`<p class="ph-note">Limite de ${PH_MAX} fotos atingido. Remova uma para adicionar outra.</p>`:''}
- <div class="ph-grid">${n?o.fotos.map(f=>`<figure class="ph-item"><img src="${esc(f.data)}" alt="Foto" data-ph-view="${esc(f.id)}"><button class="ph-del" data-ph-del="${esc(f.id)}" aria-label="Remover foto">✕</button></figure>`).join(''):'<p style="color:#6c7887;grid-column:1/-1">Nenhuma foto ainda. Use os botões acima.</p>'}</div></section>`}
+ <div class="ph-bar"><b id="phCount">${n} de ${PH_MAX} fotos</b><div class="ph-btns"><button type="button" class="btn btn-primary ph-add" id="phCam" ${cheio?'disabled':''}>📷 Tirar foto</button><button type="button" class="btn btn-secondary ph-add" id="phGal" ${cheio?'disabled':''}>🖼️ Galeria / arquivos</button></div></div>
+ <p class="ph-note ph-info">As fotos entram na ordem 1, 2, 3… Só dá para adicionar a próxima depois de preencher a anterior.</p>
+ <h4 class="ph-h">Fotos principais públicas</h4><div class="ph-grid">${[0,1,2,3,4,5].map(slot).join('')}</div>
+ <h4 class="ph-h">Fotos adicionais privativas</h4><div class="ph-grid">${[6,7,8].map(slot).join('')}</div>
+ ${extra.length?`<h4 class="ph-h">Fotos antigas (acima do limite)</h4><div class="ph-grid">${extra.map(f=>`<div class="ph-slot filled"><img src="${esc(f.data)}" alt="Foto antiga" data-ph-view="${esc(f.id)}"><button type="button" class="ph-del" data-ph-del="${esc(f.id)}" aria-label="Remover foto">✕</button></div>`).join('')}</div>`:''}
+ <h4 class="ph-h">Vídeo do evento</h4><p class="ph-note ph-info">Opcional. Limite de ${PH_VID_SEG} segundos.</p>
+ ${v?`<div class="ph-video"><span aria-hidden="true">🎬</span><div><b>${esc(v.nome||'Vídeo')}</b><small>${esc(v.dur||0)} s</small></div><button type="button" class="small-btn" id="phVidPlay">▶ Ver</button><button type="button" class="small-btn" id="phVidDel" aria-label="Remover vídeo">🗑️</button></div>`
+ :`<div class="ph-btns"><button type="button" class="btn btn-primary ph-add" id="phVidCam">🎥 Gravar vídeo</button><button type="button" class="btn btn-secondary ph-add" id="phVidGal">🖼️ Vídeo da galeria</button></div>`}</section>`}
 function phResize(file,max=1024,q=.65){return new Promise((res,rej)=>{const r=new FileReader();r.onerror=()=>rej(new Error('leitura'));r.onload=()=>{const im=new Image();im.onerror=()=>rej(new Error('imagem'));im.onload=()=>{try{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);res(c.toDataURL('image/jpeg',q))}catch(e){rej(e)}};im.src=r.result};r.readAsDataURL(file)})}
-async function phAdd(eid,files){const o=phGet(eid);let livre=PH_MAX-o.fotos.length;if(livre<=0){toast(`Limite de ${PH_MAX} fotos.`);return}
+async function phAdd(eid,files){const o=phGet(eid);let livre=PH_MAX-Math.min(o.fotos.length,PH_MAX);if(livre<=0){toast(`Limite de ${PH_MAX} fotos.`);return}
  const lista=[...files].filter(f=>/^image\//.test(f.type)||/\.(jpe?g|png|webp|heic|gif)$/i.test(f.name||''));let add=0,pulou=Math.max(0,lista.length-livre);
- for(const f of lista.slice(0,livre)){try{const d=await phResize(f);o.fotos.push({id:'ph'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),data:d});add++}catch(e){toast('Não consegui ler uma das imagens.')}}
+ for(const f of lista.slice(0,livre)){try{const d=await phResize(f);const pos=Math.min(o.fotos.length,PH_MAX);o.fotos.splice(pos,0,{id:'ph'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),data:d,publica:pos>=PH_PUB?false:true});add++}catch(e){toast('Não consegui ler uma das imagens.')}}
  if(add&&phSave(eid,o)){toast(pulou?`${add} foto(s) adicionada(s). ${pulou} ficaram de fora (limite de ${PH_MAX}).`:`${add} foto(s) adicionada(s).`)}
  phRefresh(eid)}
+/* vídeo: confere a duração antes de aceitar (máx. 45 s) e guarda o arquivo no IndexedDB */
+async function phVideoAdd(eid,file){if(!file)return;
+ if(planWriteBlocked(phKey(eid))){try{planNotifyReadOnly()}catch(e){}return}
+ if(file.size>200*1024*1024){toast('Vídeo muito grande (máx. 200 MB).');return}
+ const url=URL.createObjectURL(file),v=document.createElement('video');v.preload='metadata';
+ const dur=await new Promise(r=>{v.onloadedmetadata=()=>r(v.duration);v.onerror=()=>r(NaN);v.src=url});URL.revokeObjectURL(url);
+ if(isFinite(dur)&&dur>PH_VID_SEG+.5){toast(`Vídeo de ${Math.round(dur)} s — o limite é ${PH_VID_SEG} segundos.`);return}
+ try{await phIdbOp('readwrite',st=>st.put(file,phVidKey(eid)))}catch(e){toast('Não consegui guardar o vídeo neste aparelho.');return}
+ const o=phGet(eid);o.video={nome:file.name||'video',dur:Math.round(isFinite(dur)?dur:0),tipo:file.type||'video/mp4'};if(phSave(eid,o))toast('Vídeo gravado.');phRefresh(eid)}
+async function phVideoDel(eid){try{await phIdbOp('readwrite',st=>st.delete(phVidKey(eid)))}catch(e){}const o=phGet(eid);o.video=null;phSave(eid,o);phRefresh(eid)}
+async function phVideoPlay(eid){let b=null;try{b=await phIdbOp('readonly',st=>st.get(phVidKey(eid)))}catch(e){}
+ if(!b){toast('Vídeo não encontrado neste aparelho (ele não vai no backup).');return}
+ const d=$('#videoViewDialog'),el=$('#videoViewEl');if(el.dataset.url)URL.revokeObjectURL(el.dataset.url);const u=URL.createObjectURL(b);el.dataset.url=u;el.src=u;d.showModal()}
 function phRefresh(eid){const y=window.scrollY;drawSubView('Outros / Fotos','EVENTOS & EXPERIÊNCIAS',()=>photosView(eid),'eventos');window.scrollTo({top:y,behavior:'instant'})}
 function phBind(){const root=document.querySelector('[data-ph]');if(!root)return;const eid=root.dataset.ph;
  const sv=()=>{const o=phGet(eid);o.subject=phById('phSubject').value.trim();o.notes=phById('phNotes').value.trim();phSave(eid,o)};
  phById('phSubject').onchange=sv;phById('phNotes').onchange=sv;phById('phSubject').oninput=()=>{clearTimeout(phBind._t);phBind._t=setTimeout(sv,600)};
- const pick=inp=>{inp.onchange=async()=>{sv();await phAdd(eid,inp.files);inp.value=''}};pick(phById('phCamIn'));pick(phById('phGalIn'));
- root.querySelectorAll('[data-ph-del]').forEach(b=>b.onclick=async()=>{if(!await askConfirm({title:'Remover esta foto?',text:'Ela será apagada deste evento.',ok:'Remover'}))return;const o=phGet(eid);o.fotos=o.fotos.filter(f=>f.id!==b.dataset.phDel);phSave(eid,o);phRefresh(eid)});
+ const foto=(cap,multi)=>{sv();phPegar('image/*',cap,multi,fs=>phAdd(eid,fs))};
+ phById('phCam').onclick=()=>foto('environment',false);phById('phGal').onclick=()=>foto(null,true);
+ root.querySelectorAll('[data-ph-slot]').forEach(b=>b.onclick=()=>{sv();$('#phSourceDialog').showModal();$('#phSourceDialog').dataset.eventId=eid});
+ root.querySelectorAll('[data-ph-lock]').forEach(b=>b.onclick=()=>toast('Inclua a foto '+b.dataset.phLock+' antes.'));
+ root.querySelectorAll('[data-ph-pub]').forEach(b=>b.onclick=()=>{const o=phGet(eid),f=o.fotos.find(x=>x.id===b.dataset.phPub);if(f){f.publica=!f.publica;phSave(eid,o);phRefresh(eid)}});
+ const vc=phById('phVidCam'),vg=phById('phVidGal');if(vc)vc.onclick=()=>phPegar('video/*','environment',false,fs=>phVideoAdd(eid,fs[0]));if(vg)vg.onclick=()=>phPegar('video/*',null,false,fs=>phVideoAdd(eid,fs[0]));
+ const vp=phById('phVidPlay'),vd=phById('phVidDel');if(vp)vp.onclick=()=>phVideoPlay(eid);if(vd)vd.onclick=async()=>{if(await askConfirm({title:'Remover o vídeo?',text:'Ele será apagado deste evento.',ok:'Remover'}))phVideoDel(eid)};
+ root.querySelectorAll('[data-ph-del]').forEach(b=>b.onclick=async()=>{if(!await askConfirm({title:'Remover esta foto?',text:'Ela será apagada deste evento. As seguintes sobem uma posição.',ok:'Remover'}))return;const o=phGet(eid);o.fotos=o.fotos.filter(f=>f.id!==b.dataset.phDel);phSave(eid,o);phRefresh(eid)});
  root.querySelectorAll('[data-ph-view]').forEach(im=>im.onclick=()=>{const f=phGet(eid).fotos.find(x=>x.id===im.dataset.phView);if(!f)return;$('#photoViewImg').src=f.data;$('#photoViewDialog').showModal()})}
+function phSourceWire(){const d=document.getElementById('phSourceDialog');if(!d||d._w)return;d._w=true;
+ const go=(cap)=>{const eid=d.dataset.eventId;d.close();phPegar('image/*',cap,!cap,fs=>phAdd(eid,fs))};
+ $('#phSrcCam').onclick=()=>go('environment');$('#phSrcGal').onclick=()=>go(null)}
 
 /* ═══ Lembrete de backup (Início) ═══ */
 const BK_DIAS=7;
