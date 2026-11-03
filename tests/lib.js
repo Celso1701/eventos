@@ -1,4 +1,4 @@
-// Utilitários de teste do RIZZIERI ONE: carrega o app no jsdom com polyfill de <dialog>.
+// Utilitários de teste do DIAdoEVENTO: carrega o app no jsdom com polyfill de <dialog>.
 const fs=require('fs'),path=require('path');
 function req(m){try{return require(m)}catch(e){if(process.env.JSDOM_PATH)return require(path.join(process.env.JSDOM_PATH,'node_modules',m));throw e}}
 const {JSDOM,VirtualConsole}=req('jsdom');

@@ -26,3 +26,7 @@ The HTML preview is a local prototype. It is **not** the production security bou
 - Pro license codes are bound to the device ID with a client-side checksum. This is a deterrent for honest users, not a security boundary (the algorithm is visible in the client code); real enforcement would require a server.
 - Known limitation: free-text fields are not yet HTML-escaped everywhere in the UI, so text typed with `<` or `>` can render as markup on some screens (self-entered data only).
 - Data lives in the browser's localStorage; there is no server component in this prototype.
+
+
+## V:1.40 — optional Supabase connection
+When the user sets "multiuser cloud mode" to YES and signs in, the app calls only `https://*.supabase.co` (CSP `connect-src`) for record locks. Only the public anon key is used in the browser; never put a `service_role` key or database password in this repository or app. Isolation between companies must be enforced by Row Level Security in Supabase (see the private delivery notes, not in this repo). Lock/session keys (`lk_*`) are excluded from backups. The service worker never caches cross-origin requests.

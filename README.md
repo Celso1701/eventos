@@ -1,4 +1,4 @@
-# RIZZIERI ONE — V:1.39.0
+# DIAdoEVENTO — V:1.41.0
 
 PWA "Life, Business & Projects" — central única para projetos, eventos, financeiro e vida pessoal em quatro workspaces (Negócios, Eventos, Pessoal, Ideias).
 
@@ -23,7 +23,7 @@ tools/build-preview.py  gera o arquivo único preview-standalone.html
 ```
 git init
 git add .
-git commit -m "RIZZIERI ONE V:1.39.0"
+git commit -m "DIAdoEVENTO V:1.41.0"
 git remote add origin <seu-repositorio>
 git push -u origin main
 ```
@@ -54,7 +54,7 @@ Os `assets/icons/*.png` são ícones simples (fundo `#071624`, emblema "R1"). Se
 
 ## Dados
 
-O app guarda tudo em `localStorage` do navegador (protótipo local, sem backend — ver `SECURITY.md` para o que muda em produção). Os arquivos anexados às degustações também ficam ali e **ocupam o espaço limitado do navegador** (cerca de 5 MB no total): se o aparelho avisar "sem espaço", faça um backup e remova anexos grandes. Use **Ajustes → Backup**, dentro do próprio app, antes de trocar de navegador/aparelho ou de atualizar os arquivos.
+Por padrão o app guarda tudo em `localStorage` do navegador. Opcionalmente (Ajustes → Multiusuário, modo "nuvem" SIM) conecta-se a um projeto Supabase da própria empresa — hoje apenas para o bloqueio de registros em uso; a política de segurança (CSP) só permite `https://*.supabase.co`. Fora isso: protótipo local, sem backend — ver `SECURITY.md` para o que muda em produção). Os arquivos anexados às degustações também ficam ali e **ocupam o espaço limitado do navegador** (cerca de 5 MB no total): se o aparelho avisar "sem espaço", faça um backup e remova anexos grandes. Use **Ajustes → Backup**, dentro do próprio app, antes de trocar de navegador/aparelho ou de atualizar os arquivos.
 
 ## Manual com dados fictícios
 
@@ -66,7 +66,7 @@ Instalações novas começam **sem nenhum dado de exemplo**: o dashboard mostra 
 
 ## Versão
 
-V:1.39.0 — auditoria e lista do que mudou em `LEIA-ISTO-V1.39.0.txt` (na entrega, fora deste repositório).
+V:1.41.0 — auditoria e lista do que mudou em `LEIA-ISTO-V1.41.0.txt` (na entrega, fora deste repositório).
 
 ## Direitos autorais
 
@@ -84,7 +84,7 @@ Todos os direitos reservados. Ver arquivo `LICENSE`. O repositório é público 
 - Na primeira abertura começa o **teste grátis de 30 dias** com tudo liberado. Depois do teste o app fica só para consulta por 1 dia e então pede o código Pro (com opção de baixar um backup antes). **Nada é apagado.**
 - O **Pro de 1 mês custa R$ 90,00** (após os 30 dias de teste) e é assinado pelo WhatsApp. O código é **assinado digitalmente** (ECDSA P-256): o app só carrega a chave **pública**, então ler o código-fonte não permite gerar códigos. Cada código é gerado para o **ID do aparelho** (Ajustes → Plano), só funciona nele e precisa ser ativado em até **45 dias**.
 - O código tem ~140 caracteres: é para **colar** (ou tocar no link de ativação `?ativar=CODIGO`, que o gerador monta). Ele sai do endereço assim que é lido.
-- Quem gera os códigos usa o arquivo `gerador-codigo-pro-rizzieri.html` (guarda a chave **privada**; fica **fora** deste repositório — nunca publique).
+- Quem gera os códigos usa o arquivo `gerador-codigo-pro-diadoevento.html` (guarda a chave **privada**; fica **fora** deste repositório — nunca publique).
 - A cada abertura o app reconfere as assinaturas e recalcula o vencimento; licença adulterada no armazenamento do navegador é descartada. A licença e o teste não entram no backup.
 - Limite conhecido: o teste de 30 dias fica no navegador e pode ser reiniciado limpando os dados do site. Impedir isso exige um servidor.
 
@@ -104,4 +104,4 @@ npm test           # ~1 minuto: estático, financeiro, diálogos, licença, nave
 ```
 
 Teste em navegador real (opcional; precisa de Playwright e do gerador, que não está neste repositório):
-`node tests/e2e-browser.js https://seu-site/ /caminho/gerador-codigo-pro-rizzieri.html`
+`node tests/e2e-browser.js https://seu-site/ /caminho/gerador-codigo-pro-diadoevento.html`

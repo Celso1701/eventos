@@ -2,13 +2,13 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self' data: blob:; frame-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; media-src 'self' data: blob:; frame-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <meta name="theme-color" content="#071624"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-  <meta name="apple-mobile-web-app-title" content="RIZZIERI ONE"/>
-  <title>RIZZIERI ONE</title>
+  <meta name="apple-mobile-web-app-title" content="DIAdoEVENTO"/>
+  <title>DIAdoEVENTO</title>
   <link rel="manifest" href="./manifest.json"/>
   <link rel="icon" href="./assets/icons/icon192.png"/>
   <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png"/>
@@ -16,11 +16,58 @@
   <link rel="stylesheet" href="./css/app.css"/>
 </head>
 <body>
+  <div id="netBanner" class="net-banner" role="status" aria-live="polite" hidden></div>
 <div id="app">
-  <section id="loginView" class="login-shell">
+  <section id="landingView" class="landing hidden" aria-label="Apresentação do DIAdoEVENTO">
+  <header class="ld-top">
+    <div class="ld-brand"><img src="./assets/icons/logo.png" alt="" width="34" height="22"><strong>DIAdoEVENTO</strong></div>
+    <button type="button" class="ld-link" id="ldEnter">Já tenho acesso · Entrar</button>
+  </header>
+  <main class="ld-main">
+    <section class="ld-hero">
+      <span class="ld-eyebrow">EVENTOS E NEGÓCIOS NO CELULAR</span>
+      <h1>Do orçamento ao último convidado, <em>tudo num só app.</em></h1>
+      <p>Cadastre eventos, clientes e fornecedores, mande convites pelo WhatsApp com o mapa de como chegar, cobre por Pix e acompanhe o financeiro, mesmo sem internet.</p>
+      <div class="ld-cta">
+        <button type="button" class="ld-btn ld-primary" id="ldStart">30 dias gratuito</button>
+        <button type="button" class="ld-btn ld-secondary" id="ldHow">Ver como funciona</button>
+      </div>
+      <p class="ld-note"><b>Sem cartão de crédito.</b> Instala direto do navegador, como um aplicativo.</p>
+    </section>
+    <section class="ld-sec" id="landingHow">
+      <h2>Como funciona</h2>
+      <ol class="ld-steps">
+        <li><b>1</b><div><strong>Abra e instale</strong><span>Acesse pelo navegador do celular e toque em “Instalar” ou “Adicionar à tela inicial”. Sem loja de aplicativos.</span></div></li>
+        <li><b>2</b><div><strong>Cadastre o evento</strong><span>Cliente, data, local, “como chegar”, orçamento e convidados. O evento vira um painel com tudo dele.</span></div></li>
+        <li><b>3</b><div><strong>Acompanhe e envie</strong><span>Checklist, cronograma, mapa de mesas, contrato e orçamento em PDF, convites e cobranças por WhatsApp e Pix.</span></div></li>
+      </ol>
+    </section>
+    <section class="ld-sec">
+      <h2>O que você tem</h2>
+      <div class="ld-grid">
+        <article><span>📄</span><strong>Orçamento e contrato em PDF</strong><p>Com a sua marca, validade e sinal.</p></article>
+        <article><span>💸</span><strong>Plano de pagamento e Pix</strong><p>Parcelas, QR Code e “copia e cola” gerados no aparelho.</p></article>
+        <article><span>💬</span><strong>Convites pelo WhatsApp</strong><p>Um toque por convidado, com o cartão de mapa “Como chegar”.</p></article>
+        <article><span>🪑</span><strong>Mapa de mesas</strong><p>Arraste os convidados para as mesas.</p></article>
+        <article><span>✅</span><strong>Checklist e cronograma</strong><p>Notas de 0 a 10, responsáveis e ordem do dia.</p></article>
+        <article><span>🍽️</span><strong>Degustação e fotos</strong><p>Aprovação com nota e até 10 fotos por evento.</p></article>
+        <article><span>📶</span><strong>Funciona sem internet</strong><p>Seus dados ficam no seu aparelho, com backup quando você quiser.</p></article>
+        <article><span>🗂️</span><strong>Negócios, Pessoal e Ideias</strong><p>Além de eventos: projetos, metas, rotina e ideias.</p></article>
+      </div>
+    </section>
+    <section class="ld-sec ld-final">
+      <h2>Comece hoje, sem compromisso</h2>
+      <p>Teste todas as funções por 30 dias. Quer só olhar? Use o modo demonstração com dados fictícios.</p>
+      <div class="ld-cta"><button type="button" class="ld-btn ld-primary" id="ldStart2">30 dias gratuito</button></div>
+      <p class="ld-note"><b>Sem cartão de crédito.</b> Instala direto do navegador, como um aplicativo.</p>
+    </section>
+  </main>
+  <footer class="ld-foot">© DIAdoEVENTO · www.diadoevento.com.br</footer>
+</section>
+<section id="loginView" class="login-shell">
     <div class="login-brand">
       <div class="brand-emblem"><img src="./assets/icons/logo.png" alt="" width="40" height="26"></div>
-      <div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div>
+      <div><strong>DIAdoEVENTO</strong><span>COMMAND CENTER</span></div>
     </div>
     <div class="login-panel">
       <span class="eyebrow">LIFE • BUSINESS • PROJECTS</span>
@@ -28,31 +75,31 @@
       <p>Uma central para administrar projetos, aplicativos, estratégia, rotina e resultados em um único ecossistema.</p>
       <form id="loginForm" class="login-card">
         <label>E-mail</label>
-        <input type="email" value="demo@rizzieri.one" autocomplete="email"/>
+        <input type="email" value="demo@diadoevento.com.br" autocomplete="email"/>
         <label>Senha</label>
         <div class="password-row"><input id="password" type="password" value="123456"/><button id="togglePassword" type="button">👁</button></div>
-        <button class="btn btn-primary" type="submit">Entrar no RIZZIERI ONE</button>
+        <button class="btn btn-primary" type="submit">Entrar no DIAdoEVENTO</button>
         <button id="demoLogin" class="btn btn-secondary" type="button">Acessar demonstração</button>
       </form>
     </div>
     <div class="login-visual">
       <div class="orb orb-a"></div><div class="orb orb-b"></div>
       <div class="glass-card hero-glass">
-        <span class="micro">COMMAND CENTER</span>
-        <strong>3 apps em produção</strong>
-        <p>VetFlowCare • AttimoDrive • PDVMix</p>
-        <div class="mini-kpis"><div><b>7</b><span>projetos</span></div><div><b>12</b><span>objetivos</span></div><div><b>4</b><span>críticos</span></div></div>
+        <span class="micro">EXEMPLO • DADOS FICTÍCIOS</span>
+        <strong>3 eventos em produção</strong>
+        <p>Casamento Camila &amp; Diego • Convenção Alfa Tech • 15 Anos Helena</p>
+        <div class="mini-kpis"><div><b>3</b><span>eventos</span></div><div><b>570</b><span>convidados</span></div><div><b>3</b><span>críticos</span></div></div>
       </div>
     </div>
   </section>
 
 
   <section id="planLockView" class="login-shell hidden">
-    <div class="login-brand"><div class="brand-emblem"><img src="./assets/icons/logo.png" alt="" width="40" height="26"></div><div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div></div>
+    <div class="login-brand"><div class="brand-emblem"><img src="./assets/icons/logo.png" alt="" width="40" height="26"></div><div><strong>DIAdoEVENTO</strong><span>COMMAND CENTER</span></div></div>
     <div class="login-panel" style="max-width:440px;margin:0 auto">
       <span class="eyebrow">PLANO PRO</span>
       <h1 style="font-size:28px">Seu teste grátis terminou</h1>
-      <p>Para continuar usando o RIZZIERI ONE, assine o Plano Pro. Seus dados continuam salvos neste aparelho e são liberados assim que você ativar.</p>
+      <p>Para continuar usando o DIAdoEVENTO, assine o Plano Pro. Seus dados continuam salvos neste aparelho e são liberados assim que você ativar.</p>
       <div class="login-card" style="display:flex;flex-direction:column;gap:10px">
         <div style="background:#eef4fb;border:1.5px dashed #2563a8;border-radius:12px;padding:12px 14px">
           <div style="font-size:10px;font-weight:800;color:#2563a8;text-transform:uppercase;letter-spacing:.4px">ID deste aparelho</div>
@@ -72,7 +119,7 @@
   <section id="lockView" class="login-shell hidden">
     <div class="login-brand">
       <div class="brand-emblem"><img src="./assets/icons/logo.png" alt="" width="40" height="26"></div>
-      <div><strong>RIZZIERI</strong><span>ONE • COMMAND CENTER</span></div>
+      <div><strong>DIAdoEVENTO</strong><span>COMMAND CENTER</span></div>
     </div>
     <div class="login-panel" style="max-width:420px;margin:0 auto">
       <span class="eyebrow">ACESSO PROTEGIDO</span>
@@ -90,13 +137,13 @@
 
   <section id="appView" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="brand-row"><div class="brand-emblem small"><img src="./assets/icons/logo.png" alt="" width="30" height="20"></div><div><strong>RIZZIERI</strong><span>ONE</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.39.0</span></div>
+      <div class="brand-row"><div class="brand-emblem small"><img src="./assets/icons/logo.png" alt="" width="30" height="20"></div><div><strong>DIAdoEVENTO</strong><span>Eventos e negócios</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.41.0</span></div>
       <div class="workspace-card">
         <span>WORKSPACE</span>
         <button id="workspaceBtn"><span class="workspace-current"><i id="workspaceDot" class="workspace-dot"></i><b id="workspaceName">Negócios</b></span><i class="workspace-chevron">⌄</i></button>
       </div>
       <nav id="sideNav" class="side-nav"></nav>
-      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">RIZZIERI ONE • V:1.39.0</small>
+      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">DIAdoEVENTO • V:1.41.0</small>
         <button id="tutorialBtn" class="tutorial-entry-btn"><span data-icon="help-circle"></span><span><b>Tutorial completo</b><small>Aprenda passo a passo</small></span></button>
         <button id="installBtn" class="install-btn">⬇ Instalar aplicativo</button>
         <div class="user-card"><span class="avatar">BR</span><div><b>Bruno</b><small>Administrador</small></div><button data-open-ajustes title="Ajustes">⋯</button></div>
@@ -137,22 +184,27 @@
 </dialog>
 
 <dialog id="formDialog" class="modal wide">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="formTitle">Novo registro</h3></div><button class="close-btn" data-close="formDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3 id="formTitle">Novo registro</h3></div><button class="close-btn" data-close="formDialog">×</button></div>
   <form id="dynamicForm" class="form-grid"></form>
 </dialog>
 
 <dialog id="searchDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>Buscar</h3></div><button class="close-btn" data-close="searchDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3>Buscar</h3></div><button class="close-btn" data-close="searchDialog">×</button></div>
   <div style="display:flex;gap:8px;margin-bottom:10px"><input type="text" id="searchDialogInput" placeholder="Nome do projeto, evento ou cliente (ou telefone do cliente)..." style="flex:1;margin:0" autocomplete="off"><button class="btn btn-primary" id="searchDialogGo" style="width:auto">Buscar</button></div>
   <div id="searchDialogEmpty" style="display:none;color:#8a95a1;font-size:13px">Nada encontrado com esse termo.</div>
 </dialog>
 
 <dialog id="finConfirmDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="finConfirmTitle">Ver detalhes?</h3></div><button class="close-btn" data-close="finConfirmDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3 id="finConfirmTitle">Ver detalhes?</h3></div><button class="close-btn" data-close="finConfirmDialog">×</button></div>
   <p id="finConfirmText" style="color:#4a5568;margin:0 0 16px"></p>
   <div class="form-actions"><button class="btn btn-secondary" data-close="finConfirmDialog" style="width:auto">Não</button><button class="btn btn-primary" id="finConfirmYes" style="width:auto">Sim, ver detalhes</button></div>
 </dialog>
 
+<dialog id="lockAlertDialog" class="modal small-modal">
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3>⏳ Há outro usuário precisando atualizar informações</h3></div></div>
+  <p id="lockAlertText" style="margin:10px 0 16px;line-height:1.45"></p>
+  <div class="form-actions"><button type="button" class="btn btn-secondary" id="lockAlertKeep">Continuar editando</button><button type="button" class="btn btn-primary" id="lockAlertSave">Salvar e liberar</button></div>
+</dialog>
 <dialog id="pixDialog" class="modal small-modal">
   <div class="modal-head"><div><span class="eyebrow">COBRANÇA POR PIX</span><h3 id="pixTitle">Pix</h3></div><button class="close-btn" data-close="pixDialog">×</button></div>
   <div id="pixBody"></div>
@@ -188,7 +240,7 @@
 </dialog>
 
 <dialog id="pwSetupDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="pwSetupTitle">Criar senha de acesso</h3></div><button class="close-btn" data-close="pwSetupDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3 id="pwSetupTitle">Criar senha de acesso</h3></div><button class="close-btn" data-close="pwSetupDialog">×</button></div>
   <p style="font-size:12.5px;color:#4a5568;margin:0 0 10px">A senha protege seus eventos, clientes e financeiro neste aparelho — os dados ficam criptografados, sem ela não dá pra abrir o app nem ler o que está salvo.</p>
   <div style="font-size:12px;color:#a15b1f;background:#fdf1e3;border:1px solid #eccb9c;border-radius:10px;padding:8px 10px;margin-bottom:12px">A senha deve ter <b>de 4 a 50 caracteres</b>, com <b>1 maiúscula, 1 minúscula, 1 número e 1 símbolo</b>.</div>
   <div class="form-field"><label>Nova senha</label><div class="password-row"><input id="pwSetupPass" type="password" maxlength="50" autocomplete="off"/><button type="button" id="pwSetupToggle1">👁</button></div></div>
@@ -203,7 +255,7 @@
 </dialog>
 
 <dialog id="askConfirmDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="askConfirmTitle">Confirmar</h3></div><button class="close-btn" data-close="askConfirmDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3 id="askConfirmTitle">Confirmar</h3></div><button class="close-btn" data-close="askConfirmDialog">×</button></div>
   <p id="askConfirmText" style="font-size:13px;color:#4a5568;margin:0 0 16px;white-space:pre-line;line-height:1.55"></p>
   <div class="form-actions"><button class="btn btn-secondary" id="askConfirmNo" style="width:auto">Cancelar</button><button class="btn btn-primary" id="askConfirmYes" style="width:auto">Excluir</button></div>
 </dialog>
@@ -216,7 +268,7 @@
 
 
 <dialog id="pwRemoveDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>Remover senha de acesso?</h3></div><button class="close-btn" data-close="pwRemoveDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3>Remover senha de acesso?</h3></div><button class="close-btn" data-close="pwRemoveDialog">×</button></div>
   <p style="font-size:13px;color:#4a5568;margin:0 0 16px">Seus dados voltam a ficar legíveis neste aparelho sem precisar de senha. Você pode criar uma nova senha depois, a qualquer momento.</p>
   <div class="form-actions"><button class="btn btn-secondary" data-close="pwRemoveDialog" style="width:auto">Cancelar</button><button class="btn btn-primary" id="pwRemoveConfirmBtn" style="width:auto">Remover senha</button></div>
 </dialog>
@@ -273,7 +325,7 @@
 </dialog>
 
 <dialog id="ajListDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3 id="ajListTitle">Renomear</h3></div><button class="close-btn" data-close="ajListDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3 id="ajListTitle">Renomear</h3></div><button class="close-btn" data-close="ajListDialog">×</button></div>
   <p id="ajListText" style="font-size:13px;color:#4a5568;margin:0 0 12px"></p>
   <div class="form-field" id="ajListInputWrap"><label>Novo nome</label><input id="ajListInput" autocomplete="off"></div>
   <div class="form-field" id="ajListSelWrap" style="display:none"><label>Passar os registros para</label><select id="ajListSelect"></select></div>
@@ -282,7 +334,7 @@
 </dialog>
 
 <dialog id="proDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>Plano Pro</h3></div><button class="close-btn" data-close="proDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3>Plano Pro</h3></div><button class="close-btn" data-close="proDialog">×</button></div>
   <div id="proReason" style="display:none;background:#fff6e0;border:1.5px solid #f0a500;border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:12px"></div>
   <div style="font-size:14px;font-weight:800;margin-bottom:6px">Planos</div>
   <div style="font-size:13.5px;line-height:1.9;color:#273142">1 mês — <b id="proPreco1">R$ 90,00</b> <span style="display:inline-block;background:#2563a8;color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:100px;vertical-align:middle">PROMOÇÃO POR TEMPO LIMITADO</span><br>6 meses — <span style="color:#6b7a93">Em breve</span><br>12 meses — <span style="color:#6b7a93">Em breve</span></div>
@@ -299,7 +351,7 @@
 </dialog>
 
 <dialog id="planProfileDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>Seus dados para assinar</h3></div><button class="close-btn" data-close="planProfileDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3>Seus dados para assinar</h3></div><button class="close-btn" data-close="planProfileDialog">×</button></div>
   <p style="font-size:13px;color:#4a5568;margin:0 0 12px">Para assinar o Pro, informe seu nome e seu WhatsApp (com DDD). Eles identificam a assinatura e ficam salvos em Ajustes → Consultor.</p>
   <div class="form-field"><label>Nome</label><input id="planProfNome" autocomplete="off"></div>
   <div class="form-field"><label>WhatsApp (com DDD)</label><input id="planProfTel" placeholder="(11) 99999-9999" inputmode="tel" autocomplete="off"></div>
@@ -308,7 +360,7 @@
 </dialog>
 
 <dialog id="pwWhatsDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>🔐 Guardar sua senha</h3></div><button class="close-btn" data-close="pwWhatsDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3>🔐 Guardar sua senha</h3></div><button class="close-btn" data-close="pwWhatsDialog">×</button></div>
   <p style="font-size:13px;color:#273142;margin:0 0 12px">Envie sua senha para o <b>seu próprio WhatsApp</b>. Se um dia esquecer, você não perde o acesso aos seus dados (eles ficam criptografados e não há como recuperar sem a senha).</p>
   <div class="form-field"><label>Seu WhatsApp (com DDD)</label><input id="pwWhatsNumero" placeholder="(11) 99999-9999"></div>
   <p style="font-size:11px;color:#6b7a93;line-height:1.6;margin:8px 0 0">A senha vai abrir no WhatsApp pra você enviar a si mesmo. Guarde a mensagem em local seguro e evite compartilhá-la.</p>
@@ -316,7 +368,7 @@
 </dialog>
 
 <dialog id="pwForgotDialog" class="modal">
-  <div class="modal-head"><div><span class="eyebrow">RIZZIERI ONE</span><h3>🔑 Esqueceu a senha?</h3></div><button class="close-btn" data-close="pwForgotDialog">×</button></div>
+  <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3>🔑 Esqueceu a senha?</h3></div><button class="close-btn" data-close="pwForgotDialog">×</button></div>
   <p style="font-size:13.5px;color:#273142;line-height:1.6;margin:0 0 12px">Sem a senha certa, os dados criptografados deste aparelho <b>não podem ser recuperados</b> — não existe um jeito de "resetar" só a senha mantendo os dados.</p>
   <p style="font-size:12px;color:#6b7a93;line-height:1.6;margin:0 0 16px">Se você tiver um backup baixado (Ajustes → Backup), pode apagar tudo e restaurar a partir dele. Sem backup, o único jeito de voltar a usar o app neste aparelho é apagando tudo e recomeçando do zero.</p>
   <div class="form-actions"><button class="btn btn-secondary" data-close="pwForgotDialog" style="width:auto">← Voltar</button><button class="btn btn-secondary" id="pwForgotWipeBtn" style="width:auto;color:#c0392b;border-color:#f3c9c4">Apagar e recomeçar</button></div>
@@ -373,6 +425,7 @@
   <div class="tutorial-coach-head"><div><span id="tutorialCoachLabel" class="tutorial-coach-label">PASSO 1</span><b id="tutorialCoachTitle">Tutorial</b></div><button id="tutorialStop" class="tutorial-coach-close" title="Encerrar tutorial">×</button></div>
   <p id="tutorialCoachText"></p>
   <div id="tutorialCoachTip" class="tutorial-coach-tip"></div>
+  <div id="tutorialCoachEx" class="tutorial-coach-ex" hidden></div>
   <div id="tutorialCoachPath" class="tutorial-path" hidden></div>
   <button id="tutorialGuide" class="tutorial-guide-btn" hidden>👆 Me guie pelos botões</button>
   <div class="tutorial-coach-progress"><i id="tutorialCoachProgress"></i></div>

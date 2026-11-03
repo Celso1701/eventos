@@ -15,11 +15,11 @@ async function run(){
  a.ev(`render('dashboard')`);
  a.ev(`pixOpen('fx1')`);await L.sleep(60);
  L.check('Pix sem chave: diálogo pede cadastro da chave',/Cadastrar chave Pix/.test(a.d.querySelector('#pixBody').textContent));
- a.ev(`document.querySelector('#pixDialog').close();storage.setItem('r1_pix_cfg',JSON.stringify({chave:'a@b.com',nome:'Rizzieri',cidade:'Curitiba'}))`);
+ a.ev(`document.querySelector('#pixDialog').close();storage.setItem('r1_pix_cfg',JSON.stringify({chave:'a@b.com',nome:'DIAdoEVENTO',cidade:'Curitiba'}))`);
  a.ev(`pixOpen('fx1')`);await L.sleep(60);
  const code=a.d.querySelector('#pixCode')&&a.d.querySelector('#pixCode').value;
  L.check('Pix com chave: mostra copia-e-cola com o valor da receita',!!code&&code.includes('5407')&&code.includes('2500.00')&&/6304[0-9A-F]{4}$/.test(code));
- L.check('Pix: diálogo mostra recebedor, chave e valor',/Recebedor:\s*Rizzieri/.test(a.d.querySelector('#pixBody').textContent)&&/Chave Pix:\s*a@b\.com/.test(a.d.querySelector('#pixBody').textContent));
+ L.check('Pix: diálogo mostra recebedor, chave e valor',/Recebedor:\s*DIAdoEVENTO/.test(a.d.querySelector('#pixBody').textContent)&&/Chave Pix:\s*a@b\.com/.test(a.d.querySelector('#pixBody').textContent));
  a.ev(`document.querySelector('#pixDialog').close()`);
  // ── Backup lembrete ──
  a.ev(`storage.removeItem('r1_last_backup');storage.removeItem('r1_bk_snooze');applyWorkspace('Eventos');render('dashboard')`);
@@ -123,6 +123,48 @@ async function run(){
  a.ev(`openForm('checklist',${JSON.stringify(eid)})`);await L.sleep(60);
  L.check('Outros formulários não mudam (checklist ainda tem seleção de evento)',!!a.d.querySelector('#dynamicForm select[name="eventId"]'));
  a.ev(`document.querySelector('#formDialog').close()`);
+ // ── Projeto: categoria por lista cadastrada ──
+ a.ev(`openForm('project')`);await L.sleep(80);
+ const ps=a.d.querySelector('#dynamicForm select[name="category"]');
+ L.check('Projeto: Categoria é seleção com categorias cadastradas e opção Adicionar novo',!!ps&&ps.dataset.catList==='projectCategories'&&[...ps.options].some(o=>o.value==='Tecnologia')&&[...ps.options].some(o=>/Adicionar novo/.test(o.value)));
+ a.ev(`document.querySelector('#formDialog').close()`);
+ a.ev(`saveProjectCategories([...getProjectCategories(),'Eventos Teste'])`);
+ a.ev(`openForm('project')`);await L.sleep(80);
+ L.check('Projeto: categoria nova cadastrada aparece na lista',[...a.d.querySelector('#dynamicForm select[name="category"]').options].some(o=>o.value==='Eventos Teste'));
+ a.ev(`document.querySelector('#formDialog').close()`);
+ a.ev(`openSubView('Outros cadastros','CADASTROS',()=>cadastrosView(),'dashboard')`);await L.sleep(60);
+ L.check('Cadastros: painel Categorias de projeto presente',!!a.d.querySelector('#ajAddProjectCategory'));
+ // ── Como chegar (link do mapa) ──
+ L.check('Mapa: coordenadas viram link do Waze',a.ev(`mapLinkNorm('-23.5614, -46.6559')`)==='https://waze.com/ul?ll=-23.5614,-46.6559&navigate=yes');
+ L.check('Mapa: link do Waze/Google Maps é aceito',a.ev(`mapLinkNorm('https://waze.com/ul/h6gyc')`)==='https://waze.com/ul/h6gyc'&&a.ev(`mapLinkNorm('https://maps.app.goo.gl/abc123')`)==='https://maps.app.goo.gl/abc123'&&a.ev(`mapLinkNorm('www.google.com/maps/place/X')`)==='https://www.google.com/maps/place/X');
+ L.check('Mapa: javascript:, sites estranhos e lixo são recusados',a.ev(`mapLinkNorm('javascript:alert(1)')`)===null&&a.ev(`mapLinkNorm('https://site-falso.com/waze.com')`)===null&&a.ev(`mapLinkNorm('texto qualquer')`)===null&&a.ev(`mapLinkNorm('')`)==='');
+ a.ev(`openForm('event')`);await L.sleep(80);
+ const mlf=a.d.querySelector('#dynamicForm [name="mapLink"]');
+ const vn=a.d.querySelector('#dynamicForm [name="venue"]');
+ L.check('Formulário do evento: campo "Como chegar" vem logo após o Local, com botões de GPS e teste',!!mlf&&vn.closest('.form-field').nextElementSibling.contains(mlf)&&!!a.d.querySelector('[data-map-gps]')&&!!a.d.querySelector('[data-map-test]'));
+ mlf.value='texto invalido';a.d.querySelector('#dynamicForm').requestSubmit();await L.sleep(60);
+ L.check('Link inválido não salva e avisa',a.d.querySelector('#formDialog').open&&/inválido/.test(a.d.querySelector('#toast').textContent));
+ a.ev(`document.querySelector('#formDialog').close()`);
+ const convMsg=a.ev(`guestInviteText({name:'Maria'},{title:'Casamento X',date:'2026-12-05',time:'18:00',venue:'Espaço Jardim',mapLink:'-23.56,-46.65'})`);
+ L.check('Convite do WhatsApp inclui "Como chegar" com o link',/Como chegar: https:\/\/waze\.com\/ul\?ll=-23\.56,-46\.65/.test(convMsg)&&/Espaço Jardim/.test(convMsg));
+ L.check('Convite sem link continua igual (sem linha de mapa)',!/Como chegar/.test(a.ev(`guestInviteText({name:'Maria'},{title:'X',date:'2026-12-05',venue:'Y'})`)));
+ // ── Página de apresentação (landing) ──
+ L.check('Landing: quem já usa o app (login/teste em andamento) não vê a apresentação',a.ev(`landingWanted()`)===false);
+ a.ev(`window.matchMedia=q=>({matches:false});localStorage.removeItem('lk_landing');storage.removeItem('rizzieri_one_demo');storage.removeItem('r1_trial');storage.removeItem('r1_auth')`);
+ L.check('Landing: navegador comum, primeira visita → aparece',a.ev(`landingWanted()`)===true);
+ a.ev(`window.matchMedia=q=>({matches:/standalone/.test(q)})`);
+ L.check('Landing: app instalado (standalone) → não aparece',a.ev(`landingWanted()`)===false);
+ a.ev(`window.matchMedia=q=>({matches:false});landingInit()`);
+ const ld=a.d.querySelector('#landingView');
+ L.check('Landing: mostra os dois botões e a frase "Sem cartão de crédito"',!ld.classList.contains('hidden')&&/30 dias gratuito/.test(a.d.querySelector('#ldStart').textContent)&&/Ver como funciona/.test(a.d.querySelector('#ldHow').textContent)&&/Sem cartão de crédito\./.test(ld.textContent)&&/Instala direto do navegador, como um aplicativo/.test(ld.textContent));
+ a.d.querySelector('#loginView').classList.remove('hidden');a.d.querySelector('#ldStart').click();
+ L.check('Landing: "30 dias gratuito" fecha a página, grava a escolha e mostra o login',ld.classList.contains('hidden')&&a.ev(`lkRaw.get('lk_landing')`)==='1'&&!a.d.querySelector('#loginView').classList.contains('hidden'));
+ L.check('Landing: depois de escolher, não volta a aparecer',a.ev(`landingWanted()`)===false);
+ L.check('Landing: não mostra frases que o app não cumpre (nuvem/multiusuário/preço)',!/nuvem|multiusu|R\$|por m[eê]s/i.test(ld.textContent));
+ // ── Cartão da tela de entrada: dados fictícios do app (não os apps reais do dono) ──
+ const hg=a.d.querySelector('.hero-glass').textContent;
+ L.check('Tela de entrada: cartão mostra o exemplo fictício (eventos do modo manual) e não os apps reais',/DADOS FICTÍCIOS/.test(hg)&&/Camila/.test(hg)&&!/VetFlow|AttimoDrive|PDVMix/.test(hg));
+ L.check('Tela de entrada: totais batem com os dados do modo manual (3 eventos, 570 convidados, 3 críticos)',/3\s*eventos/.test(hg)&&/570\s*convidados/.test(hg)&&/3\s*críticos/.test(hg));
  return L.summary();
 }
 module.exports={run};

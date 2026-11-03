@@ -8,11 +8,13 @@ async function run(){
   L.check('index.html tem Content-Security-Policy',!!csp);
   L.check('CSP: scripts só do próprio site (sem unsafe-inline/eval)',/script-src 'self'(;|$)/.test(csp)&&!/script-src[^;]*unsafe/.test(csp),csp);
   L.check("CSP: object-src 'none', base-uri e form-action restritos",/object-src 'none'/.test(csp)&&/base-uri 'self'/.test(csp)&&/form-action 'self'/.test(csp));
-  L.check('CSP: conexões só para o próprio site',/connect-src 'self'/.test(csp));
+  L.check('CSP: conexões só para o próprio site e https://*.supabase.co',/connect-src 'self'( https:\/\/\*\.supabase\.co)?;/.test(csp));
   L.check('sem scripts inline no index.html',![...idx.matchAll(/<script\b([^>]*)>/g)].some(m=>!/\bsrc=/.test(m[1])));
   L.check('sem atributos on*="" (handlers inline) no HTML e no JS',!/\son(click|change|input|submit|load|error|mouseover|focus|keydown)=["']/.test(idx)&&!/\son(click|change|input|submit|load|error|mouseover|focus|keydown)=\\?["']/.test(js));
   L.check('sem javascript: nem eval/new Function no JS',!/javascript:/.test(js)&&!/\beval\(/.test(js)&&!/new Function\(/.test(js));
-  L.check('sem fetch/XMLHttpRequest/WebSocket (app 100% local)',!/\bfetch\(|XMLHttpRequest|new WebSocket|sendBeacon/.test(js));
+  const lkIni=js.indexOf('/* ═══ Registro em uso'),lkFim=js.indexOf('baseModeInit();',lkIni),fora=lkIni>0?js.slice(0,lkIni)+js.slice(lkFim):js;
+  L.check('sem fetch/XMLHttpRequest/WebSocket fora da camada opcional do Supabase (app local por padrão)',!/\bfetch\(|XMLHttpRequest|new WebSocket|sendBeacon/.test(fora));
+  L.check('rede só quando o Supabase é conectado e só para https://….supabase.co',/lkMode\(\)==='sb'/.test(js)&&/\^https:\\\/\\\/\[a-z0-9-\]\+\\\.supabase\\\.co\$/.test(js));
   L.check('nenhum recurso externo carregado (script/link/img src http)',!/(src|href)=["']https?:\/\/(?!wa\.me)/.test(idx)&&!/url\(["']?https?:/.test(css));
   L.check('nenhuma caixa nativa confirm/alert/prompt no JS',!/(^|[^.\w])(confirm|alert|prompt)\(/.test(js.replace(/\/\/.*$/gm,'')));
   // versões

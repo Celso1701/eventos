@@ -1,7 +1,7 @@
 // App novo vem vazio; instalações antigas mantêm os exemplos; manual traz os exemplos; alternância em Ajustes.
 const L=require('./lib.js'),X=require('./xss-leak.js');
 const yes=async a=>{await L.sleep(40);a.d.querySelector('#askConfirmYes').click();await L.sleep(80)};
-const DEMO=/Beatriz|Ana & Lucas|Grupo Orion|VetFlow|AttimoDrive|PDVMix|Buffet Maison|DJ Pulse|Atelier Flores|Frame 8|LumiPro|Bar Signature|Mariana Souza|Equipe Rizzieri/;
+const DEMO=/Beatriz|Ana & Lucas|Grupo Orion|VetFlow|AttimoDrive|PDVMix|Buffet Maison|DJ Pulse|Atelier Flores|Frame 8|LumiPro|Bar Signature|Mariana Souza|Equipe DIAdoEVENTO/;
 async function run(){
  L.reset();
  // ── instalação nova ──

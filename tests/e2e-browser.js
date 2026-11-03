@@ -22,7 +22,7 @@ let ok=0,bad=0;const chk=(n,c,x)=>{if(c)ok++;else{bad++;console.log('  FALHOU:',
   await g.fill('#dev','AP-'+dev);await g.selectOption('#plano','1');await g.click('#gen');await g.waitForTimeout(400);
   code=(await g.textContent('#out')).trim();chk('gerador devolve código longo (≈140 caracteres com hífens)',code.length>=130&&code.length<=150,String(code.length));
   // formato do link
-  await g.fill('#site','https://exemplo.github.io/rizzieri/');
+  await g.fill('#site','https://www.diadoevento.com.br/');
   await g.close();
  }
  // ativação pela interface
