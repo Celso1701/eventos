@@ -201,7 +201,7 @@ const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'B
 /* ===== FINANCEIRO UNIFICADO — V:1.05.0 =====
    Modelo único para Negócios, Eventos e Pessoal. Valores em CENTAVOS (inteiros),
    datas sempre em horário LOCAL (nunca toISOString), visões inspiradas no corsyncimoveis. */
-const APP_VERSION='V:1.43.1';
+const APP_VERSION='V:1.43.2';
 const FIN_STORE='r1_fin_v2',FIN_OV='r1_fin_v2_ov',FIN_DEL='r1_fin_v2_del',FIN_CFG='r1_fin_cfg',FIN_MIG='r1_fin_v2_mig';
 const FIN_WS=['Negócios','Eventos','Pessoal'];
 const FIN_CATS={'Negócios':['Assinaturas de clientes','Licenças e ferramentas','Infraestrutura','Marketing','Impostos','Outros'],'Eventos':['Contrato','Parcela','Fornecedor','Decoração','Buffet','DJ & Música','Som & Luz','Transporte','Outros'],'Pessoal':['Renda','Moradia','Alimentação','Transporte','Assinaturas','Saúde','Lazer','Outros']};
