@@ -734,5 +734,3 @@ p.ld-note{font-size:13.5px;color:#6b7896;margin:16px 0 0;line-height:1.45}
 .ph-num{position:absolute;left:5px;top:5px;background:rgba(0,0,0,.6);color:#fff;border-radius:10px;font-size:11px;padding:1px 7px}
 .ph-badge{position:absolute;left:5px;bottom:5px;border:0;border-radius:10px;background:rgba(0,0,0,.65);color:#fff;font-size:11px;padding:3px 8px;cursor:pointer}
 .ph-video{display:flex;align-items:center;gap:10px;background:#f3f5f8;border:1px solid #e1e6ec;border-radius:14px;padding:10px 12px}.ph-video>div{flex:1;min-width:0}.ph-video small{display:block;color:#6c7887}.ph-video b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-
-.fin-cat-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.fin-cat-chips .filter-chip{font-size:12px;padding:5px 10px}

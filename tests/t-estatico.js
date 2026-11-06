@@ -9,15 +9,13 @@ async function run(){
   L.check('CSP: scripts só do próprio site (sem unsafe-inline/eval)',/script-src 'self'(;|$)/.test(csp)&&!/script-src[^;]*unsafe/.test(csp),csp);
   L.check("CSP: object-src 'none', base-uri e form-action restritos",/object-src 'none'/.test(csp)&&/base-uri 'self'/.test(csp)&&/form-action 'self'/.test(csp));
   L.check('CSP: conexões só para o próprio site e https://*.supabase.co',/connect-src 'self'( https:\/\/\*\.supabase\.co)?;/.test(csp));
-  L.check('sem scripts inline no index.html',![...idx.matchAll(/<script\b([^>]*)>/g)].some(m=>!/\bsrc=/.test(m[1])&&!/type="application\/ld\+json"/.test(m[1])));
-  L.check('SEO: título, descrição, canonical, Open Graph, JSON-LD válido',/<title>[^<]{30,}<\/title>/.test(idx)&&/name="description" content="[^"]{80,}/.test(idx)&&/rel="canonical" href="https:\/\/app\.diadoevento\.com\.br\/"/.test(idx)&&/property="og:title"/.test(idx)&&(()=>{try{const j=JSON.parse(idx.match(/application\/ld\+json">([\s\S]*?)<\/script>/)[1]);return j['@type']==='SoftwareApplication'}catch(e){return false}})());
-  {const fs=require('fs'),path=require('path'),root=path.join(__dirname,'..');const rb=fs.existsSync(path.join(root,'robots.txt'))?fs.readFileSync(path.join(root,'robots.txt'),'utf8'):'',sm=fs.existsSync(path.join(root,'sitemap.xml'))?fs.readFileSync(path.join(root,'sitemap.xml'),'utf8'):'';L.check('SEO: robots.txt libera tudo e aponta o sitemap; sitemap lista a home',/Allow: \//.test(rb)&&/Sitemap: https:\/\/app\.diadoevento\.com\.br\/sitemap\.xml/.test(rb)&&/<loc>https:\/\/app\.diadoevento\.com\.br\/<\/loc>/.test(sm))}
+  L.check('sem scripts inline no index.html',![...idx.matchAll(/<script\b([^>]*)>/g)].some(m=>!/\bsrc=/.test(m[1])));
   L.check('sem atributos on*="" (handlers inline) no HTML e no JS',!/\son(click|change|input|submit|load|error|mouseover|focus|keydown)=["']/.test(idx)&&!/\son(click|change|input|submit|load|error|mouseover|focus|keydown)=\\?["']/.test(js));
   L.check('sem javascript: nem eval/new Function no JS',!/javascript:/.test(js)&&!/\beval\(/.test(js)&&!/new Function\(/.test(js));
   const lkIni=js.indexOf('/* ═══ Registro em uso'),lkFim=js.indexOf('baseModeInit();',lkIni),fora=lkIni>0?js.slice(0,lkIni)+js.slice(lkFim):js;
   L.check('sem fetch/XMLHttpRequest/WebSocket fora da camada opcional do Supabase (app local por padrão)',!/\bfetch\(|XMLHttpRequest|new WebSocket|sendBeacon/.test(fora));
   L.check('rede só quando o Supabase é conectado e só para https://….supabase.co',/lkMode\(\)==='sb'/.test(js)&&/\^https:\\\/\\\/\[a-z0-9-\]\+\\\.supabase\\\.co\$/.test(js));
-  L.check('nenhum recurso externo carregado (script/link/img src http)',!/(src|href)=["']https?:\/\/(?!wa\.me)/.test(idx.replace(/<link rel="canonical"[^>]*>/,''))&&!/url\(["']?https?:/.test(css));
+  L.check('nenhum recurso externo carregado (script/link/img src http)',!/(src|href)=["']https?:\/\/(?!wa\.me)/.test(idx)&&!/url\(["']?https?:/.test(css));
   L.check('nenhuma caixa nativa confirm/alert/prompt no JS',!/(^|[^.\w])(confirm|alert|prompt)\(/.test(js.replace(/\/\/.*$/gm,'')));
   // versões
   const ver=(js.match(/const APP_VERSION='V:([\d.]+)'/)||[])[1];

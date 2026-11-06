@@ -207,12 +207,6 @@ async function run(){
   const r3=calc({sinal:2000000,p1of3:1000000,p2of3:1000000,p3of3:1000000});L.check('Plano: todas editadas fechando 50.000 → ok e sinal mostra 40%',r3.dif===0&&/40%/.test(r3.d));
   const r4=calc({sinal:6000000});L.check('Plano: valor acima do total não gera parcela negativa silenciosa',r4.dif!==0||r4.neg);
  }
- // ── Financeiro: botões renomeados, sem "Novo lançamento", tipo travado, categoria com sugestões ──
- {const h=a.ev(`finView('Eventos')`);L.check('Financeiro: botões "Lançamento receita +" e "Lançamento despesa -", sem "Novo lançamento"',/Lançamento receita \+/.test(h)&&/Lançamento despesa -/.test(h)&&!/Novo lançamento/.test(h)&&!/data-create="finance"/.test(h));
-  for(const [tp,txt] of [['rec','Receita'],['desp','Despesa']]){a.ev(`finOpenForm({tipo:'${tp}',scope:'Eventos'})`);await L.sleep(60);
-   L.check(`Lançamento ${txt}: tipo vem travado (sem select) e é salvo como ${tp}`,!!a.d.querySelector('[data-tipo-locked]')&&!a.d.querySelector('#dynamicForm select[name="tipo"]')&&a.d.querySelector('#dynamicForm input[name="tipo"]').value===tp);
-   L.check(`Lançamento ${txt}: categoria obrigatória com sugestões tocáveis; cartão só em despesa`,a.d.querySelectorAll('[data-fin-cat]').length>3&&[...a.d.querySelector('#dynamicForm select[name="forma"]').options].some(o=>o.value==='cartao')===(tp==='desp'));
-   a.ev(`document.querySelector('#formDialog').close()`);await L.sleep(30)}}
  return L.summary();
 }
 module.exports={run};

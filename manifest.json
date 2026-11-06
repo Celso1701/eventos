@@ -1,8 +1,6 @@
 {
   "name":"DIAdoEVENTO — Life, Business & Projects",
   "short_name":"DIAdoEVENTO",
-  "description":"App para organizar eventos, orçamentos, convidados e financeiro. Funciona no celular, até sem internet.",
-  "lang":"pt-BR",
   "start_url":"./index.html",
   "display":"standalone",
   "background_color":"#071624",
