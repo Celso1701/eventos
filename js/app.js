@@ -201,7 +201,7 @@ const money=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'B
 /* ===== FINANCEIRO UNIFICADO — V:1.05.0 =====
    Modelo único para Negócios, Eventos e Pessoal. Valores em CENTAVOS (inteiros),
    datas sempre em horário LOCAL (nunca toISOString), visões inspiradas no corsyncimoveis. */
-const APP_VERSION='V:1.44.1';
+const APP_VERSION='V:1.44.2';
 const FIN_STORE='r1_fin_v2',FIN_OV='r1_fin_v2_ov',FIN_DEL='r1_fin_v2_del',FIN_CFG='r1_fin_cfg',FIN_MIG='r1_fin_v2_mig';
 const FIN_WS=['Negócios','Eventos','Pessoal'];
 const FIN_CATS={'Negócios':['Assinaturas de clientes','Licenças e ferramentas','Infraestrutura','Marketing','Impostos','Outros'],'Eventos':['Contrato','Parcela','Fornecedor','Decoração','Buffet','DJ & Música','Som & Luz','Transporte','Outros'],'Pessoal':['Renda','Moradia','Alimentação','Transporte','Assinaturas','Saúde','Lazer','Outros']};
@@ -738,7 +738,7 @@ function strategyView(){const goals=[...getStrategicGoals()].sort((a,b)=>Number(
 
 function adminView(){return `<div class="section-title"><div><span class="eyebrow">ADMINISTRAÇÃO</span><h3>Gestão real do negócio</h3><p>Identidade, usuários, dados, clientes, fornecedores, contratos, custos e segurança.</p></div><button class="btn btn-primary" data-profile>Configurar minha empresa</button></div><div class="admin-grid"><article class="admin-card"><h4>Minha empresa / marca</h4><div class="admin-list"><div><span>Logo</span><b>Personalizável</b></div><div><span>Dados cadastrais</span><b>Completo</b></div><div><span>PDFs</span><b>White-label</b></div></div><button class="small-btn" style="width:100%;margin-top:12px" data-profile>Editar perfil</button></article><article class="admin-card"><h4>Operação comercial</h4><div class="admin-list"><div><span>Clientes</span><b>${getClients().length}</b></div><div><span>Fornecedores</span><b>${getSuppliers().length}</b></div><div><span>Catálogo</span><b>${getCatalog().length}</b></div></div><button class="small-btn" style="width:100%;margin-top:12px" data-nav="clientes">Abrir CRM</button></article><article class="admin-card"><h4>Segurança</h4><div class="admin-list"><div><span>MFA</span><b>Planejado</b></div><div><span>RLS</span><b>Estruturado</b></div><div><span>Auditoria</span><b>Estruturada</b></div></div><button class="small-btn" style="width:100%;margin-top:12px" data-nav="seguranca">Central de segurança</button></article></div>`}
 
-function securityView(){return `<div class="section-title"><div><span class="eyebrow">SEGURANÇA & PRIVACIDADE</span><h3>Arquitetura para dados confidenciais</h3><p>O preview local é demonstrativo. A versão comercial deverá aplicar autenticação forte, RLS, storage privado, logs e gestão de chaves no backend.</p></div><span class="pill warn">Backend necessário</span></div><section class="security-grid"><article class="security-card"><div class="security-icon">🔐</div><h4>Autenticação forte</h4><p>MFA/TOTP, sessões controladas e recuperação segura.</p><span class="pill info">Supabase Auth</span></article><article class="security-card"><div class="security-icon">🧱</div><h4>Isolamento multi-tenant</h4><p>Row Level Security em todas as tabelas expostas.</p><span class="pill info">RLS</span></article><article class="security-card"><div class="security-icon">🗝️</div><h4>Criptografia</h4><p>TLS em trânsito, repouso e proteção adicional para campos classificados.</p><span class="pill info">KMS / AES-GCM</span></article><article class="security-card"><div class="security-icon">📁</div><h4>Arquivos privados</h4><p>Buckets privados e URLs assinadas temporárias.</p><span class="pill info">Storage privado</span></article></section>`}
+function securityView(){return `<div class="section-title"><div><span class="eyebrow">SEGURANÇA & PRIVACIDADE</span><h3>Arquitetura para dados confidenciais</h3><p>O preview local é demonstrativo. A versão comercial deverá aplicar autenticação forte, RLS, storage privado, logs e gestão de chaves no backend.</p></div><span class="pill warn">Backend necessário</span></div><section class="security-grid"><article class="security-card"><div class="security-icon">🔐</div><h4>Autenticação forte</h4><p>MFA/TOTP, sessões controladas e recuperação segura.</p><span class="pill info">Sessões protegidas</span></article><article class="security-card"><div class="security-icon">🧱</div><h4>Isolamento multi-tenant</h4><p>Row Level Security em todas as tabelas expostas.</p><span class="pill info">RLS</span></article><article class="security-card"><div class="security-icon">🗝️</div><h4>Criptografia</h4><p>TLS em trânsito, repouso e proteção adicional para campos classificados.</p><span class="pill info">KMS / AES-GCM</span></article><article class="security-card"><div class="security-icon">📁</div><h4>Arquivos privados</h4><p>Buckets privados e URLs assinadas temporárias.</p><span class="pill info">Storage privado</span></article></section>`}
 
 function ideasView(){const board=getIdeasBoard();return `<div class="section-title"><div><span class="eyebrow">INCUBADORA</span><h3>Ideias & inovação</h3><p>Transforme uma ideia em análise, validação, protótipo e produto.</p></div><button class="btn btn-primary" data-create="idea">＋ Nova ideia</button></div><div class="idea-board">${Object.entries(board).map(([stage,arr])=>`<section class="task-col"><h4>${esc(stage)}</h4>${arr.map(i=>`<article class="idea-card"><b>${esc(i.name)}</b><p>${esc(i.meta)}</p><footer><span>ECOSSISTEMA</span>${i.id?`<button class="small-btn" data-edit="idea::${esc(i.id)}">✏️ Editar</button>`:'<span>↗</span>'}</footer></article>`).join('')}</section>`).join('')}</div>`}
 
@@ -862,7 +862,7 @@ const tutorialFlows={
   {workspace:'Eventos',nav:'dashboard',target:'#quickAddBtn',title:'O botão Novo é contextual',text:'O botão Novo muda conforme o workspace. Em Eventos ele cria evento, cliente, fornecedor, contrato, apresentação e mais.',tip:'Você não precisa procurar a tela de cadastro antes: use Novo como atalho. Dentro de um evento ou de um projeto, o Novo já leva esse evento/projeto preenchido.'},
   {target:'#searchBtn',title:'Busca global',text:'A busca localiza projetos, eventos e clientes e leva você ao contexto correto.',tip:'Use nomes curtos: “Beatriz”, “VetFlow” ou parte do nome do cliente.'},
   {target:'#alertsBtn',title:'Central de atenção',text:'Alertas reúnem pontos críticos que precisam de ação. A ideia é você começar o dia por aqui. Toque em Abrir para ir direto ao item (lançamento, evento ou compromisso) — o app troca de workspace sozinho se precisar, e o ← Voltar leva de volta para onde você estava.',tip:'Na versão comercial, alertas poderão ser gerados por prazo, status, financeiro e aprovações.'},
-  {target:'#installBtn',title:'Instale como aplicativo',text:'O sistema é PWA. Você pode instalar no computador e, futuramente, no celular/tablet com experiência de app.',tip:'No Chrome/Edge, use o botão destacado para iniciar a instalação.'}
+  {target:'#installBtn',title:'Instale como aplicativo',text:'O botão azul “Instalar aplicativo” fica no menu lateral. O sistema é PWA. Você pode instalar no computador e, futuramente, no celular/tablet com experiência de app.',tip:'No Chrome/Edge, use o botão destacado para iniciar a instalação.'}
  ]},
  telas:{title:'Passeio pelas telas (dados fictícios)',group:'Comece aqui',workspace:'Eventos',icon:'play-circle',minutes:6,description:'Visite as principais telas do app já preenchidas com um casamento, uma convenção e um financeiro de exemplo.',steps:[
   {workspace:'Eventos',nav:'dashboard',target:'#finDashBlock',title:'Início: o resumo do seu dia',text:'Esta é a tela inicial do workspace Eventos, já com dados de exemplo. No topo ficam os botões <b>+ Novo evento</b> e <b>+ Novo cliente</b>; abaixo, o que vence hoje, o que está atrasado e o resumo financeiro. O menu de baixo tem sempre Início, Eventos, Clientes, Financeiro e Mais (a Agenda fica em Mais).',tip:'Tudo que aparece é fictício. Pode tocar à vontade: seus dados reais estão guardados e voltam quando você sair do manual.'},
@@ -962,9 +962,8 @@ const tutorialFlows={
   {action:'cadastros',target:'#ajNewCatalogCategory, #ajAddCatalogCategory',title:'Categorias de catálogo permanentes',text:'Mesma lógica: cadastre uma categoria nova (ex.: Doces finos) e ela fica disponível pra sempre ao cadastrar itens do catálogo.',tip:'No formulário do item, “➕ Adicionar novo…” abre este mesmo cadastro sem você sair da tela.'},
   {action:'cadastros',target:'#ajNewAppointmentType, #ajAddAppointmentType',title:'Tipos de compromisso permanentes',text:'E o mesmo vale pros tipos de compromisso da agenda — cadastre um tipo novo (ex.: Reunião de equipe) e ele fica disponível pra sempre.',tip:'Nos tipos de evento e de compromisso, digitar em “Outro” já cadastra na hora. Nas categorias de fornecedor e de catálogo use “➕ Adicionar novo…” no formulário — esta tela é para cadastrar antes, com calma.'},
   {action:'ajustes',target:'#ajPixCard',title:'Cadastre sua chave Pix',text:'Informe a chave, o nome do recebedor e a cidade. Com isso, cada receita a receber ganha o botão “Pix” no Financeiro, com copia-e-cola e QR Code.',tip:'Tudo é gerado no aparelho. Quem paga deve conferir nome e valor no app do banco.'},
-  {action:'ajustes',target:'#ajSbCard',title:'Várias pessoas usando: modo nuvem SIM ou NÃO',text:'Responda se usa o app em modo multiusuário “na nuvem”: NÃO grava tudo normalmente; SIM permite só ler quando estiver sem internet (aparece “SEM ACESSO A INTERNET”). Conectando ao Supabase da empresa, quem abre um registro para editar o reserva. Se outra pessoa tentar abrir, aparece “Registro em uso por outro usuário — aguarde”, e quem está editando recebe o aviso “Há outro usuário precisando atualizar informações”.',tip:'Salve ou feche o formulário para liberar. Se ficar parado por mais de 5 minutos, o bloqueio vence sozinho.',ex:'Ana está editando o fornecedor DJ Pulse; Carlos tenta abrir e espera. Ana toca em “Salvar e liberar” e Carlos já pode editar.'},
   {action:'ajustes',target:'#ajPlanoCard',title:'Seu plano: teste grátis e Pro',text:'Mostra quantos dias faltam do teste grátis de 30 dias, o ID deste aparelho e como assinar pelo WhatsApp (Pro de 1 mês: R$ 90,00, depois do teste). Depois do teste, sem o Pro o app fica só pra consulta — nada é apagado.',tip:'Baixe um backup antes do fim do teste: ele continua disponível mesmo com o app só pra consulta.'},
-  {action:'ajustes',target:'#ajCriarSenha, #ajTrocarSenha',title:'Proteja tudo com uma senha',text:'A senha tem de 4 a 50 caracteres, com 1 maiúscula, 1 minúscula, 1 número e 1 símbolo. Os dados ficam criptografados neste aparelho e o app pede a senha ao abrir.',tip:'Ao criar, o app oferece mandar uma cópia pro seu próprio WhatsApp. Sem a senha não há como recuperar os dados.'},
+  {action:'ajustes',target:'#ajCriarSenha, #ajTrocarSenha',title:'Proteja tudo com uma senha',text:'A senha tem de 5 a 50 caracteres. Para mais segurança, recomendamos incluir 1 maiúscula, 1 minúscula, 1 número e 1 símbolo. Os dados ficam criptografados neste aparelho e o app pede a senha ao abrir.',tip:'Ao criar, o app oferece mandar uma cópia pro seu próprio WhatsApp. Sem a senha não há como recuperar os dados.'},
   {action:'cadastros',target:'[data-aj-list-rename], [data-aj-list-hide], [data-aj-list-del]',title:'Edite, oculte ou exclua itens das listas',text:'Em cada lista (tipos de evento, categorias, tipos de compromisso) use ✏️ pra corrigir um nome (os registros já cadastrados acompanham), 🚫 pra esconder do formulário e 🗑️ pra excluir.',tip:'Renomear pra um nome que já existe junta os dois. Excluir um item em uso pede o destino dos registros.'},
   {action:'ajustes',target:'#ajSalvarConsultor',title:'Gravar ou descartar',text:'Em cada bloco de Ajustes, “Gravar” guarda as mudanças e “Descartar” volta sem salvar. No fim da página também há um “← Voltar”.',tip:'Se entrou num bloco sem querer, é só Descartar.'}
  ]},
@@ -1085,7 +1084,7 @@ const memoryStore=globalThis.__r1StorageMemory||(globalThis.__r1StorageMemory={}
 const PLAN_TRIAL_DIAS=30,PLAN_LEITURA_DIAS=1,PLAN_AVISO_DIAS=5;
 const PRO_WHATS='5515998293087';
 const PRO_PLANS={1:'1 mês',6:'6 meses',12:'12 meses'};
-const PLAN_BY_IDX={1:1,2:6,3:12};
+const PLAN_BY_IDX={1:1,2:6,3:12,4:0};// 0 = sem data de validade
 const PRECOS_PRO={1:'R$ 90,00',6:'R$ 99,90',12:'R$ 179,90'};
 // Chaves ligadas AO APARELHO: nunca cifradas, nunca vão pro backup, nunca voltam de um backup restaurado.
 const R1_DEVICE_KEYS=['r1_basemode','r1_auth','r1_lock_bad','r1_lock_until','r1_trial','r1_license','r1_devid','r1_used_codes'];
@@ -1654,15 +1653,15 @@ function hasPassword(){return !!storage.getItem(R1_AUTH_KEY)}
 function sessionUnlocked(){try{return globalThis.sessionStorage?.getItem('r1_unlocked')==='1'}catch(e){return false}}
 function markSessionUnlocked(){try{globalThis.sessionStorage?.setItem('r1_unlocked','1')}catch(e){}}
 function clearSessionUnlocked(){try{globalThis.sessionStorage?.removeItem('r1_unlocked')}catch(e){}}
-function validatePassword(v){return {len:v.length>=4&&v.length<=50,up:/[A-Z]/.test(v),low:/[a-z]/.test(v),num:/[0-9]/.test(v),sp:/[^A-Za-z0-9]/.test(v)}}
+function validatePassword(v){return {len:v.length>=5&&v.length<=50,up:/[A-Z]/.test(v),low:/[a-z]/.test(v),num:/[0-9]/.test(v),sp:/[^A-Za-z0-9]/.test(v)}}
 function checkPwRules(){
  const res=validatePassword($('#pwSetupPass')?.value||'');
  Object.keys(res).forEach(k=>{const pill=document.querySelector(`#pwRules [data-r="${esc(k)}"]`);if(pill)pill.classList.toggle('active',res[k])});
- return Object.values(res).every(Boolean);
+ return !!res.len;
 }
 function conferirSenhasSetup(){
  const p1=$('#pwSetupPass')?.value||'',p2=$('#pwSetupPass2')?.value||'';
- const regrasOk=Object.values(validatePassword(p1)).every(Boolean);
+ const regrasOk=!!validatePassword(p1).len;
  const el=$('#pwSetupMatch'),btn=$('#pwSetupBtn');
  if(!p2){if(el)el.textContent='';if(btn)btn.disabled=true;return}
  const iguais=p1===p2;
@@ -1675,7 +1674,7 @@ async function doCriarOuTrocarSenha(){
  const err=$('#pwSetupErr');
  if(err)err.textContent='';
  if(p1!==p2){if(err)err.textContent='As senhas não conferem.';return}
- if(!Object.values(validatePassword(p1)).every(Boolean)){if(err)err.textContent='A senha não atende às regras.';return}
+ if(!validatePassword(p1).len){if(err)err.textContent='A senha deve ter de 5 a 50 caracteres.';return}
  if(!globalThis.crypto?.subtle){if(err)err.textContent='A senha só funciona com o app aberto por HTTPS ou instalado na tela inicial. Neste contexto a criptografia não está disponível.';return}
  if(err)err.textContent='Criando…';
  const trocando=hasPassword();
@@ -1807,11 +1806,12 @@ async function planParse(raw){
   const ok=await crypto.subtle.verify({name:'ECDSA',hash:'SHA-256'},key,sig,msg);
   if(!ok)return{ok:false,motivo:'invalido'};
  }catch(e){return{ok:false,motivo:'indisponivel'}}
- const meses=PLAN_BY_IDX[msg[5]];if(!meses)return{ok:false,motivo:'invalido'};
+ if(!(msg[5] in PLAN_BY_IDX))return{ok:false,motivo:'invalido'};const meses=PLAN_BY_IDX[msg[5]];
  return{ok:true,dev:String.fromCharCode(msg[1],msg[2],msg[3],msg[4]),idx:msg[5],meses,iat:finAddDays(PLAN_EPOCH,(msg[6]<<8)|msg[7]),token:t};
 }
 // Vencimento calculado a partir dos códigos (nunca confiado ao valor gravado)
 function planComputeExpiry(items){
+ if(items.some(k=>k.meses===0))return '9999-12-31';
  let cur='';[...items].sort((a,b)=>a.at<b.at?-1:1).forEach(k=>{const base=(cur&&cur>=k.at)?cur:k.at;cur=finAddMonths(base,k.meses)});return cur;
 }
 // Reconfere tudo o que está gravado: assinatura, aparelho e janela de ativação. Remove o que não confere.
@@ -1951,7 +1951,7 @@ async function planTryActivate(codeRaw){
 }
 function planAfterActivate(){
  const st=planState();
- toast('🎉 Pro ativado! Válido até '+finBR(st.lic.expiresAt));
+ toast(st.lic.expiresAt==='9999-12-31'?'🎉 Pro ativado! Sem data de validade.':'🎉 Pro ativado! Válido até '+finBR(st.lic.expiresAt));
  if($('#proDialog').open)$('#proDialog').close();
  if(!$('#planLockView').classList.contains('hidden')){$('#planLockView').classList.add('hidden');proceedIntoApp();return}
  openSubView('Ajustes','CONFIGURAÇÕES',()=>ajustesView(),currentMainNav);
@@ -1976,7 +1976,7 @@ function planBannerHTML(){
 function planCardHTML(){
  const st=planState();
  let badge,texto;
- if(st.pro){badge=['#16a34a','PRO ATIVO'];texto=`Pro ativo até <b>${finBR(st.lic.expiresAt)}</b> (${esc(st.diasPro)} ${st.diasPro===1?'dia':'dias'}).`}
+ if(st.pro){badge=['#16a34a','PRO ATIVO'];texto=st.lic.expiresAt==='9999-12-31'?'Pro ativo, <b>sem data de validade</b>.':`Pro ativo até <b>${finBR(st.lic.expiresAt)}</b> (${esc(st.diasPro)} ${st.diasPro===1?'dia':'dias'}).`}
  else if(st.trialAtivo){badge=['#2563a8','TESTE GRÁTIS'];texto=`Faltam <b>${esc(st.diasTrial)} ${st.diasTrial===1?'dia':'dias'}</b> de teste, com todas as funções liberadas.`}
  else{badge=['#c0392b','TESTE ENCERRADO'];texto='O teste grátis terminou. Seus dados continuam salvos; assine o Pro para voltar a cadastrar e editar.'}
  return `<div class="card" id="ajPlanoCard" style="background:#f4f8fd;border:1.5px solid #bcd3ee;border-radius:14px;padding:14px">
@@ -2945,18 +2945,6 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
   <div class="form-actions full"><div class="aj-actions" style="width:100%"><button class="btn btn-secondary" data-aj-discard style="width:auto">Descartar</button><button class="btn btn-primary" id="ajSalvarConsultor" style="width:auto">Gravar</button></div></div>
  </div></section>
 
- <section class="panel" id="ajSbCard" style="margin-bottom:14px"><div class="panel-head"><h3>👥 Multiusuário (Supabase)</h3></div>
- <div class="cloud-q" id="ajCloudQ"><b>Utiliza em modo multiusuário “na nuvem”?</b>
-  <div class="cloud-btns" role="group" aria-label="Modo multiusuário na nuvem"><button type="button" class="cloud-btn ${cloudMode()==='nao'?'on':''}" data-cloud="nao" aria-pressed="${cloudMode()==='nao'}">NÃO</button><button type="button" class="cloud-btn ${cloudMode()==='sim'?'on':''}" data-cloud="sim" aria-pressed="${cloudMode()==='sim'}">SIM</button></div>
-  <p class="cloud-note" id="ajCloudNote">${cloudMode()==='sim'?'<b>SIM:</b> APENAS SERÁ PERMITIDA A LEITURA DAS INFORMAÇÕES enquanto não estiver conectado à internet. Sem internet aparece o aviso “SEM ACESSO A INTERNET”.':'<b>NÃO:</b> TODAS AS INFORMAÇÕES SERÃO GRAVADAS (neste aparelho), com ou sem internet.'}</p></div>
- ${cloudMode()==='sim'?` <p class="aj-hint" style="margin:0 0 10px;font-size:12.5px;color:#4a5568">${sbSession()?`Conectado como <b>${finEsc(sbSession().email)}</b>. Quando alguém estiver editando um registro, os outros veem “registro em uso” e quem está editando recebe um aviso.`:'Conecte ao Supabase da sua empresa para o bloqueio de registros valer entre todos os usuários. Sem conexão, o bloqueio só funciona entre abas deste aparelho.'}</p>
- ${sbSession()?`<div class="form-actions full"><div class="aj-actions" style="width:100%"><button class="btn btn-secondary" id="ajSbSair" style="width:auto">Desconectar</button></div></div>`:`<div class="form-grid">
-  <div class="form-field full"><label>Endereço do projeto</label><input id="ajSbUrl" autocomplete="off" placeholder="https://seuprojeto.supabase.co"></div>
-  <div class="form-field full"><label>Chave pública (anon)</label><input id="ajSbAnon" autocomplete="off" placeholder="eyJ..."></div>
-  <div class="form-field"><label>E-mail</label><input id="ajSbEmail" type="email" autocomplete="username"></div>
-  <div class="form-field"><label>Senha</label><input id="ajSbSenha" type="password" autocomplete="current-password"></div>
-  <div class="form-actions full"><div class="aj-actions" style="width:100%"><button class="btn btn-primary" id="ajSbEntrar" style="width:auto">Conectar</button></div></div></div>`}`:''}
- </section>
 
  <section class="panel" id="ajPixCard" style="margin-bottom:14px"><div class="panel-head"><h3>💸 Recebimento por Pix</h3></div>
  <p class="aj-hint" style="margin:0 0 10px;font-size:12.5px;color:#4a5568">Cadastre sua chave para gerar o <b>Pix copia-e-cola</b> e o <b>QR Code</b> de cada receita a receber (botão <b>Pix</b> no Financeiro). Tudo é gerado neste aparelho; nada é enviado a servidor.</p>
@@ -3025,13 +3013,13 @@ function ajustesView(){const c=ajCfg(),z=ajZoom(),av=ajAvisos(),lg=ajLogin(),bel
  <div style="margin-top:14px;padding:12px;background:#eafbf1;border:1px solid #b9e8cc;border-radius:12px">
   <div style="font-size:13px;font-weight:700;color:#1f8a4c;margin-bottom:4px">🔐 Senha de acesso ativa</div>
   <p style="font-size:12px;color:#4a5568;margin:0 0 10px">Seus dados ficam criptografados neste aparelho. Sem a senha, o app não abre e ninguém consegue ler o que está salvo.</p>
-  <p style="font-size:11.5px;color:#6b7a93;margin:0 0 10px">Ao trocar, vale a mesma regra: de 4 a 50 caracteres, com maiúscula, minúscula, número e símbolo.</p>
+  <p style="font-size:11.5px;color:#6b7a93;margin:0 0 10px">Ao trocar, vale a mesma regra: de 5 a 50 caracteres. Recomendamos incluir 1 maiúscula, 1 minúscula, 1 número e 1 símbolo.</p>
   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-secondary" id="ajTrocarSenha" style="width:auto">Trocar senha</button><button class="btn btn-secondary" id="ajRemoverSenha" style="width:auto;color:#c0392b;border-color:#f3c9c4">Remover senha</button></div>
  </div>`:`
  <div style="margin-top:14px;padding:12px;background:#f8fafc;border:1px solid #e3e8ef;border-radius:12px">
   <div style="font-size:13px;font-weight:700;color:#273142;margin-bottom:4px">🔐 Senha de acesso</div>
   <p style="font-size:12px;color:#6b7a93;margin:0 0 10px">Ainda não ativada — qualquer pessoa com acesso a este aparelho pode abrir o app. Criar uma senha criptografa tudo (eventos, clientes, financeiro) e passa a exigi-la pra abrir.</p>
-   <p style="font-size:11.5px;color:#6b7a93;margin:0 0 10px"><b>Regra da senha</b>: de 4 a 50 caracteres, com 1 maiúscula, 1 minúscula, 1 número e 1 símbolo. Ao criar, você pode mandar uma cópia pro seu WhatsApp.</p>
+   <p style="font-size:11.5px;color:#6b7a93;margin:0 0 10px"><b>Regra da senha</b>: de 5 a 50 caracteres. Para mais segurança, recomendamos incluir 1 maiúscula, 1 minúscula, 1 número e 1 símbolo. Ao criar, você pode mandar uma cópia pro seu WhatsApp.</p>
   <button class="btn btn-primary" id="ajCriarSenha" style="width:auto">🔒 Criar senha de acesso</button>
  </div>`}
  </section>
@@ -3077,9 +3065,6 @@ function ajWire(){
  byId('ajTutorial').onclick=()=>render('tutorial');
  if(byId('ajPermissoes'))byId('ajPermissoes').onclick=()=>{const info=byId('ajPermissoesInfo');info.style.display=info.style.display==='none'?'block':'none'};
  byId('ajBackupBaixar').onclick=()=>ajDownloadBackup();
- $$('[data-cloud]').forEach(b=>b.onclick=()=>{lkRaw.set('lk_cloud',b.dataset.cloud==='sim'?'sim':'nao');netFail=false;netRefresh();if(lkMode()==='sb')lkStart();toast(b.dataset.cloud==='sim'?'Modo nuvem: SIM. Sem internet, só leitura.':'Modo nuvem: NÃO. Todas as informações serão gravadas.');ajRefresh()});
- if(byId('ajSbEntrar'))byId('ajSbEntrar').onclick=async()=>{const b=byId('ajSbEntrar');b.disabled=true;try{await sbLogin(byId('ajSbUrl').value,byId('ajSbAnon').value,byId('ajSbEmail').value.trim(),byId('ajSbSenha').value);toast('Conectado ao Supabase.');ajRefresh()}catch(e){toast(e.message||'Não foi possível conectar.',5000);b.disabled=false}};
- if(byId('ajSbSair'))byId('ajSbSair').onclick=()=>{sbLogout();toast('Desconectado.');ajRefresh()};
  byId('ajSalvarPix').onclick=()=>{const k=pixNormKey(byId('ajPixChave').value);if(!k){toast('Informe a chave Pix.');return}storage.setItem('r1_pix_cfg',JSON.stringify({chave:k,nome:byId('ajPixNome').value.trim().slice(0,25),cidade:byId('ajPixCidade').value.trim().slice(0,15)}));toast('Pix salvo.');goBack()};
  byId('ajBaseToggle').onclick=async()=>{if(manualOn()){toast('Saia do manual antes de mudar isto.');return}const vaiOcultar=storage.getItem('r1_basemode')!=='empty';if(!await askConfirm({title:vaiOcultar?'Ocultar os exemplos antigos?':'Mostrar os exemplos antigos?',text:vaiOcultar?'Os eventos, projetos e metas de exemplo da base somem das telas. Seus próprios cadastros continuam. Dá para mostrar de novo aqui.':'Os exemplos da base voltam a aparecer junto com seus cadastros.',ok:vaiOcultar?'Ocultar':'Mostrar',danger:false}))return;storage.setItem('r1_basemode',vaiOcultar?'empty':'legacy');toast(vaiOcultar?'Exemplos antigos ocultados.':'Exemplos antigos visíveis.');currentScreenRebuild()()};
  byId('ajBackupArquivo').onchange=e=>{const file=e.target.files&&e.target.files[0];if(file)ajRestoreFile(file)};
@@ -3507,49 +3492,41 @@ function baseModeInit(){
 /* ═══ Registro em uso (multiusuário) ═══
    Quem abre um registro para editar o "reserva" (bloqueio). Outro usuário que tentar abrir recebe
    "Registro em uso por outro usuário — aguarde" e quem está com o registro recebe o alerta
-   "Há outro usuário precisando atualizar informações". Sem Supabase conectado, o bloqueio funciona entre
-   abas do mesmo aparelho (cada aba conta como um usuário). Com Supabase, vale entre todos os usuários da empresa.
+   "Há outro usuário precisando atualizar informações". O bloqueio funciona entre
+   abas do mesmo aparelho (cada aba conta como um usuário).
    Esses dados ficam em chaves "lk_*" (fora do backup). */
 const LK_TTL=90000,LK_IDLE=300000,LK_POLL=4000,LK_BEAT=20000;
 const lkMem={};
 const lkRaw={get(k){try{return globalThis.localStorage.getItem(k)}catch(e){return lkMem[k]??null}},set(k,v){try{globalThis.localStorage.setItem(k,v)}catch(e){lkMem[k]=v}},del(k){try{globalThis.localStorage.removeItem(k)}catch(e){delete lkMem[k]}}};
 const lkJ=(k,d)=>{try{const v=lkRaw.get(k);return v?JSON.parse(v):d}catch(e){return d}};
 const lkSid=(()=>{try{let s=sessionStorage.getItem('lk_sid');if(!s){s=Math.random().toString(36).slice(2,10);sessionStorage.setItem('lk_sid',s)}return s}catch(e){return Math.random().toString(36).slice(2,10)}})();
-const sbSession=()=>lkJ('lk_session',null),sbCfg=()=>lkJ('lk_sbcfg',null);
-const lkMode=()=>(cloudMode()==='sim'&&sbCfg()&&sbSession()&&sbSession().org_id)?'sb':'local';
-function lkMe(){const s=sbSession();const email=(s&&s.email)||(typeof ajLogin==='function'?ajLogin().email:'')||'usuário';return{id:((s&&s.user_id)||'local')+'|'+lkSid,name:String(email).split('@')[0]||'usuário'}}
+const lkMode=()=>'local';
+function lkMe(){const email=(typeof ajLogin==='function'?ajLogin().email:'')||'usuário';return{id:'local|'+lkSid,name:String(email).split('@')[0]||'usuário'}}
 let lkActive=Date.now(),lkCache={},lkFormRes=null,lkAlertRes=null,lkTimersOn=false;
 const lkHeld=new Set(),lkWait=new Map(),lkNotified=new Set();
 /* — Modo multiusuário na nuvem: NÃO = tudo é gravado; SIM = sem internet só leitura — */
 let netFail=false,netWasOff=false;
-function cloudMode(){return lkRaw.get('lk_cloud')==='sim'?'sim':'nao'}
+function cloudMode(){return 'nao'}
 function netOnline(){try{return navigator.onLine!==false&&!netFail}catch(e){return true}}
 function cloudReadOnly(){return cloudMode()==='sim'&&!netOnline()&&!manualOn()}
 function cloudBlock(){if(!cloudReadOnly())return false;toast('SEM ACESSO A INTERNET — apenas leitura das informações.',4000);return true}
 function netRefresh(){const b=document.getElementById('netBanner');if(!b)return;const off=!netOnline();
  if(off){b.textContent=cloudMode()==='sim'?'SEM ACESSO A INTERNET — APENAS LEITURA DAS INFORMAÇÕES':'SEM ACESSO A INTERNET — TODAS AS INFORMAÇÕES SERÃO GRAVADAS';b.classList.toggle('ro',cloudMode()==='sim');b.hidden=false;netWasOff=true}
  else{b.hidden=true;if(netWasOff&&cloudMode()==='sim')toast('Conexão restabelecida — edição liberada.');netWasOff=false}}
-function netInit(){window.addEventListener('online',()=>{netFail=false;netRefresh()});window.addEventListener('offline',netRefresh);netRefresh();if(lkMode()==='sb')lkStart()}
+function netInit(){window.addEventListener('online',()=>{netFail=false;netRefresh()});window.addEventListener('offline',netRefresh);netRefresh()}
 const lkNames={};
 const lkLabel=res=>lkNames[res]||(()=>{const i=res.indexOf(':');return i>0?res.slice(i+1):res})();
-/* — Supabase por REST (sem biblioteca) — */
-async function sbRefresh(){const c=sbCfg(),s=sbSession();if(!c||!s||!s.refresh_token)return false;try{const r=await fetch(c.url+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:c.anon,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:s.refresh_token})});if(!r.ok)return false;const j=await r.json();lkRaw.set('lk_session',JSON.stringify({...s,access_token:j.access_token,refresh_token:j.refresh_token||s.refresh_token,exp:Date.now()+(j.expires_in||3600)*1000}));return true}catch(e){return false}}
-async function sbFetch(path,opt={}){const c=sbCfg(),s=sbSession();const {_retry,...o}=opt;const r=await fetch(c.url+path,{...o,headers:{apikey:c.anon,Authorization:'Bearer '+((s&&s.access_token)||c.anon),'Content-Type':'application/json',...(o.headers||{})}});if(r.status===401&&s&&!_retry&&await sbRefresh())return sbFetch(path,{...opt,_retry:1});if(!r.ok)throw new Error('sb '+r.status);const t=await r.text();return t?JSON.parse(t):null}
-const sbRpc=(fn,args)=>sbFetch('/rest/v1/rpc/'+fn,{method:'POST',body:JSON.stringify(args)});
-async function sbLogin(url,anon,email,senha){url=String(url||'').trim().replace(/\/+$/,'');anon=String(anon||'').trim();if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url))throw new Error('Endereço inválido. Use o formato https://seuprojeto.supabase.co');if(!anon)throw new Error('Informe a chave anon.');const r=await fetch(url+'/auth/v1/token?grant_type=password',{method:'POST',headers:{apikey:anon,'Content-Type':'application/json'},body:JSON.stringify({email,password:senha})});if(!r.ok)throw new Error('E-mail ou senha incorretos.');const j=await r.json();lkRaw.set('lk_sbcfg',JSON.stringify({url,anon}));const sess={access_token:j.access_token,refresh_token:j.refresh_token,user_id:j.user.id,email:j.user.email,exp:Date.now()+(j.expires_in||3600)*1000};lkRaw.set('lk_session',JSON.stringify(sess));let m=null;try{m=await sbFetch('/rest/v1/memberships?select=org_id&user_id=eq.'+j.user.id+'&limit=1')}catch(e){}if(!m||!m[0]){lkRaw.del('lk_session');throw new Error('Este usuário não está ligado a nenhuma empresa.')}sess.org_id=m[0].org_id;lkRaw.set('lk_session',JSON.stringify(sess));return sess}
-function sbLogout(){lkRaw.del('lk_session');lkRaw.del('lk_sbcfg');lkCache={};lkHeld.clear()}
 /* — leitura do estado dos bloqueios — */
 function lkSnapshot(){if(lkMode()==='local'){const all=lkJ('lk_locks',{}),now=Date.now(),o={};Object.keys(all).forEach(k=>{if(all[k].exp>now)o[k]=all[k]});return o}return lkCache}
 function lkBlockedBy(res){const l=lkSnapshot()[res],me=lkMe();return(l&&l.holder!==me.id&&l.exp>Date.now())?l:null}
-async function lkPull(){if(lkMode()!=='sb')return;const s=sbSession();try{const rows=await sbFetch('/rest/v1/record_locks?select=resource,holder_id,holder_name,expires_at,requests&org_id=eq.'+s.org_id+'&expires_at=gt.'+encodeURIComponent(new Date().toISOString()));const o={};(rows||[]).forEach(r=>{o[r.resource]={holder:r.holder_id,name:r.holder_name,exp:Date.parse(r.expires_at),req:r.requests||[]}});lkCache=o;if(netFail){netFail=false;netRefresh()}}catch(e){if(!netFail){netFail=true;netRefresh()}}}
 /* — operações — */
-async function lkAcquire(res){const me=lkMe();if(lkMode()==='sb'){try{const r=await sbRpc('lock_acquire',{p_org:sbSession().org_id,p_resource:res,p_holder:me.id,p_name:me.name,p_ttl:Math.round(LK_TTL/1000)});if(r&&r.ok){lkHeld.add(res);lkCache[res]={holder:me.id,name:me.name,exp:Date.now()+LK_TTL,req:[]};return{ok:true}}return{ok:false,holder:r&&r.holder,holder_id:r&&r.holder_id}}catch(e){netFail=true;netRefresh();if(cloudReadOnly())return{ok:false,offline:true};toast('⚠️ Sem conexão com o servidor: editando sem bloqueio. Salve logo para evitar conflito.',5000);return{ok:true,offline:true}}}
+async function lkAcquire(res){const me=lkMe();
  const all=lkJ('lk_locks',{}),now=Date.now(),l=all[res];if(l&&l.exp>now&&l.holder!==me.id)return{ok:false,holder:l.name,holder_id:l.holder};all[res]={holder:me.id,name:me.name,exp:now+LK_TTL,req:(l&&l.holder===me.id&&l.req)||[]};lkRaw.set('lk_locks',JSON.stringify(all));lkHeld.add(res);return{ok:true}}
-async function lkRelease(res){const me=lkMe();lkHeld.delete(res);lkNotified.delete(res);if(lkMode()==='sb'){delete lkCache[res];try{await sbRpc('lock_release',{p_org:sbSession().org_id,p_resource:res,p_holder:me.id})}catch(e){}return}
+async function lkRelease(res){const me=lkMe();lkHeld.delete(res);lkNotified.delete(res);
  const all=lkJ('lk_locks',{});if(all[res]&&all[res].holder===me.id){delete all[res];lkRaw.set('lk_locks',JSON.stringify(all))}}
-async function lkRequest(res){const me=lkMe();if(lkMode()==='sb'){try{await sbRpc('lock_request',{p_org:sbSession().org_id,p_resource:res,p_name:me.name})}catch(e){}return}
+async function lkRequest(res){const me=lkMe();
  const all=lkJ('lk_locks',{}),l=all[res];if(!l)return;l.req=(l.req||[]).filter(x=>x.by!==me.name);l.req.push({by:me.name,at:Date.now()});all[res]=l;lkRaw.set('lk_locks',JSON.stringify(all))}
-async function lkClearReq(res){const me=lkMe();lkNotified.delete(res);if(lkMode()==='sb'){try{await sbRpc('lock_clear_requests',{p_org:sbSession().org_id,p_resource:res,p_holder:me.id})}catch(e){}const c=lkCache[res];if(c)c.req=[];return}
+async function lkClearReq(res){const me=lkMe();lkNotified.delete(res);
  const all=lkJ('lk_locks',{});if(all[res]&&all[res].holder===me.id){all[res].req=[];lkRaw.set('lk_locks',JSON.stringify(all))}}
 /* — porta de entrada: usada ao abrir um registro para editar — */
 async function lkGate(res){if(manualOn())return true;lkStart();const r=await lkAcquire(res);if(r.ok)return true;if(r.offline){cloudBlock();return false}
@@ -3558,7 +3535,7 @@ async function lkGate(res){if(manualOn())return true;lkStart();const r=await lkA
 function lkBlocked(res){if(manualOn())return false;const l=lkBlockedBy(res);if(!l)return false;toast('🔒 Registro em uso por outro usuário'+(l.name?' ('+l.name+')':'')+' — aguarde.',5000);lkWait.set(res,true);lkRequest(res);return true}
 /* — alerta para quem está com o registro "parado" — */
 function lkShowAlert(res,req){const d=document.getElementById('lockAlertDialog');if(!d||d.open)return;lkAlertRes=res;const by=[...new Set((req||[]).map(x=>x.by))].join(', ')||'Outro usuário';document.getElementById('lockAlertText').textContent=by+' está aguardando para atualizar este registro ('+lkLabel(res)+'). Salve e libere assim que puder.';d.showModal()}
-async function lkTick(){lkStart();if(lkMode()==='sb')await lkPull();const snap=lkSnapshot(),me=lkMe();
+async function lkTick(){lkStart();const snap=lkSnapshot(),me=lkMe();
  lkHeld.forEach(res=>{const l=snap[res];if(l&&l.holder===me.id&&l.req&&l.req.length&&!lkNotified.has(res)){lkNotified.add(res);lkShowAlert(res,l.req)}});
  [...lkWait.keys()].forEach(res=>{if(!lkBlockedBy(res)){lkWait.delete(res);toast('✅ Registro liberado — você já pode editar.',5000)}})}
 async function lkBeat(){if(Date.now()-lkActive>=LK_IDLE)return;for(const res of [...lkHeld])await lkAcquire(res)}
@@ -3566,7 +3543,7 @@ function lkStart(){if(lkTimersOn)return;lkTimersOn=true;
  ['keydown','pointerdown','input'].forEach(ev=>document.addEventListener(ev,()=>{lkActive=Date.now()},{passive:true,capture:true}));
  setInterval(()=>{lkTick()},LK_POLL);setInterval(()=>{lkBeat()},LK_BEAT);
  window.addEventListener('storage',e=>{if(e.key==='lk_locks')lkTick()});
- window.addEventListener('pagehide',()=>{const me=lkMe();if(lkMode()==='local'){const all=lkJ('lk_locks',{});lkHeld.forEach(r=>{if(all[r]&&all[r].holder===me.id)delete all[r]});lkRaw.set('lk_locks',JSON.stringify(all))}else{const c=sbCfg(),s=sbSession();lkHeld.forEach(r=>{try{fetch(c.url+'/rest/v1/rpc/lock_release',{method:'POST',keepalive:true,headers:{apikey:c.anon,Authorization:'Bearer '+s.access_token,'Content-Type':'application/json'},body:JSON.stringify({p_org:s.org_id,p_resource:r,p_holder:me.id})})}catch(e){}})}});
+ window.addEventListener('pagehide',()=>{const me=lkMe();const all=lkJ('lk_locks',{});lkHeld.forEach(r=>{if(all[r]&&all[r].holder===me.id)delete all[r]});lkRaw.set('lk_locks',JSON.stringify(all))});
  const fd=document.getElementById('formDialog');if(fd)fd.addEventListener('close',()=>{if(lkFormRes){lkRelease(lkFormRes);lkFormRes=null}});
  const ad=document.getElementById('lockAlertDialog');if(ad){document.getElementById('lockAlertKeep').onclick=()=>{if(lkAlertRes)lkClearReq(lkAlertRes);ad.close()};
   document.getElementById('lockAlertSave').onclick=()=>{const r=lkAlertRes;ad.close();if(r)lkClearReq(r);const f=document.getElementById('dynamicForm');if(lkFormRes===r&&fd&&fd.open&&f){if(f.reportValidity&&!f.reportValidity()){toast('Preencha os campos obrigatórios para salvar.');return}f.requestSubmit()}else if(r)lkRelease(r)}}}

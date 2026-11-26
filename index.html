@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8"/>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.supabase.co; media-src 'self' data: blob:; frame-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; media-src 'self' data: blob:; frame-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'"/>
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
   <meta name="theme-color" content="#071624"/>
   <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -167,13 +167,13 @@
 
   <section id="appView" class="app-shell hidden">
     <aside class="sidebar">
-      <div class="brand-row"><div class="brand-emblem small"><img src="./assets/icons/logo.png" alt="" width="30" height="20"></div><div><strong>DIAdoEVENTO</strong><span>Eventos e negócios</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.44.1</span></div>
+      <div class="brand-row"><div class="brand-emblem small"><img src="./assets/icons/logo.png" alt="" width="30" height="20"></div><div><strong>DIAdoEVENTO</strong><span>Eventos e negócios</span></div><span class="sidebar-version-badge" style="display:inline-block;margin-left:auto;align-self:flex-start;background:#fdf1e3;border:1px solid #eccb9c;color:#a15b1f;font-size:9px;font-weight:800;letter-spacing:.05em;padding:2px 8px;border-radius:100px">V:1.44.2</span></div>
       <div class="workspace-card">
         <span>WORKSPACE</span>
         <button id="workspaceBtn"><span class="workspace-current"><i id="workspaceDot" class="workspace-dot"></i><b id="workspaceName">Negócios</b></span><i class="workspace-chevron">⌄</i></button>
       </div>
       <nav id="sideNav" class="side-nav"></nav>
-      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">DIAdoEVENTO • V:1.44.1</small>
+      <div class="sidebar-foot"><small id="appVersion" style="display:block;color:#7d8b99;font-size:10px;letter-spacing:.08em;padding:0 6px 8px">DIAdoEVENTO • V:1.44.2</small>
         <button id="tutorialBtn" class="tutorial-entry-btn"><span data-icon="help-circle"></span><span><b>Tutorial completo</b><small>Aprenda passo a passo</small></span></button>
         <button id="installBtn" class="install-btn">⬇ Instalar aplicativo</button>
         <div class="user-card"><span class="avatar">BR</span><div><b>Bruno</b><small>Administrador</small></div><button data-open-ajustes title="Ajustes">⋯</button></div>
@@ -291,10 +291,10 @@
 <dialog id="pwSetupDialog" class="modal">
   <div class="modal-head"><div><span class="eyebrow">DIAdoEVENTO</span><h3 id="pwSetupTitle">Criar senha de acesso</h3></div><button class="close-btn" data-close="pwSetupDialog">×</button></div>
   <p style="font-size:12.5px;color:#4a5568;margin:0 0 10px">A senha protege seus eventos, clientes e financeiro neste aparelho — os dados ficam criptografados, sem ela não dá pra abrir o app nem ler o que está salvo.</p>
-  <div style="font-size:12px;color:#a15b1f;background:#fdf1e3;border:1px solid #eccb9c;border-radius:10px;padding:8px 10px;margin-bottom:12px">A senha deve ter <b>de 4 a 50 caracteres</b>, com <b>1 maiúscula, 1 minúscula, 1 número e 1 símbolo</b>.</div>
+  <div style="font-size:12px;color:#a15b1f;background:#fdf1e3;border:1px solid #eccb9c;border-radius:10px;padding:8px 10px;margin-bottom:12px">A senha deve ter <b>de 5 a 50 caracteres</b>. Para melhorar a segurança, recomendamos incluir <b>1 maiúscula, 1 minúscula, 1 número e 1 símbolo</b>.</div>
   <div class="form-field"><label>Nova senha</label><div class="password-row"><input id="pwSetupPass" type="password" maxlength="50" autocomplete="off"/><button type="button" id="pwSetupToggle1">👁</button></div></div>
   <div id="pwRules" style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;font-size:11px">
-   <span class="pill" data-r="len">4-50 caracteres</span><span class="pill" data-r="up">1 maiúscula</span><span class="pill" data-r="low">1 minúscula</span><span class="pill" data-r="num">1 número</span><span class="pill" data-r="sp">1 símbolo</span>
+   <span class="pill" data-r="len">5-50 caracteres</span><span class="pill" data-r="up">1 maiúscula</span><span class="pill" data-r="low">1 minúscula</span><span class="pill" data-r="num">1 número</span><span class="pill" data-r="sp">1 símbolo</span>
   </div>
   <div class="form-field"><label>Digite a senha de novo</label><div class="password-row"><input id="pwSetupPass2" type="password" maxlength="50" autocomplete="off"/><button type="button" id="pwSetupToggle2">👁</button></div></div>
   <div id="pwSetupMatch" style="min-height:18px;font-size:12px;font-weight:700;margin-top:4px"></div>
